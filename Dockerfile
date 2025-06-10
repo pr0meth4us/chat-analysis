@@ -1,24 +1,26 @@
-FROM python:3.11-slim
+# Simple Dockerfile for Chat Message Analyzer
+FROM python:3.9-slim
 
-# ---------- install deps ----------
+# Set working directory
 WORKDIR /app
+
+# Install system dependencies for parsing
+RUN apt-get update && apt-get install -y \
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements from api directory and install Python dependencies
 COPY api/requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt \
-    && pip install gunicorn
+RUN pip install --no-cache-dir -r requirements.txt
 
-COPY api ./api
+# Copy application code from api directory
+COPY api/ .
 
-# Expose the port your app will run on
+# Create uploads directory for file processing
+RUN mkdir -p uploads
+
+# Expose port
 EXPOSE 5328
 
-#
-# Corrected CMD instruction
-#
-# Changes:
-# 1. Removed uvicorn and the "-k uvicorn.workers.UvicornWorker" flag to use a standard WSGI worker.
-# 2. Changed the bind port from 5328 to 8000.
-# 3. Reduced workers from 4 to 2 to conserve memory.
-# 4. Pointed gunicorn to your Flask app factory: `api.app:create_app()`.
-#    (This assumes the file containing `create_app` is named `api/app.py`)
-#
-CMD ["gunicorn", "--workers", "2", "--bind", "0.0.0.0:5328", "api.app:create_app()"]
+# Run the ASGI application
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "asgi:asgi_app", "-k", "uvicorn.workers.UvicornWorker"]
