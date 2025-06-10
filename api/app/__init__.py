@@ -35,5 +35,10 @@ def create_app() -> Flask:
     app.register_blueprint(upload_bp, url_prefix="/api")
     app.register_blueprint(analyze_bp, url_prefix="/api")
 
+    @app.route("/health", methods=["GET"])
+    def health():
+        """Simple liveness / readiness probe."""
+        return {"status": "ok"}, 200
+
     app.logger.info("📦 Flask Chat Analyzer App Initialized")
     return app
