@@ -23,4 +23,4 @@ RUN mkdir -p uploads
 EXPOSE 5328
 
 # Run the ASGI application
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "asgi:asgi_app", "-k", "uvicorn.workers.UvicornWorker"]
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "api.asgi:asgi_app", "-k", "uvicorn.workers.UvicornWorker"]
