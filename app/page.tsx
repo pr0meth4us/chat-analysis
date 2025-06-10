@@ -111,7 +111,7 @@ const uploadChatFiles = async (files: File[]): Promise<UploadResponse> => {
   const formData = new FormData();
   files.forEach((file) => formData.append("files", file));
 
-  const response = await fetch("http://localhost:5328/api/upload", {
+  const response = await fetch("https://worrying-iolande-aupp-5e910212.koyeb.app:5328/api/upload", {
     method: "POST",
     body: formData,
     credentials: "include",
@@ -131,7 +131,7 @@ const runChatAnalysis = async (requestData: {
   remove: string[];
   other_label: string;
 }): Promise<AnalysisResult> => {
-  const response = await fetch("http://localhost:5328/api/filter_and_analyze", {
+  const response = await fetch("https://worrying-iolande-aupp-5e910212.koyeb.app:5328/api/filter_and_analyze", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
