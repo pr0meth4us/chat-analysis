@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+*
+!api/requirements.txt
+!api/
+!Dockerfile
+!api/wheels/strhub-1.2.0-py3-none-any.whl
