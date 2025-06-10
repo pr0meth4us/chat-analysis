@@ -13,3 +13,8 @@ vaderSentiment
 
 uvicorn
 asgiref
+flask
+numpy
+pandas
+flask-cors
+bs4

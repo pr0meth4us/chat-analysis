@@ -1,6 +1,5 @@
 import re
 import json
-from bs4 import BeautifulSoup
 from .json_parser import parse_generic_json
 
 def extract_json_from_html(soup):
