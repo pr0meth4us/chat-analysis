@@ -2,14 +2,15 @@ import hashlib
 import json
 from datetime import datetime
 from bs4 import BeautifulSoup
-from ..utils import log
-from ..config import Config
+from utils import log
+from config import Config
 from .date_parser import parse_datetime_comprehensive
 from .html_parser import (
     extract_json_from_html, extract_telegram, extract_facebook,
     extract_instagram, extract_imessage, extract_discord_html
 )
 from .json_parser import parse_generic_json
+
 
 def process_uploaded_files(files):
     """
@@ -50,7 +51,8 @@ def process_uploaded_files(files):
     seen_hashes = set()
     unique_messages = []
     for msg in compiled:
-        content_hash = hashlib.md5(f"{msg.get('timestamp', '')}{msg.get('sender', '')}{msg.get('message', '')}".encode()).hexdigest()
+        content_hash = hashlib.md5(
+            f"{msg.get('timestamp', '')}{msg.get('sender', '')}{msg.get('message', '')}".encode()).hexdigest()
         if content_hash not in seen_hashes:
             seen_hashes.add(content_hash)
             unique_messages.append(msg)

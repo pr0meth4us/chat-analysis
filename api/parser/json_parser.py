@@ -1,5 +1,3 @@
-import json
-
 def parse_generic_json(data):
     messages = []
     for msg in data:
