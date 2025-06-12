@@ -229,3 +229,34 @@ export interface SenderCardProps {
 export interface AnalysisResultsProps {
   results: AnalysisResult;
 }
+
+export interface Message {
+  sender: string;
+  message: string; // Changed from 'content' to 'message' to match backend
+  timestamp?: string;
+}
+
+export interface UploadResponse {
+  message: string;
+  session_id: string; // Added session_id from backend
+  unique_senders: string[];
+}
+
+export interface FilterRequest {
+  messages?: Message[];
+  me?: string[];
+  remove?: string[];
+  other_label?: string;
+}
+
+export interface FilterResponse {
+  filtered_messages: string[];
+}
+
+export interface AnalysisRequest {
+  filtered_messages?: string[];
+}
+
+export interface AnalysisResponse {
+  analysis_report: any;
+}

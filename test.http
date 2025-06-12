@@ -1,0 +1,75 @@
+# Chat Analysis API – PyCharm HTTP Client
+@host = http://localhost:5001/api
+@boundary = ----Boundary
+
+### Upload one or more chat files
+POST {{host}}/upload
+Content-Type: multipart/form-data; boundary={{boundary}}
+
+--{{boundary}}
+Content-Disposition: form-data; name="files"; filename="chat1.html"
+Content-Type: text/html
+
+< C:\Users\phear\Downloads\Telegram Desktop\all_chats\flat_chats\chatlogs-channel1020721583440011399-@20220101-20230516.html
+--{{boundary}}
+
+### Upload & extract a ZIP archive of chat files
+POST {{host}}/upload-zip
+Content-Type: multipart/form-data; boundary=----Boundary
+
+------Boundary
+Content-Disposition: form-data; name="zipfile"; filename="all_chats.zip"
+Content-Type: application/zip
+
+< C:\Users\phear\Downloads\Telegram Desktop\all_chats.zip
+------Boundary--
+
+### Filter, relabel & dedupe processed messages
+POST {{host}}/filter
+Content-Type: application/json
+
+{
+  "me": {{ME_LIST}},
+  "remove": {{REMOVE_LIST}},
+  "other_label": "{{OTHER_LABEL}}"
+}
+
+
+### Analyze filtered messages (JSON body)
+POST {{host}}/analyze
+Content-Type: application/json
+
+{
+  "filtered_messages": [
+    "Hey, how are you?",
+    "I'm good!"
+  ]
+}
+
+### Analyze filtered messages (JSON file upload)
+POST {{host}}/analyze
+Content-Type: multipart/form-data
+
+file=@./path/to/filtered_messages.json
+
+### Count occurrences of a keyword per sender
+POST {{host}}/count_keyword
+Content-Type: application/json
+
+{
+  "keyword": "sl"
+}
+
+### Retrieve stored processed messages for current session
+GET {{host}}/get_stored_messages
+
+### Clear all session data
+POST {{host}}/clear
+
+### Analyze filtered messages (session fallback)
+POST {{host}}/analyze
+Content-Type: application/json
+
+{}
+
+

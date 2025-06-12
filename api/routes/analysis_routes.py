@@ -9,41 +9,61 @@ analysis_bp = Blueprint('analysis', __name__)
 @analysis_bp.route('/analyze', methods=['POST'])
 def analyze_messages():
     """Analyze filtered messages and generate report"""
-    messages = None
+    raw_messages = None
+    session_id = session_manager.get_session_id()
 
-    # Accept JSON body or uploaded JSON file
+    # 1) Try JSON payload
+    if request.is_json:
+        data = request.get_json(silent=True) or {}
+        raw_messages = data.get('filtered_messages')
+
+    # 2) Try file upload
     if 'file' in request.files:
-        f = request.files['file']
         try:
-            data = json.load(f)
-            messages = data.get('filtered_messages')
+            f = request.files['file']
+            file_data = json.load(f)
+            raw_messages = file_data.get('filtered_messages')
         except Exception:
             return jsonify({"error": "Invalid JSON file"}), 400
-    else:
-        body = request.get_json() or {}
-        messages = body.get('filtered_messages')
 
-    # If no messages provided, check session store
+    # 3) Session fallback
+    if not isinstance(raw_messages, list):
+        raw_messages = session_manager.get_filtered_messages(session_id)
+        log(f"Using stored filtered messages from session {session_id}: {len(raw_messages or [])} messages")
+
+    # Validate messages
+    if not raw_messages:
+        return jsonify({
+            "error": "No messages to analyze. Upload and filter first, or provide 'filtered_messages'."
+        }), 400
+
+    # Prepare full message dicts
+    messages = []
+    for msg in raw_messages:
+        if isinstance(msg, dict):
+            messages.append({
+                'sender': msg.get('sender', 'unknown'),
+                'message': msg.get('message', ''),
+                'timestamp': msg.get('timestamp')
+            })
+
     if not messages:
-        session_id = session_manager.get_session_id()
-        stored_filtered = session_manager.get_filtered_messages(session_id)
-        if stored_filtered:
-            minimal = stored_filtered
-            log(f"Using stored filtered messages from session {session_id}: {len(minimal)} messages")
-        else:
-            return jsonify({
-                "error": "Provide 'filtered_messages' list, upload JSON file, or filter messages first"
-            }), 400
-    else:
-        if not isinstance(messages, list) or not messages:
-            return jsonify({
-                "error": "Provide 'filtered_messages' list, upload JSON file, or filter messages first"
-            }), 400
-        # Reconstruct minimal message dict for analyzer
-        minimal = [{'message': m} for m in messages]
+        return jsonify({"error": "No valid message objects to analyze."}), 400
 
-    analyzer = ChatAnalyzer(minimal)
-    report = analyzer.generate_comprehensive_report()
+    # Initialize analyzer and preprocess
+    analyzer = ChatAnalyzer(messages, input_type='messages')
+    analyzer.load_and_preprocess()
+
+    # Defensive check
+    if not hasattr(analyzer, 'df') or analyzer.df is None or analyzer.df.empty:
+        return jsonify({"error": "Internal error: failed to build analysis data."}), 500
+
+    try:
+        report = analyzer.generate_comprehensive_report()
+    except Exception as e:
+        log(f"Analysis error: {e}")
+        return jsonify({"error": "Analysis failed internally."}), 500
+
     return jsonify({"analysis_report": report})
 
 @analysis_bp.route('/count_keyword', methods=['POST'])

@@ -14,6 +14,7 @@ def filter_messages():
     messages = data.get('messages')
     if not messages:
         session_id = session_manager.get_session_id()
+        print(session_id)
         messages = session_manager.get_processed_messages(session_id)
         if not messages:
             return jsonify({
@@ -49,5 +50,4 @@ def filter_messages():
     log(f"Filtered {len(cleaned)} unique messages.")
 
     # Return only message texts as JSON array
-    messages_only = [m.get('message') for m in cleaned]
-    return make_json_response({"filtered_messages": messages_only}, filename='filtered.json')
+    return make_json_response({"filtered_messages": cleaned}, filename='filtered.json')
