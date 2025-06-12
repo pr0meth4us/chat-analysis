@@ -1,47 +1,32 @@
 import React, { useState } from 'react';
 
-// Icon imports organized by category
 import {
-    // Communication icons
     MessageCircle,
     MessageSquare,
     Send,
     Reply,
-
-    // User & People icons
     Users,
     User,
-
-    // Time & Activity icons
     Clock,
     Calendar,
     Timer,
-
-    // Analytics & Charts icons
     TrendingUp,
     Activity,
-
-    // Status & Indicators
     Heart,
     Zap,
     Moon,
     Sun,
     Flame,
     Ghost,
-
-    // Navigation & UI
     ArrowRight,
     ChevronDown,
     ChevronUp,
-
-    // Content & Data icons
     Globe,
     Hash,
     Award,
     Target
 } from 'lucide-react';
 
-// Chart imports
 import {
     XAxis,
     YAxis,
@@ -54,131 +39,9 @@ import {
     Cell,
     Pie
 } from 'recharts';
-
-// ============================================================================
-// TYPE DEFINITIONS
-// ============================================================================
-
-// Core Data Types
-interface DateRange {
-    total_days: number;
-    start_date: string;
-    end_date: string;
-}
-
-interface DatasetOverview {
-    total_messages: number;
-    date_range: DateRange;
-}
-
-interface GhostPeriod {
-    duration_hours: number;
-    last_sender_before_ghost: string;
-    who_broke_silence: string;
-    last_message_before_ghost: string;
-    first_message_after_ghost: string;
-}
-
-interface UserBehavior {
-    total_messages: number;
-    avg_message_length: number;
-    emoji_usage_rate: number;
-    vocabulary_size: number;
-    active_days: Record<string, number>;
-}
-
-// Analysis Result Types
-interface RelationshipMetrics {
-    relationship_intensity: 'LOW' | 'MEDIUM' | 'HIGH' | 'EXTREMELY_HIGH';
-    daily_average_messages: number;
-    avg_response_time_minutes: number;
-    balance_score: number;
-    peak_single_day_messages: number;
-    most_active_date: string;
-    communication_balance: Record<string, number>;
-}
-
-interface ConversationPatterns {
-    total_conversations: number;
-    avg_conversation_duration_minutes: number;
-    avg_conversation_length: number;
-    conversation_starters: Record<string, number>;
-    conversation_enders: Record<string, number>;
-}
-
-interface GhostAnalysis {
-    total_ghost_periods: number;
-    longest_ghost_hours: number;
-    who_breaks_silence_most: Record<string, number>;
-    top_10_ghost_periods: GhostPeriod[];
-}
-
-interface WordAnalysis {
-    english_word_count: number;
-    khmer_word_count: number;
-    top_50_meaningful_words: [string, number][];
-}
-
-// Main Data Structure
-interface AnalysisData {
-    dataset_overview: DatasetOverview;
-    relationship_metrics: RelationshipMetrics;
-    conversation_patterns: ConversationPatterns;
-    ghost_analysis: GhostAnalysis;
-    user_behavior: Record<string, UserBehavior>;
-    word_analysis: WordAnalysis;
-}
-
-// Chart Data Types
-interface ActivityDataPoint {
-    day: string;
-    Othher: number;
-    me: number;
-}
-
-interface BalanceDataPoint {
-    name: string;
-    value: number;
-    color: string;
-}
-
-// Component Props Types
-interface MetricCardProps {
-    title: string;
-    value: string | number;
-    subtitle?: string;
-    icon: React.ComponentType<{ className?: string }>;
-    color?: 'blue' | 'green' | 'purple' | 'orange' | 'red' | 'indigo' | 'yellow';
-    trend?: number;
-}
-
-interface IntensityBadgeProps {
-    intensity: RelationshipMetrics['relationship_intensity'];
-}
-
-interface GhostPeriodCardProps {
-    ghost: GhostPeriod;
-    index: number;
-}
-
-interface WordCloudCardProps {
-    words: [string, number][];
-    title: string;
-}
-
-interface CollapsibleSectionProps {
-    title: string;
-    children: React.ReactNode;
-    defaultOpen?: boolean;
-}
-
-interface ChatAnalysisDashboardProps {
-    data: AnalysisData;
-}
-
-// ============================================================================
-// CONSTANTS
-// ============================================================================
+import {ActivityDataPoint,
+    BalanceDataPoint, ChatAnalysisDashboardProps,
+    CollapsibleSectionProps, GhostPeriodCardProps, IntensityBadgeProps, MetricCardProps, RelationshipMetrics, WordCloudCardProps} from "@/types";
 
 const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4'];
 
@@ -191,11 +54,6 @@ const COLOR_CLASSES = {
     indigo: 'bg-indigo-100 text-indigo-600',
     yellow: 'bg-yellow-100 text-yellow-600',
 };
-
-// ============================================================================
-// UTILITY FUNCTIONS
-// ============================================================================
-
 const formatDuration = (minutes: number): string => {
     const hours = Math.floor(minutes / 60);
     const mins = Math.round(minutes % 60);
@@ -205,11 +63,6 @@ const formatDuration = (minutes: number): string => {
 const formatNumber = (num: number): string => {
     return new Intl.NumberFormat().format(Math.round(num));
 };
-
-// ============================================================================
-// COMPONENTS
-// ============================================================================
-
 const MetricCard: React.FC<MetricCardProps> = ({
                                                    title,
                                                    value,
@@ -338,18 +191,13 @@ const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({ title, children
         </div>
     );
 };
-
-// ============================================================================
-// MAIN COMPONENT
-// ============================================================================
-
 const ChatAnalysisDashboard: React.FC<ChatAnalysisDashboardProps> = ({ data }) => {
     // Helper functions for data processing
     const getActivityData = (): ActivityDataPoint[] => {
         const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
         return days.map(day => ({
             day: day.slice(0, 3),
-            Othher: data.user_behavior?.Othher?.active_days?.[day] || 0,
+            Other: data.user_behavior?.Othher?.active_days?.[day] || 0,
             me: data.user_behavior?.me?.active_days?.[day] || 0
         }));
     };
