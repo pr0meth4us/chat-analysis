@@ -1,0 +1,65 @@
+# Chat Analysis API – PyCharm HTTP Client (macOS)
+@host = http://localhost:5001/api
+@boundary = ----Boundary
+
+### 1) Upload one or more chat files
+POST {{host}}/upload
+Content-Type: multipart/form-data; boundary={{boundary}}
+
+--{{boundary}}
+Content-Disposition: form-data; name="files"; filename="chat1.html"
+Content-Type: text/html
+
+< /Users/nicksng/Desktop/school/aupp/code/google-drive-html-downloader/flat_chats/chatlogs-channel1020721583440011399-@20220101-20230516.html
+--{{boundary}}--
+
+### 2) Upload & extract a ZIP archive of chat files
+POST {{host}}/upload-zip
+Content-Type: multipart/form-data; boundary={{boundary}}
+
+--{{boundary}}
+Content-Disposition: form-data; name="zipfile"; filename="all_chats.zip"
+Content-Type: application/zip
+
+< /Users/nicksng/Desktop/school/aupp/code/google-drive-html-downloader/all_chats.zip
+--{{boundary}}--
+
+### 3) Filter, relabel & dedupe processed messages
+POST {{host}}/filter
+Content-Type: application/json
+
+{
+  "me": ["Me","Neron","Neternal Soeung","Ni","konkhmerlaorlek1","neron - ណឺរ៉ូន","neron - ូន","xeno.bozo"],
+  "remove": ["Jockie Music (1)"],
+  "other_label": "smt"
+}
+
+### 4) Analyze filtered messages (session fallback)
+POST {{host}}/analyze
+Content-Type: application/json
+
+{}
+
+### 5) Count occurrences of a keyword per sender
+POST {{host}}/count_keyword
+Content-Type: application/json
+
+{
+  "keyword": "sl"
+}
+
+### 6) Retrieve stored processed messages for current session
+GET {{host}}/get_stored_messages
+
+### 7) Clear all session data
+POST {{host}}/clear
+
+###
+GET {{host}}/get_stored_messages?download=true
+> stored_filtered.json
+
+
+###
+ curl -b cookies.txt \
+   "http://localhost:5001/api/get_stored_messages?download=true" \
+   -o stored_filtered.json

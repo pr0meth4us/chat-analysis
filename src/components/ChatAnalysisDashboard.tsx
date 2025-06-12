@@ -220,12 +220,17 @@ const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({ title, children
 };
 
 const ChatAnalysisDashboard: React.FC<ChatAnalysisDashboardProps> = ({ data }) => {
+    const participants = Object.keys(data.user_behavior || {});
+    console.log(participants, "o")
+    const otherKey = participants.find(k => k !== 'me') || 'Other'; // fallback to your actual label
+
+    // 2) Now you can build both series using that dynamic key:
     const getActivityData = (): ActivityDataPoint[] => {
-        const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+        const days = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
         return days.map(day => ({
             day: day.slice(0, 3),
-            Other: data.user_behavior?.Othher?.active_days?.[day] || 0,
-            me: data.user_behavior?.me?.active_days?.[day] || 0
+            me:    data.user_behavior?.me?.active_days?.[day]   || 0,
+            [otherKey]: data.user_behavior?.[otherKey]?.active_days?.[day] || 0,
         }));
     };
 
@@ -233,13 +238,13 @@ const ChatAnalysisDashboard: React.FC<ChatAnalysisDashboardProps> = ({ data }) =
         {
             name: 'Me',
             value: Math.round(data.relationship_metrics?.communication_balance?.me || 0),
-            color: MODERN_COLORS[0]
+            color: MODERN_COLORS[0],
         },
         {
-            name: 'Other',
-            value: Math.round(data.relationship_metrics?.communication_balance?.Othher || 0),
-            color: MODERN_COLORS[1]
-        }
+            name: otherKey,
+            value: Math.round(data.relationship_metrics?.communication_balance?.[otherKey] || 0),
+            color: MODERN_COLORS[1],
+        },
     ];
 
     return (
@@ -325,7 +330,7 @@ const ChatAnalysisDashboard: React.FC<ChatAnalysisDashboardProps> = ({ data }) =
                                     <YAxis axisLine={false} tickLine={false} className="text-sm text-gray-600" />
                                     <Tooltip cursor={{ fill: 'rgba(0,0,0,0.05)' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
                                     <Bar dataKey="me" fill={MODERN_COLORS[0]} name="Me" radius={[5, 5, 0, 0]} />
-                                    <Bar dataKey="Other" fill={MODERN_COLORS[1]} name="Other" radius={[5, 5, 0, 0]} />
+                                    <Bar dataKey={otherKey} fill={MODERN_COLORS[1]} name={otherKey} radius={[5, 5, 0, 0]} />
                                 </BarChart>
                             </ResponsiveContainer>
                         </div>

@@ -50,4 +50,4 @@ def filter_messages():
     log(f"Filtered {len(cleaned)} unique messages.")
 
     # Return only message texts as JSON array
-    return make_json_response({"filtered_messages": cleaned}, filename='filtered.json')
+    return make_json_response({"messages": cleaned}, filename='filtered.json')

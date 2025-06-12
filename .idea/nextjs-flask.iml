@@ -6,6 +6,7 @@
       <excludeFolder url="file://$MODULE_DIR$/.venv" />
       <excludeFolder url="file://$MODULE_DIR$/venv/bin/python" />
       <excludeFolder url="file://$MODULE_DIR$/api/.venv" />
+      <excludeFolder url="file://$MODULE_DIR$/api/venv/bin/python" />
     </content>
     <orderEntry type="jdk" jdkName="Python 3.13 virtualenv at C:\Users\phear\PycharmProjects\chat-analysis\api\.venv" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
