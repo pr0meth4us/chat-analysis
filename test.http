@@ -35,22 +35,11 @@ Content-Type: application/json
 }
 
 
-### Analyze filtered messages (JSON body)
+### Analyze filtered messages (session fallback)
 POST {{host}}/analyze
 Content-Type: application/json
 
-{
-  "filtered_messages": [
-    "Hey, how are you?",
-    "I'm good!"
-  ]
-}
-
-### Analyze filtered messages (JSON file upload)
-POST {{host}}/analyze
-Content-Type: multipart/form-data
-
-file=@./path/to/filtered_messages.json
+{}
 
 ### Count occurrences of a keyword per sender
 POST {{host}}/count_keyword
@@ -66,10 +55,5 @@ GET {{host}}/get_stored_messages
 ### Clear all session data
 POST {{host}}/clear
 
-### Analyze filtered messages (session fallback)
-POST {{host}}/analyze
-Content-Type: application/json
-
-{}
 
 

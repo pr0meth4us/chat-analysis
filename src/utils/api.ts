@@ -45,6 +45,7 @@ export const uploadZipFile = async (zipFile: File): Promise<UploadResponse> => {
   }
 };
 
+// Updated to not pass messages - backend uses session
 export const filterMessages = async (data: FilterRequest): Promise<FilterResponse> => {
   try {
     const response = await api.post<FilterResponse>('/filter', data);
@@ -58,9 +59,10 @@ export const filterMessages = async (data: FilterRequest): Promise<FilterRespons
   }
 };
 
-export const analyzeMessages = async (data: AnalysisRequest): Promise<AnalysisResponse> => {
+// Updated to use session fallback - empty request body
+export const analyzeMessages = async (): Promise<AnalysisResponse> => {
   try {
-    const response = await api.post<AnalysisResponse>('/analyze', data);
+    const response = await api.post<AnalysisResponse>('/analyze', {});
     return response.data;
   } catch (error) {
     const err = error as AxiosError<{ error?: string }>;
@@ -97,14 +99,15 @@ export const clearSession = async (): Promise<{ message: string; session_id: str
   }
 };
 
-export const countKeyword = async (keyword: string, messages?: Message[]): Promise<{
+// Updated to not require messages parameter - backend uses session
+export const countKeyword = async (keyword: string): Promise<{
   keyword: string;
   message_count: number;
   total_matches: number;
   counts: Record<string, number>;
 }> => {
   try {
-    const response = await api.post('/count_keyword', { keyword, messages });
+    const response = await api.post('/count_keyword', { keyword });
     return response.data;
   } catch (error) {
     const err = error as AxiosError<{ error?: string }>;

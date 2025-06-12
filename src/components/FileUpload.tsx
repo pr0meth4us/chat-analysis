@@ -1,6 +1,6 @@
-import React, {useCallback, useState} from "react";
-import {FileUploadProps} from "@/types";
-import {FileText, Loader2, Upload} from "lucide-react";
+import React, { useCallback, useState } from "react";
+import { FileUploadProps } from "@/types";
+import { FileText, Loader2, Upload } from "lucide-react";
 
 export const FileUpload: React.FC<FileUploadProps> = ({ onFilesUploaded, isUploading }) => {
     const [isDragOver, setIsDragOver] = useState(false);
@@ -28,27 +28,28 @@ export const FileUpload: React.FC<FileUploadProps> = ({ onFilesUploaded, isUploa
     }, [onFilesUploaded]);
 
     return (
-        <div className="w-full max-w-2xl mx-auto">
+        <div className="w-full">
             <div
-                className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-all duration-200 ${
+                className={`relative border-2 border-dashed rounded-xl p-10 text-center transition-all duration-200 ${
                     isDragOver
-                        ? 'border-blue-500 bg-blue-50'
+                        ? 'border-blue-400 bg-blue-50'
                         : 'border-gray-300 hover:border-gray-400'
-                } ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}
+                } ${isUploading ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'}`}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
             >
                 {isUploading && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-80 rounded-xl">
-                        <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+                    <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-80 rounded-xl z-10">
+                        <Loader2 className="w-10 h-10 animate-spin text-blue-600" />
+                        <span className="ml-3 text-lg font-medium text-blue-600">Uploading...</span>
                     </div>
                 )}
 
-                <Upload className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">Upload Chat Files</h3>
-                <p className="text-gray-500 mb-4">
-                    Drag and drop your chat files here, or click to select
+                <Upload className="w-16 h-16 mx-auto mb-5 text-gray-400" />
+                <h3 className="text-xl font-semibold text-gray-900 mb-3">Drag & Drop Your Chat Files</h3>
+                <p className="text-gray-600 mb-6">
+                    Supports `.txt` chat logs or `.zip` archives.
                 </p>
 
                 <input
@@ -57,15 +58,17 @@ export const FileUpload: React.FC<FileUploadProps> = ({ onFilesUploaded, isUploa
                     onChange={handleFileSelect}
                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                     disabled={isUploading}
+                    aria-label="Upload chat files"
                 />
 
                 <button
                     type="button"
-                    className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                     disabled={isUploading}
+                    onClick={() => document.querySelector<HTMLInputElement>('input[type="file"]')?.click()} // Trigger input click
                 >
-                    <FileText className="w-4 h-4 mr-2" />
-                    Choose Files
+                    <FileText className="w-5 h-5 mr-3" />
+                    Browse Files
                 </button>
             </div>
         </div>
