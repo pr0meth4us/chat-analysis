@@ -34,8 +34,8 @@ Content-Type: application/json
   "other_label": "smt"
 }
 
-### 4) Analyze filtered messages (session fallback)
-POST {{host}}/analyze
+### {{host}}/analyze?download=true
+POST {{host}}/analyze?download=true
 Content-Type: application/json
 
 {}
@@ -60,6 +60,10 @@ GET {{host}}/get_stored_messages?download=true
 
 
 ###
- curl -b cookies.txt \
-   "http://localhost:5001/api/get_stored_messages?download=true" \
-   -o stored_filtered.json
+POST http://localhost:5001/api/analyze?download=true
+Content-Type: application/json
+Cookie: session=eyJzZXNzaW9uX2lkIjoiNzE5MDI1MmMtMTFjZi00YzU5LWJmZmUtNzBiMTk0ZWFiMTU1In0.aEvuvw.Ti3JXobp-Nlh2TelON-Zkq_NcgI
+
+{}
+
+> analysis.json

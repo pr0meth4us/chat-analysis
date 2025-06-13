@@ -17,7 +17,8 @@ def create_app():
         SESSION_COOKIE_SECURE=True,
         MAX_CONTENT_LENGTH=Config.MAX_CONTENT_LENGTH,
         UPLOAD_FOLDER=Config.UPLOAD_FOLDER,
-        SECRET_KEY=os.urandom(24)
+        SECRET_KEY=os.urandom(24),
+        JSONIFY_PRETTYPRINT_REGULAR=False
     )
 
     ensure_dir(Config.UPLOAD_FOLDER)

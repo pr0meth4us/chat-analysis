@@ -1,7 +1,10 @@
 import json
-from flask import Blueprint, request, jsonify
-from api.session_manager import session_manager
+
+from flask import Blueprint, request
+
 from analyzer.main_analyzer import ChatAnalyzer
+from api.session_manager import session_manager
+from helpers.response_helpers import make_json_response
 from utils import log
 
 analysis_bp = Blueprint('analysis', __name__)
@@ -9,91 +12,68 @@ analysis_bp = Blueprint('analysis', __name__)
 @analysis_bp.route('/analyze', methods=['POST'])
 def analyze_messages():
     """Analyze filtered messages and generate report"""
-    raw_messages = None
     session_id = session_manager.get_session_id()
+    raw_messages = None
 
-    # 1) Try JSON payload
     if request.is_json:
-        data = request.get_json(silent=True) or {}
-        raw_messages = data.get('filtered_messages')
+        payload = request.get_json(silent=True) or {}
+        raw_messages = payload.get('filtered_messages')
 
-    # 2) Try file upload
     if 'file' in request.files:
         try:
             f = request.files['file']
             file_data = json.load(f)
             raw_messages = file_data.get('filtered_messages')
         except Exception:
-            return jsonify({"error": "Invalid JSON file"}), 400
+            return make_json_response({"error": "Invalid JSON file"}, f"{session_id}-analysis.json", status_code=400)
 
-    # 3) Session fallback
     if not isinstance(raw_messages, list):
         raw_messages = session_manager.get_filtered_messages(session_id)
         log(f"Using stored filtered messages from session {session_id}: {len(raw_messages or [])} messages")
 
-    # Validate messages
     if not raw_messages:
-        return jsonify({
-            "error": "No messages to analyze. Upload and filter first, or provide 'filtered_messages'."
-        }), 400
+        return make_json_response(
+            {"error": "No messages to analyze."},
+            f"{session_id}-analysis.json", status_code=400
+        )
 
-    # Prepare full message dicts
-    messages = []
-    for msg in raw_messages:
-        if isinstance(msg, dict):
-            messages.append({
-                'sender': msg.get('sender', 'unknown'),
-                'message': msg.get('message', ''),
-                'timestamp': msg.get('timestamp')
-            })
-
+    messages = [{
+        'source': m.get('source','unknown'), 'sender': m.get('sender','unknown'),
+        'message': m.get('message',''), 'timestamp': m.get('timestamp')
+    } for m in raw_messages if isinstance(m, dict)]
     if not messages:
-        return jsonify({"error": "No valid message objects to analyze."}), 400
+        return make_json_response({"error": "No valid message objects to analyze."}, f"{session_id}-analysis.json", status_code=400)
 
-    # Initialize analyzer and preprocess
     analyzer = ChatAnalyzer(messages, input_type='messages')
     analyzer.load_and_preprocess()
-
-    # Defensive check
-    if not hasattr(analyzer, 'df') or analyzer.df is None or analyzer.df.empty:
-        return jsonify({"error": "Internal error: failed to build analysis data."}), 500
+    if analyzer.df.empty:
+        return make_json_response({"error": "Internal error: failed to build analysis data."}, f"{session_id}-analysis.json", status_code=500)
 
     try:
         report = analyzer.generate_comprehensive_report()
     except Exception as e:
         log(f"Analysis error: {e}")
-        return jsonify({"error": "Analysis failed internally."}), 500
+        return make_json_response({"error": "Analysis failed internally."}, f"{session_id}-analysis.json", status_code=500)
 
-    return jsonify({"analysis_report": report})
+    return make_json_response({'analysis_report': report}, f"{session_id}-analysis.json")
+
 
 @analysis_bp.route('/count_keyword', methods=['POST'])
 def count_keyword():
     """Count keyword occurrences in messages by sender"""
+    session_id = session_manager.get_session_id()
     data = request.get_json() or {}
     keyword = data.get('keyword')
     messages = data.get('messages')
-
-    if not messages:
-        session_id = session_manager.get_session_id()
+    if not isinstance(messages, list):
         messages = session_manager.get_filtered_messages(session_id)
-
     if not keyword or not isinstance(messages, list):
-        return jsonify({
-            "error": "Provide 'keyword' and ensure messages are available"
-        }), 400
+        return make_json_response({"error": "Provide 'keyword'."}, f"{session_id}-count.json", status_code=400)
 
-    keyword_lower = keyword.lower()
     counts = {}
-
+    kl = keyword.lower()
     for msg in messages:
-        sender = msg.get('sender')
-        text = msg.get('message', '')
-        if keyword_lower in text.lower():
-            counts[sender] = counts.get(sender, 0) + 1
-
-    return jsonify({
-        "keyword": keyword,
-        "message_count": len(messages),
-        "total_matches": sum(counts.values()),
-        "counts": counts
-    })
+        text = msg.get('message','')
+        if kl in text.lower(): counts[msg.get('sender')] = counts.get(msg.get('sender'),0)+1
+    result = {"keyword":keyword, "message_count":len(messages), "total_matches":sum(counts.values()), "counts":counts}
+    return make_json_response(result, f"{session_id}-count.json")

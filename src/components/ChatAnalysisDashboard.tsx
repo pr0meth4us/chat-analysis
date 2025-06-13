@@ -1,530 +1,715 @@
-import React, { useState } from 'react';
-import {
-    MessageCircle,
-    MessageSquare,
-    Send,
-    Reply,
-    Users,
-    User,
-    Clock,
-    Calendar,
-    Timer,
-    TrendingUp,
-    Activity,
-    Heart,
-    Zap,
-    Moon,
-    Sun,
-    Flame,
-    Ghost,
-    ArrowRight,
-    ChevronDown,
-    ChevronUp,
-    Globe,
-    Hash,
-    Award,
-    Target,
-    Smile, // New icon for Emoji Usage
-    BookOpen // New icon for Vocabulary
-} from 'lucide-react';
+"use client";
+import React, { useState, useMemo } from 'react';
+import data from "../2025-06-13T114447.200.json";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, Area, AreaChart, Legend } from 'recharts';
+import { MessageCircle, Clock, PieChart as PieChartIcon, TrendingUp, Users, Smile, Zap, Heart, Globe, MessageSquare } from 'lucide-react';
 
-import {
-    XAxis,
-    YAxis,
-    CartesianGrid,
-    Tooltip,
-    ResponsiveContainer,
-    BarChart,
-    Bar,
-    PieChart as RechartsPieChart,
-    Cell,
-    Pie
-} from 'recharts';
-import {
-    ActivityDataPoint,
-    BalanceDataPoint,
-    ChatAnalysisDashboardProps,
-    CollapsibleSectionProps,
-    GhostPeriodCardProps,
-    IntensityBadgeProps,
-    MetricCardProps,
-    RelationshipMetrics,
-    WordCloudCardProps
-} from "@/types"; // Assuming types are correctly defined here
+const Dashboard = () => {
+    const [activeTab, setActiveTab] = useState('overview');
 
-// Modernized color palette
-const MODERN_COLORS = [
-    '#6366F1', // Indigo 500
-    '#10B981', // Green 500
-    '#F97316', // Orange 500
-    '#EF4444', // Red 500
-    '#8B5CF6', // Purple 500
-    '#0EA5E9', // Sky 500
-    '#EAB308', // Yellow 500
-    '#D946EF', // Fuchsia 500
-];
+    // Use a consistent source for the analysis data
+    const report = useMemo(() => data.analysis_report || data, []);
 
-const COLOR_MAP = {
-    blue: 'bg-blue-100 text-blue-700',
-    green: 'bg-green-100 text-green-700',
-    purple: 'bg-purple-100 text-purple-700',
-    orange: 'bg-orange-100 text-orange-700',
-    red: 'bg-red-100 text-red-700',
-    indigo: 'bg-indigo-100 text-indigo-700',
-    yellow: 'bg-yellow-100 text-yellow-700',
-    pink: 'bg-pink-100 text-pink-700', // Added pink for variety
-    gray: 'bg-gray-100 text-gray-700',
-};
+    // Get participants dynamically
+    const participants = useMemo(() => {
+        return report.dataset_overview?.participants ||
+            Object.keys(report.user_behavior || {}) ||
+            ['user1', 'user2'];
+    }, [report]);
 
-const formatDuration = (minutes: number): string => {
-    const hours = Math.floor(minutes / 60);
-    const mins = Math.round(minutes % 60);
-    if (hours > 0 && mins > 0) return `${hours}h ${mins}m`;
-    if (hours > 0) return `${hours}h`;
-    return `${mins}m`;
-};
+    const [participant1, participant2] = participants;
 
-const formatNumber = (num: number): string => {
-    return new Intl.NumberFormat().format(Math.round(num));
-};
+    // Process data for charts
+    const hourlyData = useMemo(() => {
+        const hourlyDist = report.temporal_patterns?.hourly_distribution || {};
+        return Object.entries(hourlyDist).map(([hour, count]) => ({
+            hour: `${hour}:00`,
+            messages: count
+        }));
+    }, [report]);
 
-const MetricCard: React.FC<MetricCardProps> = ({
-    title,
-    value,
-    subtitle,
-    icon: Icon,
-    color = 'blue',
-    trend
-}) => (
-    <div className="bg-white rounded-xl p-6 shadow-md border border-gray-100 transform hover:scale-105 transition-all duration-300 ease-in-out">
-        <div className="flex items-start justify-between">
-            <div className="flex items-center space-x-4">
-                <div className={`p-3 rounded-full ${COLOR_MAP[color]} shadow-sm`}>
-                    <Icon className="w-6 h-6" />
-                </div>
+    const dailyData = useMemo(() => {
+        const dailyDist = report.temporal_patterns?.daily_distribution || {};
+        return Object.entries(dailyDist).map(([day, count]) => ({
+            day,
+            messages: count
+        }));
+    }, [report]);
+
+    const monthlyData = useMemo(() => {
+        const monthlyTrend = report.temporal_patterns?.monthly_trend || {};
+        return Object.entries(monthlyTrend).map(([month, count]) => ({
+            month,
+            messages: count
+        }));
+    }, [report]);
+
+    const emojiData = useMemo(() => {
+        const topEmojis = report.emoji_analysis?.top_20_emojis_overall || [];
+        return topEmojis.slice(0, 10).map(emoji => ({
+            emoji: emoji.emoji,
+            count: emoji.count
+        }));
+    }, [report]);
+
+    // --- REFACTORED FOR SEPARATE CHARTS ---
+    const userTotalMessagesData = useMemo(() => {
+        const userBehavior = report.user_behavior || {};
+        return participants.map(p => ({
+            name: p,
+            value: userBehavior[p]?.total_messages || 0,
+        }));
+    }, [participants, report]);
+
+    const userAvgLengthData = useMemo(() => {
+        const userBehavior = report.user_behavior || {};
+        return participants.map(p => ({
+            name: p,
+            value: Math.round(userBehavior[p]?.avg_message_length || 0),
+        }));
+    }, [participants, report]);
+    const platformData = useMemo(() => {
+        const platforms = report.dataset_overview?.chat_platforms || {};
+        return Object.entries(platforms).map(([name, value]) => ({
+            name,
+            value
+        })).sort((a, b) => b.value - a.value);
+    }, [report]);
+    const questionsData = useMemo(() => {
+        const questionsAnalysis = report.questions_analysis || {};
+        return participants.map(p => ({
+            user: p,
+            questions: questionsAnalysis[p]?.total_questions || 0,
+        }));
+    }, [participants, report]);
+
+
+    const topicsData = useMemo(() => {
+        const topics = report.inferred_topics?.topic_analysis?.detected_topics || {};
+        return Object.entries(topics).map(([topic, count]) => ({
+            topic: topic.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+            count
+        }));
+    }, [report]);
+
+    const wordAnalysis = useMemo(() => {
+        const wordData = report.word_analysis || {};
+        const userWordData = wordData.user_word_analysis || {};
+        return {
+            topWords: wordData.top_50_meaningful_words_overall?.slice(0, 15) || [],
+            topBigrams: wordData.top_20_bigrams_overall?.slice(0, 10) || [],
+            languageRatio: wordData.language_ratio_overall || {},
+            userWords: Object.fromEntries(
+                participants.map(p => [p, userWordData[p]?.top_meaningful_words?.slice(0, 10) || []])
+            )
+        };
+    }, [participants, report]);
+
+    const conversationInsights = useMemo(() => {
+        const patterns = report.conversation_patterns || {};
+        return {
+            longestConversations: patterns.longest_conversations?.slice(0, 3) || [],
+            intensestConversations: patterns.most_intense_conversations?.slice(0, 3) || [],
+            starterCounts: patterns.conversation_starters_counts || {}
+        };
+    }, [report]);
+    const RADIAN = Math.PI / 180;
+
+
+    const COLORS = ['#6366f1', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#06b6d4', '#84cc16', '#f97316'];
+
+    const StatCard = ({ title, value, subtitle, icon: Icon, color = 'indigo' }) => (
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-100 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02]">
+            <div className="flex items-center justify-between">
                 <div>
-                    <p className="text-base font-medium text-gray-600">{title}</p>
-                    <p className="text-3xl font-extrabold text-gray-900 mt-1">{value}</p>
+                    <p className="text-sm font-medium text-gray-600">{title}</p>
+                    <p className={`text-3xl font-bold text-${color}-600 mt-1`}>{value}</p>
                     {subtitle && <p className="text-sm text-gray-500 mt-1">{subtitle}</p>}
                 </div>
-            </div>
-            {trend !== undefined && (
-                <div className={`flex items-center text-sm font-semibold ${trend >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {trend >= 0 ? <TrendingUp className="w-4 h-4 mr-1" /> : <TrendingUp className="w-4 h-4 mr-1 transform rotate-180 text-red-600" />}
-                    {Math.abs(trend)}%
+                <div className={`p-3 bg-${color}-100 rounded-xl`}>
+                    <Icon className={`w-6 h-6 text-${color}-600`} />
                 </div>
-            )}
-        </div>
-    </div>
-);
-
-const IntensityBadge: React.FC<IntensityBadgeProps> = ({ intensity }) => {
-    const getIntensityConfig = (level: RelationshipMetrics['relationship_intensity']) => {
-        switch (level) {
-            case 'EXTREMELY_HIGH':
-                return { color: 'red', icon: Flame, text: 'Extremely High' };
-            case 'HIGH':
-                return { color: 'orange', icon: Zap, text: 'High' };
-            case 'MEDIUM':
-                return { color: 'yellow', icon: Activity, text: 'Medium' };
-            case 'LOW':
-                return { color: 'green', icon: Sun, text: 'Low' }; // Assuming low is generally good, can be adjusted
-            default:
-                return { color: 'gray', icon: Activity, text: 'Undetermined' };
-        }
-    };
-
-    const config = getIntensityConfig(intensity);
-    const Icon = config.icon;
-    const colorClass = `bg-${config.color}-100 text-${config.color}-800`;
-
-    return (
-        <div className={`inline-flex items-center px-4 py-2 rounded-full text-base font-semibold ${colorClass} shadow-sm`}>
-            <Icon className="w-5 h-5 mr-2" />
-            {config.text}
+            </div>
         </div>
     );
-};
 
-const GhostPeriodCard: React.FC<GhostPeriodCardProps> = ({ ghost, index }) => (
-    <div className="bg-white rounded-xl p-5 border border-gray-200 hover:shadow-lg transition-shadow duration-300">
-        <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center space-x-3">
-                <Ghost className="w-6 h-6 text-purple-500" />
-                <span className="font-semibold text-lg text-gray-900">Ghost Period #{index + 1}</span>
-            </div>
-            <div className="text-right">
-                <p className="text-xl font-bold text-gray-900">{Math.round(ghost.duration_hours)}h</p>
-                <p className="text-sm text-gray-600">Duration</p>
-            </div>
-        </div>
-
-        <div className="space-y-2 text-sm text-gray-700">
-            <div className="flex justify-between items-center pb-1 border-b border-gray-100">
-                <span className="font-medium">Last message by:</span>
-                <span className="text-gray-900 font-semibold">{ghost.last_sender_before_ghost}</span>
-            </div>
-            <div className="flex justify-between items-center pt-1">
-                <span className="font-medium">Silence broken by:</span>
-                <span className="text-blue-600 font-semibold">{ghost.who_broke_silence}</span>
-            </div>
-        </div>
-
-        <div className="mt-4 p-3 bg-gray-50 rounded-lg text-xs text-gray-700 border border-gray-100">
-            <p className="truncate italic">"{ghost.last_message_before_ghost}"</p>
-            <ArrowRight className="w-4 h-4 text-gray-400 mx-auto my-2" />
-            <p className="truncate italic">"{ghost.first_message_after_ghost}"</p>
-        </div>
-    </div>
-);
-
-const WordCloudCard: React.FC<WordCloudCardProps> = ({ words, title }) => (
-    <div className="bg-white rounded-xl p-6 shadow-md border border-gray-100">
-        <h3 className="text-xl font-semibold text-gray-900 mb-5 flex items-center">
-            <Hash className="w-6 h-6 mr-3 text-blue-600" />
-            {title}
-        </h3>
-        <div className="flex flex-wrap gap-3">
-            {words.slice(0, 20).map(([word, count], index) => (
-                <span
-                    key={word}
-                    className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium transition-transform transform hover:scale-105"
-                    style={{
-                        backgroundColor: MODERN_COLORS[index % MODERN_COLORS.length] + '20', // Lighter shade for background
-                        color: MODERN_COLORS[index % MODERN_COLORS.length],
-                        fontSize: `${Math.max(0.8, Math.min(1.5, count / words[0][1] * 1.2))}rem`, // Adjusted font size scaling
-                    }}
-                >
-                    {word} <span className="ml-2 text-xs opacity-80 font-normal">({count})</span>
-                </span>
-            ))}
-        </div>
-    </div>
-);
-
-const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({ title, children, defaultOpen = false }) => {
-    const [isOpen, setIsOpen] = useState(defaultOpen);
-
-    return (
-        <div className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
-            <button
-                onClick={() => setIsOpen(!isOpen)}
-                className="w-full flex items-center justify-between p-6 text-left hover:bg-gray-50 transition-colors duration-200"
-            >
-                <h2 className="text-2xl font-bold text-gray-900">{title}</h2>
-                {isOpen ? <ChevronUp className="w-6 h-6 text-gray-600" /> : <ChevronDown className="w-6 h-6 text-gray-600" />}
-            </button>
-            {isOpen && <div className="px-6 pb-6 pt-2 border-t border-gray-100">{children}</div>}
-        </div>
+    const TabButton = ({ id, label, isActive, onClick }) => (
+        <button
+            onClick={() => onClick(id)}
+            className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
+                isActive
+                    ? 'bg-indigo-600 text-white shadow-lg'
+                    : 'text-gray-600 hover:text-indigo-600 hover:bg-indigo-50'
+            }`}
+        >
+            {label}
+        </button>
     );
-};
-
-const ChatAnalysisDashboard: React.FC<ChatAnalysisDashboardProps> = ({ data }) => {
-    const participants = Object.keys(data.user_behavior || {});
-    console.log(participants, "o")
-    const otherKey = participants.find(k => k !== 'me') || 'Other'; // fallback to your actual label
-
-    // 2) Now you can build both series using that dynamic key:
-    const getActivityData = (): ActivityDataPoint[] => {
-        const days = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
-        return days.map(day => ({
-            day: day.slice(0, 3),
-            me:    data.user_behavior?.me?.active_days?.[day]   || 0,
-            [otherKey]: data.user_behavior?.[otherKey]?.active_days?.[day] || 0,
-        }));
+    const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
+        if (percent < 0.05) return null; // Don't render label for small slices
+        const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+        const x = cx + radius * Math.cos(-midAngle * RADIAN);
+        const y = cy + radius * Math.sin(-midAngle * RADIAN);
+        return (
+            <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" fontSize="12px" fontWeight="bold">
+                {`${(percent * 100).toFixed(0)}%`}
+            </text>
+        );
     };
 
-    const getBalanceData = (): BalanceDataPoint[] => [
-        {
-            name: 'Me',
-            value: Math.round(data.relationship_metrics?.communication_balance?.me || 0),
-            color: MODERN_COLORS[0],
-        },
-        {
-            name: otherKey,
-            value: Math.round(data.relationship_metrics?.communication_balance?.[otherKey] || 0),
-            color: MODERN_COLORS[1],
-        },
-    ];
+    const datasetInfo = report.dataset_overview || {};
+    const relationshipMetrics = report.relationship_metrics || {};
+    const ghostPeriods = report.ghost_periods || {};
+    const responseMetrics = report.response_metrics || {};
+    const emojiAnalysis = report.emoji_analysis || {};
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-blue-50 font-sans text-gray-900">
-            {/* Hero Section */}
-            <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white shadow-lg">
-                <div className="max-w-7xl mx-auto px-6 py-16 text-center">
-                    <h1 className="text-5xl font-extrabold mb-4 animate-fade-in-down">Chat Analysis Dashboard</h1>
-                    <p className="text-xl opacity-90 mb-8 max-w-2xl mx-auto animate-fade-in-up">
-                        Dive deep into your conversation patterns, relationships, and behavioral insights.
+        <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+            <div className="max-w-7xl mx-auto p-6">
+                {/* Header */}
+                <div className="text-center mb-8">
+                    <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2">
+                        Chat Analytics Dashboard
+                    </h1>
+                    <p className="text-gray-600">
+                        Analysis of {(datasetInfo.total_messages || 0).toLocaleString()} messages
+                        {datasetInfo.date_range && (
+                            <span> from {datasetInfo.date_range.start_date} to {datasetInfo.date_range.end_date}</span>
+                        )}
                     </p>
+                </div>
 
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-10">
-                        <div className="bg-white/15 backdrop-blur-sm rounded-xl p-5 shadow-inner border border-white/20 transform hover:scale-105 transition-all duration-300">
-                            <MessageCircle className="w-9 h-9 mx-auto mb-3 text-white/90" />
-                            <p className="text-3xl font-extrabold">{formatNumber(data.dataset_overview?.total_messages || 0)}</p>
-                            <p className="text-sm opacity-80 mt-1">Total Messages</p>
-                        </div>
-                        <div className="bg-white/15 backdrop-blur-sm rounded-xl p-5 shadow-inner border border-white/20 transform hover:scale-105 transition-all duration-300">
-                            <Calendar className="w-9 h-9 mx-auto mb-3 text-white/90" />
-                            <p className="text-3xl font-extrabold">{data.dataset_overview?.date_range?.total_days || 0}</p>
-                            <p className="text-sm opacity-80 mt-1">Days Analyzed</p>
-                        </div>
-                        <div className="bg-white/15 backdrop-blur-sm rounded-xl p-5 shadow-inner border border-white/20 transform hover:scale-105 transition-all duration-300">
-                            <Users className="w-9 h-9 mx-auto mb-3 text-white/90" />
-                            <p className="text-3xl font-extrabold">{data.conversation_patterns?.total_conversations || 0}</p>
-                            <p className="text-sm opacity-80 mt-1">Conversations</p>
-                        </div>
-                        <div className="bg-white/15 backdrop-blur-sm rounded-xl p-5 shadow-inner border border-white/20 flex flex-col items-center justify-center transform hover:scale-105 transition-all duration-300">
-                            <Heart className="w-9 h-9 mx-auto mb-3 text-white/90" />
-                            <IntensityBadge intensity={data.relationship_metrics?.relationship_intensity || 'LOW'} />
+                {/* Navigation */}
+                <div className="flex justify-center mb-8">
+                    <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-2 border border-gray-200 shadow-lg">
+                        <div className="flex space-x-2">
+                            <TabButton id="overview" label="Overview" isActive={activeTab === 'overview'} onClick={setActiveTab} />
+                            <TabButton id="patterns" label="Patterns" isActive={activeTab === 'patterns'} onClick={setActiveTab} />
+                            <TabButton id="behavior" label="Behavior" isActive={activeTab === 'behavior'} onClick={setActiveTab} />
+                            <TabButton id="language" label="Language" isActive={activeTab === 'language'} onClick={setActiveTab} />
+                            <TabButton id="emotions" label="Emotions" isActive={activeTab === 'emotions'} onClick={setActiveTab} />
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <div className="max-w-7xl mx-auto px-6 py-12 space-y-10">
-                {/* Key Metrics */}
-                <CollapsibleSection title="Key Relationship Metrics" defaultOpen={true}>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        <MetricCard
-                            title="Daily Messages"
-                            value={formatNumber(data.relationship_metrics?.daily_average_messages || 0)}
-                            subtitle="Average messages per day"
-                            icon={MessageSquare}
-                            color="blue"
-                        />
-                        <MetricCard
-                            title="Avg. Response Time"
-                            value={`${data.relationship_metrics?.avg_response_time_minutes?.toFixed(1) || 0}m`}
-                            subtitle="Average time to reply"
-                            icon={Timer}
-                            color="green"
-                        />
-                        <MetricCard
-                            title="Communication Balance"
-                            value={`${Math.round(data.relationship_metrics?.balance_score || 0)}%`}
-                            subtitle="Harmony in communication"
-                            icon={Target}
-                            color="purple"
-                        />
-                        <MetricCard
-                            title="Peak Activity Day"
-                            value={formatNumber(data.relationship_metrics?.peak_single_day_messages || 0)}
-                            subtitle={data.relationship_metrics?.most_active_date || 'N/A'}
-                            icon={Award}
-                            color="orange"
-                        />
-                    </div>
-                </CollapsibleSection>
-
-                {/* Activity Patterns */}
-                <CollapsibleSection title="Activity Patterns & Balance">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                        <div className="bg-gray-50 rounded-xl p-6 shadow-inner border border-gray-200">
-                            <h3 className="text-xl font-semibold text-gray-900 mb-5 flex items-center">
-                                <Activity className="w-5 h-5 mr-2 text-indigo-600" /> Weekly Activity Distribution
-                            </h3>
-                            <ResponsiveContainer width="100%" height={300}>
-                                <BarChart data={getActivityData()} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
-                                    <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-                                    <XAxis dataKey="day" axisLine={false} tickLine={false} className="text-sm text-gray-600" />
-                                    <YAxis axisLine={false} tickLine={false} className="text-sm text-gray-600" />
-                                    <Tooltip cursor={{ fill: 'rgba(0,0,0,0.05)' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
-                                    <Bar dataKey="me" fill={MODERN_COLORS[0]} name="Me" radius={[5, 5, 0, 0]} />
-                                    <Bar dataKey={otherKey} fill={MODERN_COLORS[1]} name={otherKey} radius={[5, 5, 0, 0]} />
-                                </BarChart>
-                            </ResponsiveContainer>
+                {/* Content */}
+                {activeTab === 'overview' && (
+                    <div className="space-y-8">
+                        {/* Key Stats */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            <StatCard
+                                title="Total Messages"
+                                value={(datasetInfo.total_messages || 0).toLocaleString()}
+                                subtitle={`Over ${datasetInfo.date_range?.total_days || 0} days`}
+                                icon={MessageCircle}
+                                color="indigo"
+                            />
+                            <StatCard
+                                title="Participants"
+                                value={participants.length}
+                                subtitle={participants.join(', ')}
+                                icon={Users}
+                                color="green"
+                            />
+                            <StatCard
+                                title="Avg Response Time"
+                                value={`${Math.round(relationshipMetrics.overall_avg_response_time_minutes || 0)} min`}
+                                subtitle="Overall average"
+                                icon={Clock}
+                                color="blue"
+                            />
+                            <StatCard
+                                title="Balance Score"
+                                value={`${Math.round(relationshipMetrics.balance_score || 0)}%`}
+                                subtitle="Communication balance"
+                                icon={Heart}
+                                color="pink"
+                            />
                         </div>
 
-                        <div className="bg-gray-50 rounded-xl p-6 shadow-inner border border-gray-200">
-                            <h3 className="text-xl font-semibold text-gray-900 mb-5 flex items-center">
-                                <Users className="w-5 h-5 mr-2 text-green-600" /> Communication Balance Overview
-                            </h3>
-                            <ResponsiveContainer width="100%" height={300}>
-                                <RechartsPieChart>
-                                    <Pie
-                                        dataKey="value"
-                                        data={getBalanceData()}
-                                        cx="50%"
-                                        cy="50%"
-                                        outerRadius={120}
-                                        fill="#8884d8"
-                                        labelLine={false}
-                                        label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                                    >
-                                        {getBalanceData().map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill={entry.color} />
-                                        ))}
-                                    </Pie>
-                                    <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
-                                </RechartsPieChart>
-                            </ResponsiveContainer>
-                        </div>
-                    </div>
-                </CollapsibleSection>
-
-                {/* Conversation Insights */}
-                <CollapsibleSection title="Conversation Flow Insights">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <div className="bg-white rounded-xl p-6 shadow-md border border-gray-100">
-                            <h4 className="font-semibold text-lg text-gray-900 mb-3 flex items-center">
-                                <Send className="w-5 h-5 mr-2 text-blue-600" />
-                                Top Conversation Starters
-                            </h4>
-                            <ul className="space-y-2">
-                                {Object.entries(data.conversation_patterns?.conversation_starters || {}).sort(([, a], [, b]) => b - a).map(([user, count]) => (
-                                    <li key={user} className="flex justify-between items-center text-gray-700 text-base border-b border-gray-100 pb-1">
-                                        <span className="truncate">{user}</span>
-                                        <span className="font-semibold text-blue-600">{count} times</span>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-
-                        <div className="bg-white rounded-xl p-6 shadow-md border border-gray-100">
-                            <h4 className="font-semibold text-lg text-gray-900 mb-3 flex items-center">
-                                <Reply className="w-5 h-5 mr-2 text-green-600" />
-                                Top Conversation Enders
-                            </h4>
-                            <ul className="space-y-2">
-                                {Object.entries(data.conversation_patterns?.conversation_enders || {}).sort(([, a], [, b]) => b - a).map(([user, count]) => (
-                                    <li key={user} className="flex justify-between items-center text-gray-700 text-base border-b border-gray-100 pb-1">
-                                        <span className="truncate">{user}</span>
-                                        <span className="font-semibold text-green-600">{count} times</span>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-
-                        <div className="bg-white rounded-xl p-6 shadow-md border border-gray-100 flex flex-col justify-between">
-                            <div>
-                                <h4 className="font-semibold text-lg text-gray-900 mb-3 flex items-center">
-                                    <Clock className="w-5 h-5 mr-2 text-purple-600" />
-                                    Average Conversation Metrics
-                                </h4>
-                                <p className="text-3xl font-extrabold text-purple-600 mb-2">
-                                    {formatDuration(data.conversation_patterns?.avg_conversation_duration_minutes || 0)}
-                                </p>
-                                <p className="text-base text-gray-600">
-                                    Average Duration
-                                </p>
+                        {/* Monthly Trend */}
+                        {monthlyData.length > 0 && (
+                            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-100 shadow-lg">
+                                <h3 className="text-xl font-semibold text-gray-800 mb-4">Message Volume Over Time</h3>
+                                <ResponsiveContainer width="100%" height={300}>
+                                    <AreaChart data={monthlyData}>
+                                        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb"/>
+                                        <XAxis dataKey="month" stroke="#6b7280"/>
+                                        <YAxis stroke="#6b7280"/>
+                                        <Tooltip
+                                            contentStyle={{
+                                                backgroundColor: 'white',
+                                                border: '1px solid #e5e7eb',
+                                                borderRadius: '12px',
+                                                boxShadow: '0 10px 25px rgba(0,0,0,0.1)'
+                                            }}
+                                        />
+                                        <Area type="monotone" dataKey="messages" stroke="#6366f1" fill="url(#gradient)"
+                                              strokeWidth={2}/>
+                                        <defs>
+                                            <linearGradient id="gradient" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3}/>
+                                                <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
+                                            </linearGradient>
+                                        </defs>
+                                    </AreaChart>
+                                </ResponsiveContainer>
                             </div>
-                            <div className="mt-4 pt-4 border-t border-gray-100">
-                                <p className="text-3xl font-extrabold text-purple-600 mb-2">
-                                    {Math.round(data.conversation_patterns?.avg_conversation_length || 0)}
-                                </p>
-                                <p className="text-base text-gray-600">
-                                    Messages per Conversation
-                                </p>
+                        )}
+                        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+                            <div
+                                className="lg:col-span-3 bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-100 shadow-lg">
+                                <h3 className="text-xl font-semibold text-gray-800 mb-4">Message Volume Over Time</h3>
+                                <ResponsiveContainer width="100%" height={300}>
+                                    <AreaChart data={monthlyData} margin={{top: 5, right: 20, left: -10, bottom: 5}}>
+                                        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb"/>
+                                        <XAxis dataKey="month" stroke="#6b7280"/>
+                                        <YAxis stroke="#6b7280"/>
+                                        <Tooltip contentStyle={{
+                                            backgroundColor: 'white',
+                                            border: '1px solid #e5e7eb',
+                                            borderRadius: '12px'
+                                        }}/>
+                                        <Area type="monotone" dataKey="messages" stroke="#6366f1" fill="url(#gradient)"
+                                              strokeWidth={2}/>
+                                        <defs>
+                                            <linearGradient id="gradient" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3}/>
+                                                <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
+                                            </linearGradient>
+                                        </defs>
+                                    </AreaChart>
+                                </ResponsiveContainer>
                             </div>
-                        </div>
-                    </div>
-                </CollapsibleSection>
-
-                {/* Ghost Analysis */}
-                <CollapsibleSection title="Silence & Ghost Mode Analysis">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                        <MetricCard
-                            title="Total Silent Periods"
-                            value={data.ghost_analysis?.total_ghost_periods || 0}
-                            subtitle="Number of quiet spells"
-                            icon={Ghost}
-                            color="purple"
-                        />
-                        <MetricCard
-                            title="Longest Silence"
-                            value={`${Math.round(data.ghost_analysis?.longest_ghost_hours || 0)}h`}
-                            subtitle="Maximum duration of no messages"
-                            icon={Moon}
-                            color="indigo"
-                        />
-                        <MetricCard
-                            title="Most Common Silence Breaker"
-                            value={Object.entries(data.ghost_analysis?.who_breaks_silence_most || {}).reduce((a, b) => a[1] > b[1] ? a : b)?.[0] || 'N/A'}
-                            subtitle="Who usually initiates contact again"
-                            icon={Sun}
-                            color="yellow"
-                        />
-                    </div>
-
-                    <h4 className="text-xl font-semibold text-gray-900 mb-5 flex items-center">
-                        <Ghost className="w-5 h-5 mr-2 text-red-600" /> Top Silent Periods
-                    </h4>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {(data.ghost_analysis?.top_10_ghost_periods || []).slice(0, 6).map((ghost, index) => (
-                            <GhostPeriodCard key={index} ghost={ghost} index={index} />
-                        ))}
-                    </div>
-                </CollapsibleSection>
-
-                {/* User Behavior Comparison */}
-                <CollapsibleSection title="Individual User Behavior">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                        {Object.entries(data.user_behavior || {}).map(([user, behavior]) => (
-                            <div key={user} className="bg-white rounded-xl border border-gray-200 p-6 shadow-md">
-                                <div className="flex items-center mb-5">
-                                    <User className="w-7 h-7 mr-3 text-blue-600" />
-                                    <h3 className="text-2xl font-bold text-gray-900">{user}</h3>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="bg-gray-50 rounded-lg p-4 text-center shadow-inner">
-                                        <p className="text-sm text-gray-600">Total Messages</p>
-                                        <p className="text-2xl font-bold text-gray-900 mt-1">{formatNumber(behavior.total_messages || 0)}</p>
-                                    </div>
-                                    <div className="bg-gray-50 rounded-lg p-4 text-center shadow-inner">
-                                        <p className="text-sm text-gray-600">Avg. Message Length</p>
-                                        <p className="text-2xl font-bold text-gray-900 mt-1">{Math.round(behavior.avg_message_length || 0)} words</p>
-                                    </div>
-                                    <div className="bg-gray-50 rounded-lg p-4 text-center shadow-inner">
-                                        <p className="text-sm text-gray-600">Emoji Usage Rate</p>
-                                        <p className="text-2xl font-bold text-gray-900 mt-1">{Math.round(behavior.emoji_usage_rate || 0)}%</p>
-                                    </div>
-                                    <div className="bg-gray-50 rounded-lg p-4 text-center shadow-inner">
-                                        <p className="text-sm text-gray-600">Vocabulary Size</p>
-                                        <p className="text-2xl font-bold text-gray-900 mt-1">{formatNumber(behavior.vocabulary_size || 0)} unique</p>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </CollapsibleSection>
-
-                {/* Word Analysis */}
-                <CollapsibleSection title="Word & Language Analysis">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                        <div className="bg-white rounded-xl p-6 shadow-md border border-gray-100">
-                            <h4 className="text-xl font-semibold text-gray-900 mb-5 flex items-center">
-                                <Globe className="w-5 h-5 mr-2 text-pink-600" /> Language Distribution
-                            </h4>
-                            <div className="space-y-4">
-                                <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg border border-blue-100 shadow-sm">
-                                    <div className="flex items-center">
-                                        <span className="font-medium text-blue-700 text-lg">English Words</span>
-                                    </div>
-                                    <span className="text-3xl font-bold text-blue-600">
-                                        {formatNumber(data.word_analysis?.english_word_count || 0)}
-                                    </span>
-                                </div>
-                                <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg border border-green-100 shadow-sm">
-                                    <div className="flex items-center">
-                                        <span className="font-medium text-green-700 text-lg">Khmer Words</span>
-                                    </div>
-                                    <span className="text-3xl font-bold text-green-600">
-                                        {formatNumber(data.word_analysis?.khmer_word_count || 0)}
-                                    </span>
-                                </div>
+                            <div
+                                className="lg:col-span-2 bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-100 shadow-lg">
+                                <h3 className="text-xl font-semibold text-gray-800 mb-4">Platform Distribution</h3>
+                                <ResponsiveContainer width="100%" height={300}>
+                                    <PieChart>
+                                        <Pie data={platformData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100}
+                                             labelLine={false} label={renderCustomizedLabel}>
+                                            {platformData.map((entry, index) => (
+                                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]}/>))}
+                                        </Pie>
+                                        <Tooltip contentStyle={{
+                                            backgroundColor: 'white',
+                                            border: '1px solid #e5e7eb',
+                                            borderRadius: '12px'
+                                        }}/>
+                                        <Legend wrapperStyle={{fontSize: "14px"}}/>
+                                    </PieChart>
+                                </ResponsiveContainer>
                             </div>
                         </div>
 
-                        <WordCloudCard
-                            words={data.word_analysis?.top_50_meaningful_words || []}
-                            title="Most Meaningful Words (Word Cloud)"
-                        />
+                        {/* User Comparison */}
+                        {/* --- REPLACEMENT: USER COMPARISON SPLIT CHARTS --- */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            {/* Total Messages Chart */}
+                            {userTotalMessagesData.some(d => d.value > 0) && (
+                                <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-100 shadow-lg">
+                                    <h3 className="text-xl font-semibold text-gray-800 mb-4">Total Messages Sent</h3>
+                                    <ResponsiveContainer width="100%" height={250}>
+                                        <BarChart data={userTotalMessagesData} layout="vertical"
+                                                  margin={{top: 5, right: 20, left: 20, bottom: 5}}>
+                                            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb"/>
+                                            <XAxis type="number" stroke="#6b7280"/>
+                                            <YAxis type="category" dataKey="name" stroke="#6b7280" width={80} interval={0}/>
+                                            <Tooltip contentStyle={{
+                                                backgroundColor: 'white',
+                                                border: '1px solid #e5e7eb',
+                                                borderRadius: '12px'
+                                            }} cursor={{fill: 'rgba(99, 102, 241, 0.1)'}}/>
+                                            <Bar dataKey="value" name="Total Messages" radius={[0, 8, 8, 0]}>
+                                                {userTotalMessagesData.map((entry, index) => (
+                                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]}/>
+                                                ))}
+                                            </Bar>
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            )}
+
+                            {/* Average Message Length Chart */}
+                            {userAvgLengthData.some(d => d.value > 0) && (
+                                <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-100 shadow-lg">
+                                    <h3 className="text-xl font-semibold text-gray-800 mb-4">Avg. Message Length (chars)</h3>
+                                    <ResponsiveContainer width="100%" height={250}>
+                                        <BarChart data={userAvgLengthData} layout="vertical"
+                                                  margin={{top: 5, right: 20, left: 20, bottom: 5}}>
+                                            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb"/>
+                                            <XAxis type="number" stroke="#6b7280"/>
+                                            <YAxis type="category" dataKey="name" stroke="#6b7280" width={80} interval={0}/>
+                                            <Tooltip contentStyle={{
+                                                backgroundColor: 'white',
+                                                border: '1px solid #e5e7eb',
+                                                borderRadius: '12px'
+                                            }} cursor={{fill: 'rgba(236, 72, 153, 0.1)'}}/>
+                                            <Bar dataKey="value" name="Avg Length" radius={[0, 8, 8, 0]}>
+                                                {userAvgLengthData.map((entry, index) => (
+                                                    <Cell key={`cell-${index}`} fill={COLORS[(index + 2) % COLORS.length]}/>
+                                                ))}
+                                            </Bar>
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            )}
+                        </div>
+                        {/* --- END REPLACEMENT --- */}
+
+
+                        {/* Questions Asked - Separate Chart */}
+                        {questionsData.some(d => d.questions > 0) && (
+                            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-100 shadow-lg">
+                                <h3 className="text-xl font-semibold text-gray-800 mb-4">Questions Asked</h3>
+                                <ResponsiveContainer width="100%" height={250}>
+                                    <BarChart data={questionsData}>
+                                        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb"/>
+                                        <XAxis dataKey="user" stroke="#6b7280"/>
+                                        <YAxis stroke="#6b7280"/>
+                                        <Tooltip
+                                            contentStyle={{
+                                                backgroundColor: 'white',
+                                                border: '1px solid #e5e7eb',
+                                                borderRadius: '12px',
+                                                boxShadow: '0 10px 25px rgba(0,0,0,0.1)'
+                                            }}
+                                        />
+                                        <Bar dataKey="questions" fill="#ec4899" radius={8}/>
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </div>
+                        )}
                     </div>
-                </CollapsibleSection>
+                )}
+
+                {activeTab === 'patterns' && (
+                    <div className="space-y-8">
+                        {/* Hourly Pattern */}
+                        {hourlyData.length > 0 && (
+                            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-100 shadow-lg">
+                                <h3 className="text-xl font-semibold text-gray-800 mb-4">Daily Activity Pattern</h3>
+                                <ResponsiveContainer width="100%" height={300}>
+                                    <LineChart data={hourlyData}>
+                                        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb"/>
+                                        <XAxis dataKey="hour" stroke="#6b7280"/>
+                                        <YAxis stroke="#6b7280"/>
+                                        <Tooltip
+                                            contentStyle={{
+                                                backgroundColor: 'white',
+                                                border: '1px solid #e5e7eb',
+                                                borderRadius: '12px',
+                                                boxShadow: '0 10px 25px rgba(0,0,0,0.1)'
+                                            }}
+                                        />
+                                        <Line type="monotone" dataKey="messages" stroke="#6366f1" strokeWidth={3}
+                                              dot={{fill: '#6366f1', strokeWidth: 2, r: 4}}/>
+                                    </LineChart>
+                                </ResponsiveContainer>
+                            </div>
+                        )}
+
+                        {/* Daily Distribution */}
+                        {dailyData.length > 0 && (
+                            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-100 shadow-lg">
+                                <h3 className="text-xl font-semibold text-gray-800 mb-4">Weekly Pattern</h3>
+                                <ResponsiveContainer width="100%" height={300}>
+                                    <BarChart data={dailyData}>
+                                        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb"/>
+                                        <XAxis dataKey="day" stroke="#6b7280"/>
+                                        <YAxis stroke="#6b7280"/>
+                                        <Tooltip
+                                            contentStyle={{
+                                                backgroundColor: 'white',
+                                                border: '1px solid #e5e7eb',
+                                                borderRadius: '12px',
+                                                boxShadow: '0 10px 25px rgba(0,0,0,0.1)'
+                                            }}
+                                        />
+                                        <Bar dataKey="messages" fill="#8b5cf6" radius={8} />
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </div>
+                        )}
+
+                        {/* Ghost Periods */}
+                        {ghostPeriods.total_ghost_periods > 0 && (
+                            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-100 shadow-lg">
+                                <h3 className="text-xl font-semibold text-gray-800 mb-4">Communication Gaps</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div className="text-center p-4 bg-gradient-to-r from-red-50 to-pink-50 rounded-xl">
+                                        <p className="text-sm text-gray-600">Longest Gap</p>
+                                        <p className="text-2xl font-bold text-red-600">{Math.round((ghostPeriods.longest_ghost_hours || 0) / 24)} days</p>
+                                    </div>
+                                    <div className="text-center p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl">
+                                        <p className="text-sm text-gray-600">Average Gap</p>
+                                        <p className="text-2xl font-bold text-blue-600">{Math.round(ghostPeriods.avg_ghost_duration_hours || 0)} hours</p>
+                                    </div>
+                                    <div className="text-center p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl">
+                                        <p className="text-sm text-gray-600">Total Gaps</p>
+                                        <p className="text-2xl font-bold text-green-600">{ghostPeriods.total_ghost_periods || 0}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {activeTab === 'behavior' && (
+                    <div className="space-y-8">
+                        {/* Topics */}
+                        {topicsData.length > 0 && (
+                            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-100 shadow-lg">
+                                <h3 className="text-xl font-semibold text-gray-800 mb-4">Discussion Topics</h3>
+                                <ResponsiveContainer width="100%" height={300}>
+                                    <PieChart>
+                                        <Pie
+                                            data={topicsData}
+                                            cx="50%"
+                                            cy="50%"
+                                            outerRadius={100}
+                                            fill="#8884d8"
+                                            dataKey="count"
+                                            label={({ topic, percent }) => `${topic} ${(percent * 100).toFixed(0)}%`}
+                                        >
+                                            {topicsData.map((entry, index) => (
+                                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                            ))}
+                                        </Pie>
+                                        <Tooltip />
+                                    </PieChart>
+                                </ResponsiveContainer>
+                            </div>
+                        )}
+
+                        {/* Conversation Insights */}
+                        {conversationInsights.longestConversations.length > 0 && (
+                            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-100 shadow-lg">
+                                <h3 className="text-xl font-semibold text-gray-800 mb-4">Conversation Insights</h3>
+                                <div className="space-y-4">
+                                    <h4 className="text-lg font-medium text-gray-700">Longest Conversations</h4>
+                                    {conversationInsights.longestConversations.slice(0, 3).map((conv, index) => (
+                                        <div key={index} className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg">
+                                            <div className="flex justify-between items-start">
+                                                <div className="flex-1">
+                                                    <p className="text-sm text-gray-600 mb-1">Started with: "{conv.starter_message?.substring(0, 50)}..."</p>
+                                                    <p className="text-sm text-gray-600">Ended with: "{conv.ender_message?.substring(0, 50)}..."</p>
+                                                </div>
+                                                <div className="text-right ml-4">
+                                                    <p className="text-lg font-bold text-blue-600">{conv.total_messages} messages</p>
+                                                    <p className="text-sm text-gray-500">{Math.round(conv.duration_minutes)} min</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Response Times */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {participants.map((participant) => {
+                                const otherParticipant = participants.find(p => p !== participant);
+                                const responseKey = `${participant}_to_${otherParticipant}`;
+                                const metrics = responseMetrics[responseKey] || {};
+
+                                return (
+                                    <div key={participant} className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-100 shadow-lg">
+                                        <h4 className="text-lg font-semibold text-gray-800 mb-4">{participant}'s Response Stats</h4>
+                                        <div className="space-y-3">
+                                            <div className="flex justify-between">
+                                                <span className="text-gray-600">Avg Response Time</span>
+                                                <span className="font-semibold">{Math.round(metrics.avg_response_time_minutes || 0)} min</span>
+                                            </div>
+                                            <div className="flex justify-between">
+                                                <span className="text-gray-600">Quick Responses (&lt;1min)</span>
+                                                <span className="font-semibold">{(metrics.quick_responses_under_1min || 0).toLocaleString()}</span>
+                                            </div>
+                                            <div className="flex justify-between">
+                                                <span className="text-gray-600">Slow Responses (&gt;1hr)</span>
+                                                <span className="font-semibold">{(metrics.slow_responses_over_1hr || 0).toLocaleString()}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
+
+                {activeTab === 'language' && (
+                    <div className="space-y-8">
+                        {/* Language Distribution */}
+                        {wordAnalysis.languageRatio && Object.keys(wordAnalysis.languageRatio).length > 0 && (
+                            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-100 shadow-lg">
+                                <h3 className="text-xl font-semibold text-gray-800 mb-4">Language Distribution</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    {Object.entries(wordAnalysis.languageRatio).map(([lang, percentage]) => (
+                                        <div key={lang} className="text-center p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl">
+                                            <p className="text-sm text-gray-600 capitalize">{lang.replace('_percentage', '')}</p>
+                                            <p className="text-2xl font-bold text-green-600">{Math.round(percentage)}%</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Top Words */}
+                        {wordAnalysis.topWords.length > 0 && (
+                            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-100 shadow-lg">
+                                <h3 className="text-xl font-semibold text-gray-800 mb-4">Most Used Words</h3>
+                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                                    {wordAnalysis.topWords.map((word, index) => (
+                                        <div key={index} className="p-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg text-center">
+                                            <p className="font-semibold text-purple-700">{word[0]}</p>
+                                            <p className="text-sm text-gray-600">{word[1]} times</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Top Phrases */}
+                        {wordAnalysis.topBigrams.length > 0 && (
+                            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-100 shadow-lg">
+                                <h3 className="text-xl font-semibold text-gray-800 mb-4">Popular Phrases</h3>
+                                <div className="space-y-2">
+                                    {wordAnalysis.topBigrams.map((phrase, index) => (
+                                        <div key={index} className="flex justify-between items-center p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg">
+                                            <span className="font-medium text-blue-800">"{phrase.phrase}"</span>
+                                            <span className="text-blue-600 font-semibold">{phrase.count}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* User Word Analysis */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {participants.map((participant) => {
+                                const userWords = wordAnalysis.userWords[participant] || [];
+                                return (
+                                    <div key={participant} className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-100 shadow-lg">
+                                        <h4 className="text-lg font-semibold text-gray-800 mb-4">{participant}'s Top Words</h4>
+                                        <div className="space-y-2">
+                                            {userWords.slice(0, 8).map((word, index) => (
+                                                <div key={index} className="flex items-center justify-between p-2 bg-indigo-50 rounded-lg">
+                                                    <div className="flex items-center space-x-3">
+                                                        <span className="text-gray-700 font-medium">{word[0]}</span>
+                                                        <span className="text-gray-500">#{index + 1}</span>
+                                                    </div>
+                                                    <span className="font-semibold text-indigo-600">{word[1]}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
+
+                {activeTab === 'emotions' && (
+                    <div className="space-y-8">
+                        {/* Top Emojis */}
+                        {emojiData.length > 0 && (
+                            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-100 shadow-lg">
+                                <h3 className="text-xl font-semibold text-gray-800 mb-4">Most Used Emojis</h3>
+                                <ResponsiveContainer width="100%" height={300}>
+                                    <BarChart data={emojiData}>
+                                        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                                        <XAxis dataKey="emoji" stroke="#6b7280" />
+                                        <YAxis stroke="#6b7280" />
+                                        <Tooltip
+                                            contentStyle={{
+                                                backgroundColor: 'white',
+                                                border: '1px solid #e5e7eb',
+                                                borderRadius: '12px',
+                                                boxShadow: '0 10px 25px rgba(0,0,0,0.1)'
+                                            }}
+                                        />
+                                        <Bar dataKey="count" fill="#f59e0b" radius={8} />
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </div>
+                        )}
+
+                        {/* Emoji Stats */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <StatCard
+                                title="Total Emojis Used"
+                                value={(emojiAnalysis.total_emojis_used_overall || 0).toLocaleString()}
+                                subtitle={`${(emojiAnalysis.emoji_usage_rate_overall_percent || 0).toFixed(1)}% of messages`}
+                                icon={Smile}
+                                color="yellow"
+                            />
+                            <StatCard
+                                title="Unique Emojis"
+                                value={emojiAnalysis.unique_emojis_overall || 0}
+                                subtitle="Different expressions"
+                                icon={Zap}
+                                color="purple"
+                            />
+                            <StatCard
+                                title="Most Popular"
+                                value={emojiAnalysis.top_20_emojis_overall?.[0]?.emoji || '😊'}
+                                subtitle={`Used ${emojiAnalysis.top_20_emojis_overall?.[0]?.count || 0} times`}
+                                icon={TrendingUp}
+                                color="green"
+                            />
+                        </div>
+
+                        {/* User Emoji Comparison */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {participants.map((participant) => {
+                                const userEmojiStats = emojiAnalysis.user_emoji_analysis?.[participant] || {};
+                                const topEmojis = userEmojiStats.top_10_emojis || [];
+
+                                return (
+                                    <div key={participant} className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-100 shadow-lg">
+                                        <h4 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                                            <Smile className="w-5 h-5 mr-2 text-yellow-600" />
+                                            {participant}'s Emoji Usage
+                                        </h4>
+                                        <div className="space-y-3 mb-4">
+                                            <div className="flex justify-between items-center text-sm">
+                                                <span className="text-gray-600">Total Emojis Used</span>
+                                                <span className="font-bold text-gray-800">{(userEmojiStats.total_emojis_used || 0).toLocaleString()}</span>
+                                            </div>
+                                            <div className="flex justify-between items-center text-sm">
+                                                <span className="text-gray-600">Emoji Usage Rate</span>
+                                                <span className="font-bold text-gray-800">{`${(userEmojiStats.emoji_usage_rate_percent || 0).toFixed(1)}%`}</span>
+                                            </div>
+                                            <div className="flex justify-between items-center text-sm">
+                                                <span className="text-gray-600">Favorite Emoji</span>
+                                                <span className="font-bold text-2xl">{topEmojis[0]?.emoji || 'N/A'}</span>
+                                            </div>
+                                        </div>
+
+                                        <h5 className="text-md font-semibold text-gray-700 mt-6 mb-3">Top 5 Emojis</h5>
+                                        <div className="space-y-2">
+                                            {topEmojis.slice(0, 5).map((emoji, index) => (
+                                                <div key={index} className="flex items-center justify-between p-2 bg-yellow-50 rounded-lg">
+                                                    <div className="flex items-center space-x-3">
+                                                        <span className="text-xl">{emoji.emoji}</span>
+                                                        <span className="text-gray-500 font-mono">#{index + 1}</span>
+                                                    </div>
+                                                    <span className="font-semibold text-yellow-700">{emoji.count} uses</span>
+                                                </div>
+                                            ))}
+                                            {topEmojis.length === 0 && (
+                                                <p className="text-sm text-gray-500 text-center py-4">No emoji data available.</p>
+                                            )}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );
 };
 
-export default ChatAnalysisDashboard;
+export default Dashboard;
