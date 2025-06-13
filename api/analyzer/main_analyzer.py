@@ -49,6 +49,9 @@ class ChatAnalyzer:
         self.khmer_stopwords = sentiment_lexicons.khmer_stopwords
         self.positive_words = sentiment_lexicons.positive_words
         self.negative_words = sentiment_lexicons.negative_words
+        self.sad_words = sentiment_lexicons.sad_words
+        self.romance_words = sentiment_lexicons.romance_words
+        self.sexual_words = sentiment_lexicons.sexual_words
 
     def _update_progress(self, step_name, status='in_progress', **kwargs):
         """Internal helper to calculate and send progress."""
@@ -207,10 +210,19 @@ class ChatAnalyzer:
 
         self.report['topic_modeling'] = af.analyze_topics_with_nmf(self.df, self.generic_words)
         self._update_progress("Performed NMF topic modeling")
+        self.report['sad_tone_analysis'] = af.analyze_sad_tone(self.df, self.sad_words)
+        self._update_progress("Analyzing for sad tone")
+
+        self.report['romance_tone_analysis'] = af.analyze_romance_tone(self.df, self.romance_words)
+        self._update_progress("Analyzing for romantic tone")
+
+        self.report['sexual_tone_analysis'] = af.analyze_sexual_tone(self.df, self.sexual_words)
+        self._update_progress("Analyzing for sexual content")
 
         # Final serialization step
         self.report = self.convert_to_serializable(self.report)
         self._update_progress("Comprehensive report generation complete!")
+
         return self.report
 
     def run_analysis(self):

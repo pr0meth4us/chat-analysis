@@ -9,6 +9,7 @@ from urllib.parse import urlparse
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.decomposition import NMF
 
+
 # Note: The progress_callback is handled by the main ChatAnalyzer class,
 # so the functions here just return the data.
 
@@ -30,6 +31,7 @@ def dataset_overview(df: pd.DataFrame):
     }
     return overview
 
+
 def analyze_reactions(df: pd.DataFrame):
     """Analyze message reactions (e.g., 'Liked', 'Loved')."""
     if 'is_reaction' not in df.columns or not df['is_reaction'].any():
@@ -50,6 +52,7 @@ def analyze_reactions(df: pd.DataFrame):
         'top_reaction_givers': giver_counts.head(5).to_dict(),
         'top_reaction_recipients': recipient_counts.head(5).to_dict()
     }
+
 
 def analyze_sentiment(df: pd.DataFrame, word_pattern, positive_words, negative_words):
     """Perform lexicon-based sentiment analysis."""
@@ -74,6 +77,7 @@ def analyze_sentiment(df: pd.DataFrame, word_pattern, positive_words, negative_w
         'neutral_message_count': int((analysis_df['sentiment_score'] == 0).sum())
     }
 
+
 def analyze_shared_links(df: pd.DataFrame, url_pattern):
     """Extract and analyze shared URLs."""
     if df.empty: return {}
@@ -94,11 +98,13 @@ def analyze_shared_links(df: pd.DataFrame, url_pattern):
         'top_10_shared_domains': dict(domain_counts.most_common(10))
     }
 
+
 def analyze_topics_with_nmf(df: pd.DataFrame, generic_words, n_topics=7, n_top_words=10):
     """Use NMF for true topic modeling, ignoring reactions."""
     if df.empty: return {}
 
-    analysis_df = df[~df['is_reaction'] & (df['word_count'] > 3)] if 'is_reaction' in df.columns else df[df['word_count'] > 3]
+    analysis_df = df[~df['is_reaction'] & (df['word_count'] > 3)] if 'is_reaction' in df.columns else df[
+        df['word_count'] > 3]
 
     if len(analysis_df) < n_topics:
         return {"error": "Not enough documents for topic modeling."}
@@ -116,6 +122,7 @@ def analyze_topics_with_nmf(df: pd.DataFrame, generic_words, n_topics=7, n_top_w
         topics.append({"topic_id": topic_idx, "top_words": top_words})
 
     return {"discovered_topics": topics}
+
 
 def analyze_user_behavior(df: pd.DataFrame):
     """Individual user behavior analysis, now with platform usage and reaction counts."""
@@ -140,6 +147,7 @@ def analyze_user_behavior(df: pd.DataFrame):
         }
     return user_analysis
 
+
 def first_last_messages(df: pd.DataFrame):
     """Get first and last messages."""
     if df.empty: return {}
@@ -158,6 +166,7 @@ def first_last_messages(df: pd.DataFrame):
         }
     }
 
+
 def icebreaker_analysis(df: pd.DataFrame):
     """Identify conversation starters."""
     if df.empty: return {}
@@ -168,9 +177,11 @@ def icebreaker_analysis(df: pd.DataFrame):
         return {
             "sender": str(first_substantial_overall['sender']),
             "datetime": first_substantial_overall['datetime'],
-            "message": first_substantial_overall['message'][:200] + ('...' if len(first_substantial_overall['message']) > 200 else '')
+            "message": first_substantial_overall['message'][:200] + (
+                '...' if len(first_substantial_overall['message']) > 200 else '')
         }
     return {}
+
 
 def calculate_response_metrics(df: pd.DataFrame):
     """Calculate comprehensive response time metrics using vectorized operations."""
@@ -182,9 +193,13 @@ def calculate_response_metrics(df: pd.DataFrame):
         'next_sender': df_shifted['sender'],
         'next_datetime': df_shifted['datetime']
     })
-    response_pairs_df = combined_df[(combined_df['current_sender'] != combined_df['next_sender']) & (combined_df['current_datetime'].notna()) & (combined_df['next_datetime'].notna())].copy()
-    response_pairs_df['response_time_minutes'] = (response_pairs_df['next_datetime'] - response_pairs_df['current_datetime']).dt.total_seconds() / 60
-    valid_responses = response_pairs_df[(response_pairs_df['response_time_minutes'] > 0) & (response_pairs_df['response_time_minutes'] <= 1440)]
+    response_pairs_df = combined_df[
+        (combined_df['current_sender'] != combined_df['next_sender']) & (combined_df['current_datetime'].notna()) & (
+            combined_df['next_datetime'].notna())].copy()
+    response_pairs_df['response_time_minutes'] = (response_pairs_df['next_datetime'] - response_pairs_df[
+        'current_datetime']).dt.total_seconds() / 60
+    valid_responses = response_pairs_df[
+        (response_pairs_df['response_time_minutes'] > 0) & (response_pairs_df['response_time_minutes'] <= 1440)]
     if valid_responses.empty: return {}
 
     aggregated_metrics = valid_responses.groupby(['current_sender', 'next_sender'])['response_time_minutes'].agg(
@@ -202,12 +217,16 @@ def calculate_response_metrics(df: pd.DataFrame):
             'fastest_response_minutes': float(row['fastest_response_minutes']),
             'slowest_response_minutes': float(row['slowest_response_minutes']),
             'response_count': int(row['response_count']),
-            'quick_responses_under_1min': int((valid_responses[(valid_responses['current_sender'] == sender) & (valid_responses['next_sender'] == responder)]['response_time_minutes'] < 1).sum()),
-            'quick_responses_under_5min': int((valid_responses[(valid_responses['current_sender'] == sender) & (valid_responses['next_sender'] == responder)]['response_time_minutes'] < 5).sum()),
-            'slow_responses_over_1hr': int((valid_responses[(valid_responses['current_sender'] == sender) & (valid_responses['next_sender'] == responder)]['response_time_minutes'] > 60).sum()),
+            'quick_responses_under_1min': int((valid_responses[(valid_responses['current_sender'] == sender) & (
+                    valid_responses['next_sender'] == responder)]['response_time_minutes'] < 1).sum()),
+            'quick_responses_under_5min': int((valid_responses[(valid_responses['current_sender'] == sender) & (
+                    valid_responses['next_sender'] == responder)]['response_time_minutes'] < 5).sum()),
+            'slow_responses_over_1hr': int((valid_responses[(valid_responses['current_sender'] == sender) & (
+                    valid_responses['next_sender'] == responder)]['response_time_minutes'] > 60).sum()),
             'response_consistency': float(row['response_std']) if row['response_count'] > 1 else 0.0
         }
     return response_data
+
 
 def detect_ghost_periods(df: pd.DataFrame):
     """Detect periods of silence/ghosting with context."""
@@ -222,7 +241,8 @@ def detect_ghost_periods(df: pd.DataFrame):
                 'duration_hours': float(row['time_gap_minutes'] / 60),
                 'who_broke_silence': str(row['sender']),
                 'last_sender_before_ghost': str(prev_msg['sender']),
-                'last_message_before_ghost': prev_msg['message'][:200] + ('...' if len(prev_msg['message']) > 200 else ''),
+                'last_message_before_ghost': prev_msg['message'][:200] + (
+                    '...' if len(prev_msg['message']) > 200 else ''),
                 'first_message_after_ghost': row['message'][:200] + ('...' if len(row['message']) > 200 else '')
             })
     ghost_periods.sort(key=lambda x: x['duration_hours'], reverse=True)
@@ -231,11 +251,14 @@ def detect_ghost_periods(df: pd.DataFrame):
         'total_ghost_periods': len(ghost_periods),
         'longest_ghost_hours': float(ghost_periods[0]['duration_hours']) if ghost_periods else 0.0,
         'top_10_ghost_periods': ghost_periods[:10],
-        'avg_ghost_duration_hours': float(np.mean([g['duration_hours'] for g in ghost_periods])) if ghost_periods else 0.0,
+        'avg_ghost_duration_hours': float(
+            np.mean([g['duration_hours'] for g in ghost_periods])) if ghost_periods else 0.0,
         'who_breaks_silence_most': dict(silence_breaker_counts.most_common()) if ghost_periods else {}
     }
 
-def analyze_word_patterns(df: pd.DataFrame, word_pattern, english_pattern, khmer_pattern, generic_words, khmer_stopwords):
+
+def analyze_word_patterns(df: pd.DataFrame, word_pattern, english_pattern, khmer_pattern, generic_words,
+                          khmer_stopwords):
     """Comprehensive word and language analysis, including per-user top words by language."""
     if df.empty: return {}
     all_words_lists = df['message'].astype(str).str.lower().str.findall(word_pattern)
@@ -244,15 +267,19 @@ def analyze_word_patterns(df: pd.DataFrame, word_pattern, english_pattern, khmer
     english_words_overall = english_pattern.findall(' '.join(words_overall))
     khmer_words_overall = khmer_pattern.findall(' '.join(df['message'].astype(str).tolist()))
     word_counter_overall = Counter(meaningful_words_overall)
-    bigram_counts_overall = Counter(zip(meaningful_words_overall, meaningful_words_overall[1:])) if len(meaningful_words_overall) > 1 else Counter()
-    trigram_counts_overall = Counter(zip(meaningful_words_overall, meaningful_words_overall[1:], meaningful_words_overall[2:])) if len(meaningful_words_overall) > 2 else Counter()
+    bigram_counts_overall = Counter(zip(meaningful_words_overall, meaningful_words_overall[1:])) if len(
+        meaningful_words_overall) > 1 else Counter()
+    trigram_counts_overall = Counter(
+        zip(meaningful_words_overall, meaningful_words_overall[1:], meaningful_words_overall[2:])) if len(
+        meaningful_words_overall) > 2 else Counter()
 
     user_word_analysis = {}
     for sender in df['sender'].unique():
         user_msgs_text = ' '.join(df[df['sender'] == sender]['message'].astype(str).tolist())
         user_word_list = word_pattern.findall(user_msgs_text.lower())
         user_meaningful_words = [w for w in user_word_list if w not in generic_words and len(w) > 2]
-        user_english_words = [w for w in english_pattern.findall(user_msgs_text) if w.lower() not in generic_words and len(w) > 2]
+        user_english_words = [w for w in english_pattern.findall(user_msgs_text) if
+                              w.lower() not in generic_words and len(w) > 2]
         user_khmer_words = [w for w in khmer_pattern.findall(user_msgs_text) if w not in khmer_stopwords and len(w) > 1]
         user_word_analysis[str(sender)] = {
             'total_words': len(user_word_list), 'unique_words': len(set(user_word_list)),
@@ -266,17 +293,22 @@ def analyze_word_patterns(df: pd.DataFrame, word_pattern, english_pattern, khmer
 
     return {
         'total_words_overall': len(words_overall), 'meaningful_words_overall': len(meaningful_words_overall),
-        'unique_words_overall': len(set(words_overall)), 'unique_meaningful_words_overall': len(set(meaningful_words_overall)),
+        'unique_words_overall': len(set(words_overall)),
+        'unique_meaningful_words_overall': len(set(meaningful_words_overall)),
         'top_50_meaningful_words_overall': [(w, int(c)) for w, c in word_counter_overall.most_common(50)],
-        'top_20_bigrams_overall': [{"phrase": " ".join(b), "count": int(c)} for b, c in bigram_counts_overall.most_common(20)],
-        'top_15_trigrams_overall': [{"phrase": " ".join(t), "count": int(c)} for t, c in trigram_counts_overall.most_common(15)],
+        'top_20_bigrams_overall': [{"phrase": " ".join(b), "count": int(c)} for b, c in
+                                   bigram_counts_overall.most_common(20)],
+        'top_15_trigrams_overall': [{"phrase": " ".join(t), "count": int(c)} for t, c in
+                                    trigram_counts_overall.most_common(15)],
         'english_word_count_overall': len(english_words_overall), 'khmer_word_count_overall': len(khmer_words_overall),
         'language_ratio_overall': {
-            'english_percentage': float(len(english_words_overall) / len(words_overall) * 100) if words_overall else 0.0,
+            'english_percentage': float(
+                len(english_words_overall) / len(words_overall) * 100) if words_overall else 0.0,
             'khmer_percentage': float(len(khmer_words_overall) / len(words_overall) * 100) if words_overall else 0.0
         },
         'user_word_analysis': user_word_analysis
     }
+
 
 def emoji_analysis(df: pd.DataFrame):
     """Analyze emoji usage patterns per user."""
@@ -285,7 +317,8 @@ def emoji_analysis(df: pd.DataFrame):
     emoji_counter_overall = Counter(all_emojis)
     user_emoji_analysis = {}
     for sender in df['sender'].unique():
-        user_emoji_list = [e['emoji'] for msg_emojis in df[df['sender'] == sender]['emoji_list'].tolist() for e in msg_emojis]
+        user_emoji_list = [e['emoji'] for msg_emojis in df[df['sender'] == sender]['emoji_list'].tolist() for e in
+                           msg_emojis]
         user_emoji_analysis[str(sender)] = {
             'total_emojis': len(user_emoji_list),
             'unique_emojis': len(set(user_emoji_list)),
@@ -300,52 +333,82 @@ def emoji_analysis(df: pd.DataFrame):
         'user_emoji_analysis': user_emoji_analysis
     }
 
+
 def analyze_conversation_patterns(df: pd.DataFrame):
-    """Deep conversation pattern analysis, including most intense conversations."""
-    if df.empty: return {'total_conversations': 0}
+    """
+    Deep conversation pattern analysis, including most intense conversations.
+    Intensity is measured as messages per hour.
+    """
+    if df.empty:
+        return {'total_conversations': 0}
 
     conversations = []
     for conv_id in df['conversation_id'].unique():
         conv_msgs = df[df['conversation_id'] == conv_id].copy()
-        if len(conv_msgs) < 2: continue
-        start_time, end_time = conv_msgs['datetime'].min(), conv_msgs['datetime'].max()
-        duration_minutes = (end_time - start_time).total_seconds() / 60
-        effective_duration_hours = max(duration_minutes / 60, 0.05)
+        if len(conv_msgs) < 2:
+            continue
 
-        conversations.append({
-            'id': int(conv_id), 'total_messages': int(len(conv_msgs)),
+        start_time = conv_msgs['datetime'].min()
+        end_time = conv_msgs['datetime'].max()
+        duration_minutes = (end_time - start_time).total_seconds() / 60
+        # To avoid division by zero for rapid-fire messages, use a minimum duration for intensity calculation
+        effective_duration_hours = max(duration_minutes / 60, 0.01)  # Minimum of ~36 seconds
+
+        conv_data = {
+            'id': int(conv_id),
+            'total_messages': int(len(conv_msgs)),
             'duration_minutes': float(duration_minutes),
             'participants': [str(p) for p in list(conv_msgs['sender'].unique())],
-            'start_time': start_time, 'end_time': end_time,
-            'starter_message': conv_msgs.iloc[0]['message'][:150] + ('...' if len(conv_msgs.iloc[0]['message']) > 150 else ''),
+            'start_time': start_time,
+            'end_time': end_time,
+            'starter_message': conv_msgs.iloc[0]['message'][:150] + (
+                '...' if len(conv_msgs.iloc[0]['message']) > 150 else ''),
             'starter_sender': str(conv_msgs.iloc[0]['sender']),
-            'ender_message': conv_msgs.iloc[-1]['message'][:150] + ('...' if len(conv_msgs.iloc[-1]['message']) > 150 else ''),
-            'ender_sender': str(conv_msgs.iloc[-1]['sender']),
-            'avg_message_length': float(conv_msgs['message_length'].mean()),
-            'total_words': int(conv_msgs['word_count'].sum()),
-            'intensity_score': float(len(conv_msgs) / effective_duration_hours)
-        })
+            'intensity_score': float(len(conv_msgs) / effective_duration_hours),  # messages per hour
+            'messages_per_minute': float(len(conv_msgs) / max(duration_minutes, 1))  # messages per minute
+        }
+        conversations.append(conv_data)
 
-    def _extract_conv_data(c_item):
-        if not isinstance(c_item, dict): return None
+    # --- Extract Top Conversations ---
+
+    # Helper for extracting rich data for intense conversations
+    def _extract_intense_conv_data(c_item):
         return {
-            'starter_message': c_item.get('starter_message', ''), 'ender_message': c_item.get('ender_message', ''),
-            'duration_minutes': c_item.get('duration_minutes', 0.0), 'total_messages': c_item.get('total_messages', 0),
-            'participants': c_item.get('participants', [])
+            'intensity_score_msgs_per_hr': round(c_item.get('intensity_score', 0.0), 2),
+            'messages_per_minute': round(c_item.get('messages_per_minute', 0.0), 2),
+            'total_messages': c_item.get('total_messages', 0),
+            'duration_minutes': round(c_item.get('duration_minutes', 0.0), 2),
+            'participants': c_item.get('participants', []),
+            'starter_message': c_item.get('starter_message', '')
         }
 
-    longest_raw = sorted(conversations, key=lambda x: x.get('total_messages', 0), reverse=True)[:10]
-    intense_raw = sorted(conversations, key=lambda x: x.get('intensity_score', 0.0), reverse=True)[:10]
+    # Helper for extracting data for longest conversations
+    def _extract_longest_conv_data(c_item):
+        return {
+            'total_messages': c_item.get('total_messages', 0),
+            'duration_minutes': round(c_item.get('duration_minutes', 0.0), 2),
+            'participants': c_item.get('participants', []),
+            'starter_message': c_item.get('starter_message', '')
+        }
+
+    # Sort and extract top 10 for each category
+    longest_convs_raw = sorted(conversations, key=lambda x: x.get('total_messages', 0), reverse=True)[:10]
+    intense_convs_raw = sorted(conversations, key=lambda x: x.get('intensity_score', 0.0), reverse=True)[:10]
+
+    # --- Final Assembly ---
+    starter_counts = Counter(c['starter_sender'] for c in conversations)
 
     return {
         'total_conversations': len(conversations),
-        'avg_conversation_length_messages': float(np.mean([c['total_messages'] for c in conversations])) if conversations else 0.0,
-        'avg_conversation_duration_minutes': float(np.mean([c['duration_minutes'] for c in conversations])) if conversations else 0.0,
-        'longest_conversations': [d for c in longest_raw if (d := _extract_conv_data(c))],
-        'most_intense_conversations': [d for c in intense_raw if (d := _extract_conv_data(c))],
-        'conversation_starters_counts': dict(Counter(c['starter_sender'] for c in conversations).most_common()),
-        'conversation_enders_counts': dict(Counter(c['ender_sender'] for c in conversations).most_common())
+        'avg_conversation_length_messages': float(
+            np.mean([c['total_messages'] for c in conversations])) if conversations else 0.0,
+        'avg_conversation_duration_minutes': float(
+            np.mean([c['duration_minutes'] for c in conversations])) if conversations else 0.0,
+        'longest_conversations': [_extract_longest_conv_data(c) for c in longest_convs_raw],
+        'most_intense_conversations': [_extract_intense_conv_data(c) for c in intense_convs_raw],
+        'conversation_starters_counts': dict(starter_counts.most_common()),
     }
+
 
 def temporal_patterns(df: pd.DataFrame):
     """Analyze temporal messaging patterns."""
@@ -357,16 +420,21 @@ def temporal_patterns(df: pd.DataFrame):
 
     return {
         'hourly_distribution': {i: int(hourly_activity.get(i, 0)) for i in range(24)},
-        'daily_distribution': {day: int(daily_activity.get(day, 0)) for day in ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']},
+        'daily_distribution': {day: int(daily_activity.get(day, 0)) for day in
+                               ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']},
         'monthly_trend': {str(k): int(v) for k, v in monthly_activity.items()},
         'peak_hour': int(hourly_activity.idxmax()) if not hourly_activity.empty else None,
         'quietest_hour': int(hourly_activity.idxmin()) if not hourly_activity.empty else None,
         'most_active_day': daily_activity.idxmax() if not daily_activity.empty else None,
         'least_active_day': daily_activity.idxmin() if not daily_activity.empty else None,
-        'night_owl_percentage': float(len(df[df['hour'].isin([22, 23, 0, 1, 2])]) / total_messages * 100) if total_messages > 0 else 0.0,
-        'early_bird_percentage': float(len(df[df['hour'].isin([5, 6, 7, 8])]) / total_messages * 100) if total_messages > 0 else 0.0,
-        'weekend_activity_percentage': float(len(df[df['is_weekend']]) / total_messages * 100) if total_messages > 0 else 0.0
+        'night_owl_percentage': float(
+            len(df[df['hour'].isin([22, 23, 0, 1, 2])]) / total_messages * 100) if total_messages > 0 else 0.0,
+        'early_bird_percentage': float(
+            len(df[df['hour'].isin([5, 6, 7, 8])]) / total_messages * 100) if total_messages > 0 else 0.0,
+        'weekend_activity_percentage': float(
+            len(df[df['is_weekend']]) / total_messages * 100) if total_messages > 0 else 0.0
     }
+
 
 def calculate_relationship_metrics(df: pd.DataFrame, conversation_patterns_data, response_metrics_data):
     """Calculate relationship strength indicators."""
@@ -374,31 +442,38 @@ def calculate_relationship_metrics(df: pd.DataFrame, conversation_patterns_data,
 
     total_days = (df['date'].max() - df['date'].min()).days + 1 if len(df) > 0 else 0
     daily_message_counts = df.groupby('date').size()
-    consistency_score = 1 - (daily_message_counts.std() / daily_message_counts.mean()) if daily_message_counts.mean() > 0 else 1.0
+    consistency_score = 1 - (
+            daily_message_counts.std() / daily_message_counts.mean()) if daily_message_counts.mean() > 0 else 1.0
     all_avg_times = [m['avg_response_time_minutes'] for m in response_metrics_data.values()]
 
     user_balance = {str(s): len(df[df['sender'] == s]) / len(df) * 100 for s in df['sender'].unique()}
     ideal_pct = 100 / len(user_balance) if user_balance else 100
-    balance_score = 100 - sum(abs(pct - ideal_pct) for pct in user_balance.values()) / len(user_balance) if len(user_balance) > 1 else 100.0
+    balance_score = 100 - sum(abs(pct - ideal_pct) for pct in user_balance.values()) / len(user_balance) if len(
+        user_balance) > 1 else 100.0
 
     daily_avg = len(df) / total_days if total_days > 0 else 0.0
     intensity = 'LOW'
-    if daily_avg > 100 and balance_score > 80: intensity = 'EXTREMELY_HIGH'
-    elif daily_avg > 50 and balance_score > 70: intensity = 'HIGH'
-    elif daily_avg > 10: intensity = 'MEDIUM'
+    if daily_avg > 100 and balance_score > 80:
+        intensity = 'EXTREMELY_HIGH'
+    elif daily_avg > 50 and balance_score > 70:
+        intensity = 'HIGH'
+    elif daily_avg > 10:
+        intensity = 'MEDIUM'
 
     return {
         'total_days_in_chat': int(total_days),
         'daily_average_messages': float(daily_avg),
         'consistency_score': float(consistency_score),
         'overall_avg_response_time_minutes': float(np.mean(all_avg_times)) if all_avg_times else 0.0,
-        'long_conversations_count': len([c for c in conversation_patterns_data.get('longest_conversations', []) if c.get('total_messages', 0) > 50]),
+        'long_conversations_count': len([c for c in conversation_patterns_data.get('longest_conversations', []) if
+                                         c.get('total_messages', 0) > 50]),
         'communication_balance_percentages': user_balance,
         'balance_score': float(balance_score),
         'peak_single_day_messages': int(daily_message_counts.max()) if not daily_message_counts.empty else 0,
         'most_active_date': daily_message_counts.idxmax().isoformat() if not daily_message_counts.empty else None,
         'relationship_intensity': intensity
     }
+
 
 def analyze_unbroken_streaks(df: pd.DataFrame):
     """Find the longest consecutive streak of days with at least one message."""
@@ -413,13 +488,13 @@ def analyze_unbroken_streaks(df: pd.DataFrame):
         if i == 0:
             current_streak = 1
             current_start = unique_dates[i]
-        elif unique_dates[i] == unique_dates[i-1] + timedelta(days=1):
+        elif unique_dates[i] == unique_dates[i - 1] + timedelta(days=1):
             current_streak += 1
         else:
             if current_streak > longest_streak:
                 longest_streak = current_streak
                 start_date = current_start
-                end_date = unique_dates[i-1]
+                end_date = unique_dates[i - 1]
             current_streak = 1
             current_start = unique_dates[i]
     if current_streak > longest_streak:
@@ -433,6 +508,7 @@ def analyze_unbroken_streaks(df: pd.DataFrame):
         'streak_end_date': end_date,
         'total_active_days': int(len(unique_dates))
     }
+
 
 def analyze_questions(df: pd.DataFrame, sentence_pattern):
     """Extract and categorize questions asked by each user."""
@@ -459,3 +535,66 @@ def analyze_questions(df: pd.DataFrame, sentence_pattern):
             'top_5_latest_questions': data['questions_asked_details'][:5]
         }
     return final_results
+
+
+def _create_thematic_report(df: pd.DataFrame, keywords: set, theme_name: str):
+    """
+    A helper function to generate a standardized report for a given thematic lexicon.
+    """
+    if df.empty:
+        return {}
+
+    # Find messages that contain any of the theme keywords
+    pattern = r'\b(' + '|'.join(keywords) + r')\b'
+    thematic_msgs_mask = df['message'].str.contains(pattern, case=False, regex=True)
+    thematic_df = df[thematic_msgs_mask].copy()
+
+    if thematic_df.empty:
+        return {
+            'total_matching_messages': 0,
+            f'{theme_name}_intensity_percent': 0.0,
+            'top_senders': {},
+            'top_messages': []
+        }
+
+    # Analyze the findings
+    total_matching_messages = len(thematic_df)
+    intensity_percent = (total_matching_messages / len(df[~df['is_reaction']])) * 100 if len(df) > 0 else 0
+    top_senders = thematic_df['sender'].value_counts().to_dict()
+
+    # Extract the most representative messages, sorted by length to find more substantial ones
+    thematic_df['match_strength'] = thematic_df['message_length']
+    top_messages = thematic_df.nlargest(5, 'match_strength')[[
+        'sender', 'message', 'datetime'
+    ]].to_dict('records')
+
+    return {
+        'total_matching_messages': total_matching_messages,
+        f'{theme_name}_intensity_percent': round(intensity_percent, 2),
+        'top_senders': top_senders,
+        'top_messages': top_messages
+    }
+
+
+def analyze_sad_tone(df: pd.DataFrame, sad_words: set):
+    """
+    Analyzes the chat for expressions of sadness and negative sentiment.
+    """
+    return _create_thematic_report(df, sad_words, 'sadness')
+
+
+def analyze_romance_tone(df: pd.DataFrame, romance_words: set):
+    """
+    Analyzes the chat for romantic expressions and language.
+    """
+    return _create_thematic_report(df, romance_words, 'romance')
+
+
+def analyze_sexual_tone(df: pd.DataFrame, sexual_words: set):
+    """
+    Analyzes the chat for sexually explicit or suggestive language. Includes a disclaimer.
+    """
+    report = _create_thematic_report(df, sexual_words, 'sexual_content')
+    report[
+        'disclaimer'] = "This analysis is based on a predefined list of keywords and may not capture all nuances. It is intended for analytical purposes only."
+    return report

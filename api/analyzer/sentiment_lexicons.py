@@ -67,3 +67,22 @@ negative_words = {
     'stress', 'anxious', 'worried', 'fear', 'fail', 'problem', 'issue', 'stupid', 'dumb', 'lame', 'sucks',
     'annoying', 'frustrated', 'difficult', 'hard', 'disaster', 'sorry'
 }
+
+sad_words = {
+    'sad', 'upset', 'crying', 'cry', 'tears', 'lonely', 'heartbroken', 'depressed', 'miserable', 'unhappy',
+    'grief', 'pain', 'hurts', 'awful', 'terrible', 'feeling down', 'devastated', 'hopeless', 'gloomy'
+}
+
+# Keywords for detecting romantic conversation
+romance_words = {
+    'love', 'darling', 'sweetheart', 'my dear', 'babe', 'honey', 'miss you', 'thinking of you',
+    'date', 'kiss', 'hug', 'cuddle', 'my love', 'valentine', 'romance', 'romantic', 'adore', 'beautiful',
+    'handsome', 'gorgeous'
+}
+
+# Keywords for detecting sexual conversation.
+# Note: This list contains sensitive terms for analysis purposes.
+sexual_words = {
+    'horny', 'sexy', 'naked', 'turn on', 'kinky', 'fetish', 'fuck', 'sex', 'pussy', 'dick', 'cock',
+    'boobs', 'tits', 'ass', 'orgasm', 'cum', 'intercourse', 'making love', 'get laid'
+}
