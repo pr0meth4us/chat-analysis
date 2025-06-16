@@ -1,119 +1,118 @@
 import axios, { AxiosError } from 'axios';
 import {
-  UploadResponse,
-  FilterRequest,
-  FilterResponse,
   AnalysisRequest,
-  AnalysisResponse,
+  FilterRequest,
+  Task,
   Message
 } from "@/types";
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
 
 const api = axios.create({
   baseURL: API_URL,
   withCredentials: true,
 });
 
-export const uploadChatFiles = async (files: File[]): Promise<UploadResponse> => {
+/**
+ * A helper function to handle API errors consistently.
+ */
+const handleError = (error: unknown, defaultMessage: string): Error => {
+  const err = error as AxiosError<{ error?: string }>;
+  if (err.response && err.response.data?.error) {
+    return new Error(err.response.data.error);
+  }
+  return new Error(defaultMessage);
+};
+
+/**
+ * A helper function to trigger a browser download for any JSON data.
+ */
+const triggerJsonDownload = (data: unknown, filename: string) => {
+  const jsonString = `data:text/json;charset=utf-8,${encodeURIComponent(
+      JSON.stringify(data, null, 2)
+  )}`;
+  const link = document.createElement("a");
+  link.href = jsonString;
+  link.download = filename;
+  link.click();
+};
+
+// --- Core Workflow API Calls ---
+
+export const processFile = async (file: File): Promise<Task> => {
   try {
     const formData = new FormData();
-    files.forEach((file) => formData.append('files', file));
-    const response = await api.post<UploadResponse>('/upload', formData);
+    formData.append('file', file);
+    const response = await api.post<Task>('/process', formData);
     return response.data;
   } catch (error) {
-    const err = error as AxiosError<{ error?: string }>;
-    if (err.response) {
-      throw new Error(err.response.data?.error || 'Upload failed');
-    }
-    throw new Error('Network error during upload');
+    throw handleError(error, 'File processing failed to start.');
   }
 };
 
-export const uploadZipFile = async (zipFile: File): Promise<UploadResponse> => {
+export const filterMessages = async (data: FilterRequest): Promise<{ message: string }> => {
   try {
-    const formData = new FormData();
-    formData.append('zipfile', zipFile);
-    const response = await api.post<UploadResponse>('/upload-zip', formData);
+    const response = await api.post<{ message: string }>('/filter', data);
     return response.data;
   } catch (error) {
-    const err = error as AxiosError<{ error?: string }>;
-    if (err.response) {
-      throw new Error(err.response.data?.error || 'ZIP upload failed');
-    }
-    throw new Error('Network error during ZIP upload');
+    throw handleError(error, 'Filtering messages failed.');
   }
 };
 
-// Updated to not pass messages - backend uses session
-export const filterMessages = async (data: FilterRequest): Promise<FilterResponse> => {
+export const analyzeMessages = async (data: AnalysisRequest): Promise<Task> => {
   try {
-    const response = await api.post<FilterResponse>('/filter', data);
+    const response = await api.post<Task>('/analyze', data);
     return response.data;
   } catch (error) {
-    const err = error as AxiosError<{ error?: string }>;
-    if (err.response) {
-      throw new Error(err.response.data?.error || 'Filter failed');
-    }
-    throw new Error('Network error during filtering');
+    throw handleError(error, 'Analysis failed to start.');
   }
 };
 
-// Updated to use session fallback - empty request body
-export const analyzeMessages = async (): Promise<AnalysisResponse> => {
+// --- Task & Session Management ---
+
+export const getTaskStatus = async (taskId: string): Promise<Task> => {
   try {
-    const response = await api.post<AnalysisResponse>('/analyze', {});
+    const response = await api.get<Task>(`/tasks/status/${taskId}`);
     return response.data;
   } catch (error) {
-    const err = error as AxiosError<{ error?: string }>;
-    if (err.response) {
-      throw new Error(err.response.data?.error || 'Analysis failed');
-    }
-    throw new Error('Network error during analysis');
+    throw handleError(error, 'Failed to get task status.');
   }
 };
 
-export const getStoredMessages = async (): Promise<{ session_id: string; messages: Message[] }> => {
+export const clearSession = async (): Promise<{ message: string }> => {
   try {
-    const response = await api.get<{ session_id: string; messages: Message[] }>('/get_stored_messages');
+    const response = await api.post<{ message: string }>('/session/clear');
     return response.data;
   } catch (error) {
-    const err = error as AxiosError<{ error?: string }>;
-    if (err.response) {
-      throw new Error(err.response.data?.error || 'Failed to get stored messages');
-    }
-    throw new Error('Network error getting stored messages');
+    throw handleError(error, 'Failed to clear session.');
   }
 };
 
-export const clearSession = async (): Promise<{ message: string; session_id: string }> => {
+// --- New Download API Calls ---
+
+export const downloadProcessedMessages = async (): Promise<void> => {
   try {
-    const response = await api.post<{ message: string; session_id: string }>('/clear');
-    return response.data;
+    const response = await api.get<Message[]>('/data/processed');
+    triggerJsonDownload(response.data, 'processed_messages.json');
   } catch (error) {
-    const err = error as AxiosError<{ error?: string }>;
-    if (err.response) {
-      throw new Error(err.response.data?.error || 'Failed to clear session');
-    }
-    throw new Error('Network error clearing session');
+    throw handleError(error, 'Failed to download processed messages.');
   }
 };
 
-// Updated to not require messages parameter - backend uses session
-export const countKeyword = async (keyword: string): Promise<{
-  keyword: string;
-  message_count: number;
-  total_matches: number;
-  counts: Record<string, number>;
-}> => {
+export const downloadFilteredMessages = async (): Promise<void> => {
   try {
-    const response = await api.post('/count_keyword', { keyword });
-    return response.data;
+    const response = await api.get<Message[]>('/data/filtered');
+    triggerJsonDownload(response.data, 'filtered_messages.json');
   } catch (error) {
-    const err = error as AxiosError<{ error?: string }>;
-    if (err.response) {
-      throw new Error(err.response.data?.error || 'Keyword count failed');
-    }
-    throw new Error('Network error during keyword counting');
+    throw handleError(error, 'Failed to download filtered messages.');
+  }
+};
+
+export const downloadAnalysisReport = async (): Promise<void> => {
+  try {
+    const response = await api.get<any>('/data/report');
+    triggerJsonDownload(response.data, 'analysis_report.json');
+  } catch (error) {
+    throw handleError(error, 'Failed to download analysis report.');
   }
 };

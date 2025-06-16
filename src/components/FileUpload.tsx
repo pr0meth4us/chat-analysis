@@ -1,76 +1,74 @@
-import React, { useCallback, useState } from "react";
-import { FileUploadProps } from "@/types";
-import { FileText, Loader2, Upload } from "lucide-react";
+"use client";
 
-export const FileUpload: React.FC<FileUploadProps> = ({ onFilesUploaded, isUploading }) => {
-    const [isDragOver, setIsDragOver] = useState(false);
+import React, { useState, useCallback } from 'react';
+import { useDropzone } from 'react-dropzone';
+import { UploadCloud, File as FileIcon, Loader2 } from 'lucide-react';
+import { FileUploadProps } from '@/types'; // Import the correct props type
 
-    const handleDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
-        e.preventDefault();
-        setIsDragOver(true);
-    }, []);
+export const FileUpload: React.FC<FileUploadProps> = ({ onFileSelected, isUploading }) => {
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
-    const handleDragLeave = useCallback((e: React.DragEvent<HTMLDivElement>) => {
-        e.preventDefault();
-        setIsDragOver(false);
-    }, []);
+    const handleFileDrop = useCallback((acceptedFiles: File[]) => {
+        // The new API handles one file at a time (which can be a .zip)
+        if (acceptedFiles.length > 0) {
+            const file = acceptedFiles[0];
+            setSelectedFile(file);
+            // This now correctly calls the prop from the parent component
+            onFileSelected(file);
+        }
+    }, [onFileSelected]);
 
-    const handleDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
-        e.preventDefault();
-        setIsDragOver(false);
-        const files = Array.from(e.dataTransfer.files);
-        onFilesUploaded(files);
-    }, [onFilesUploaded]);
-
-    const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-        const files = Array.from(e.target.files || []);
-        onFilesUploaded(files);
-    }, [onFilesUploaded]);
+    const { getRootProps, getInputProps, isDragActive } = useDropzone({
+        onDrop: handleFileDrop,
+        multiple: false, // Ensure only one file is accepted
+        accept: {
+            'text/html': ['.html', '.htm'],
+            'application/zip': ['.zip'],
+            'application/json': ['.json'],
+            'text/plain': ['.txt'],
+        }
+    });
 
     return (
         <div className="w-full">
             <div
-                className={`relative border-2 border-dashed rounded-xl p-10 text-center transition-all duration-200 ${
-                    isDragOver
-                        ? 'border-blue-400 bg-blue-50'
-                        : 'border-gray-300 hover:border-gray-400'
-                } ${isUploading ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'}`}
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
+                {...getRootProps()}
+                className={`
+          w-full p-8 border-2 border-dashed rounded-xl cursor-pointer
+          transition-colors duration-300 ease-in-out
+          ${isDragActive ? 'border-indigo-600 bg-indigo-50' : 'border-gray-300 hover:border-indigo-400 bg-gray-50/50'}
+        `}
             >
-                {isUploading && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-80 rounded-xl z-10">
-                        <Loader2 className="w-10 h-10 animate-spin text-blue-600" />
-                        <span className="ml-3 text-lg font-medium text-blue-600">Uploading...</span>
-                    </div>
-                )}
-
-                <Upload className="w-16 h-16 mx-auto mb-5 text-gray-400" />
-                <h3 className="text-xl font-semibold text-gray-900 mb-3">Drag & Drop Your Chat Files</h3>
-                <p className="text-gray-600 mb-6">
-                    Supports `.txt` chat logs or `.zip` archives.
-                </p>
-
-                <input
-                    type="file"
-                    multiple
-                    onChange={handleFileSelect}
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                    disabled={isUploading}
-                    aria-label="Upload chat files"
-                />
-
-                <button
-                    type="button"
-                    className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                    disabled={isUploading}
-                    onClick={() => document.querySelector<HTMLInputElement>('input[type="file"]')?.click()} // Trigger input click
-                >
-                    <FileText className="w-5 h-5 mr-3" />
-                    Browse Files
-                </button>
+                <input {...getInputProps()} />
+                <div className="flex flex-col items-center justify-center text-center">
+                    <UploadCloud className={`w-12 h-12 mb-4 ${isDragActive ? 'text-indigo-600' : 'text-gray-400'}`} />
+                    <p className="text-lg font-semibold text-gray-700">
+                        {isDragActive ? "Drop the file here!" : "Drag & drop your file here, or click to select"}
+                    </p>
+                    <p className="text-sm text-gray-500 mt-1">
+                        Supports: Single Chat File or a .ZIP Archive
+                    </p>
+                </div>
             </div>
+
+            {isUploading && (
+                <div className="mt-4 flex items-center justify-center space-x-3 text-lg font-semibold text-indigo-600">
+                    <Loader2 className="w-6 h-6 animate-spin" />
+                    <span>Processing, please wait...</span>
+                </div>
+            )}
+
+            {!isUploading && selectedFile && (
+                <div className="mt-4 p-3 bg-green-100 text-green-800 rounded-lg flex items-center justify-between shadow-sm">
+                    <div className="flex items-center space-x-3">
+                        <FileIcon className="w-5 h-5 flex-shrink-0" />
+                        <span className="font-medium truncate">{selectedFile.name}</span>
+                    </div>
+                    <span className="text-sm font-mono text-green-600">
+            {(selectedFile.size / 1024).toFixed(2)} KB
+          </span>
+                </div>
+            )}
         </div>
     );
 };
