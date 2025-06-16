@@ -1,4 +1,3 @@
-# app/__init__.py
 from flask import Flask
 from flask_cors import CORS
 import os
@@ -24,15 +23,17 @@ def create_app():
     ensure_dir(Config.UPLOAD_FOLDER)
 
     # Register blueprints
-    from api.routes.upload_routes import upload_bp
-    from api.routes.filter_routes import filter_bp
     from api.routes.analysis_routes import analysis_bp
-    from api.routes.utility_routes import utility_bp
+    from api.routes.data_routes import data_bp
+    from api.routes.filter_routes import filter_bp
+    from api.routes.process_routes import proces_bp
+    from api.routes.task_routes import tasks_bp
 
-    app.register_blueprint(upload_bp, url_prefix='/api')
-    app.register_blueprint(filter_bp, url_prefix='/api')
-    app.register_blueprint(analysis_bp, url_prefix='/api')
-    app.register_blueprint(utility_bp, url_prefix='/api')
+    app.register_blueprint(analysis_bp)
+    app.register_blueprint(filter_bp)
+    app.register_blueprint(data_bp)
+    app.register_blueprint(proces_bp)
+    app.register_blueprint(tasks_bp)
 
     # Register error handlers
     from api.error_handlers import register_error_handlers

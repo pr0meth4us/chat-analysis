@@ -1,0 +1,170 @@
+# Chat Analysis API Client (Simplified Workflow)
+#
+# This file provides a clean, step-by-step guide to using the unified API.
+#
+# --- WORKFLOW ---
+# 1. Configure your variables below.
+# 2. Run "Step 1: Process File".
+# 3. Run "Step 2: Check Task Status" until the task is 'completed'.
+# 4. Run "Step 3: Filter Data".
+# 5. Run "Step 4: Analyze Data".
+# 6. Run "Step 2: Check Task Status" again with the new task ID.
+
+### ===========================================
+### ⚙️ 1. CONFIGURATION
+### ===========================================
+
+@host = http://localhost:5001
+
+# --- IMPORTANT: UPDATE THE PATH TO YOUR FILE ---
+# This can be a single chat file (.html, .json, .txt) or a .zip archive.
+@file_to_process = "/Users/nicksng/Desktop/school/aupp/code/google-drive-html-downloader/all_chats.zip"
+
+# --- Filter Configuration ---
+@me_list = ["Me","Neron","Neternal Soeung","Ni","konkhmerlaorlek1","neron - ណឺរ៉ូន","neron - ូន","xeno.bozo"]
+@remove_list = ["Jockie Music (1)"]
+@other_label = SMT
+
+# --- Analysis Configuration ---
+# Comma-separated list of modules to run. Leave empty to run all.
+@modules_to_run = dataset_overview, conversation_patterns, relationship_metrics
+
+# --- Dynamic Variables (do not change) ---
+@session_id =
+@task_id =
+
+
+### ===========================================
+### 🚀 2. THE WORKFLOW
+### ===========================================
+
+### STEP 1: Process File
+#
+# Upload your data. The API will automatically handle ZIPs or single files
+# and start a background processing task.
+POST {{host}}/process
+Content-Type: multipart/form-data; boundary=----WebAppBoundary
+
+------WebAppBoundary
+Content-Disposition: form-data; name="file"; filename="data.zip"
+
+< /Users/nicksng/Desktop/school/aupp/code/google-drive-html-downloader/all_chats.zip
+------WebAppBoundary--
+
+> {%
+    client.test("Handle Process Response", function() {
+        client.assert(response.status === 202, "Request should be accepted for background processing");
+        client.global.set("session_id", response.body.session_id);
+        client.global.set("task_id", response.body.task_id);
+        console.log("✅ UPLOAD ACCEPTED");
+        console.log("   - Session ID:", response.body.session_id);
+        console.log("   - Task ID:", response.body.task_id);
+        console.log("⏭️  NEXT: Run 'Check Task Status' to monitor.");
+    });
+%}
+
+### STEP 2: Check Task Status
+#
+# Run this to monitor your 'process' or 'analyze' task.
+# The 'stage' and 'progress' fields will update as it runs.
+GET {{host}}/tasks/status/ffb27d33-61dd-4a05-aaec-80db1156ae82
+
+> {%
+    client.test("Check Task Status", function() {
+        const r = response.body;
+        console.log(`📊 STATUS: ${r.status} (${r.progress.toFixed(1)}%)`);
+        console.log(`   - Stage: ${r.stage || 'N/A'}`);
+
+        if (r.status === "completed") {
+            console.log("✅ TASK COMPLETE!");
+            // Log the result of the completed task
+            if (r.result?.message) {
+                console.log(`   - Result: ${r.result.message}`);
+            }
+            if (r.result?.analysis_report) {
+                console.log("   - Analysis Report Generated!");
+            }
+        } else if (r.status === "failed") {
+            console.log("❌ TASK FAILED:", r.error);
+        }
+    });
+%}
+
+### STEP 3: Filter Data
+#
+# Once processing is complete, this step relabels and removes senders.
+POST {{host}}/filter
+Content-Type: application/json
+
+{
+  "me": {{me_list}},
+  "remove": {{remove_list}},
+  "other_label": "{{other_label}}"
+}
+
+> {%
+    client.test("Filter Messages", function() {
+        client.assert(response.status === 200, "Filter should succeed");
+        console.log("✅ FILTERING COMPLETE");
+        console.log(`   - ${response.body.message}`);
+        console.log("⏭️  NEXT: Run 'Analyze Data'.");
+    });
+%}
+
+### STEP 4: Analyze Data
+#
+# This starts the main analysis on your filtered data.
+# It always runs in the background.
+POST {{host}}/analyze
+Content-Type: application/json
+
+> {%
+    client.test("Handle Analysis Response", function() {
+        client.assert(response.status === 202, "Analysis request should be accepted");
+        client.global.set("task_id", response.body.task_id); // This sets the task_id for the *new* analysis task
+        console.log("✅ ANALYSIS STARTED");
+        console.log("   - Analysis Task ID:", response.body.task_id);
+        console.log("⏭️  NEXT: Run 'Check Task Status' again to monitor the analysis.");
+    });
+%}
+
+
+### ===========================================
+### 🛠️ 3. SESSION MANAGEMENT
+### ===========================================
+
+### Get All Tasks for Session
+# See a history of all tasks you have run.
+GET {{host}}/tasks/session
+
+> {%
+    client.test("Get Session Tasks", function() {
+        console.log("📋 TASKS FOR SESSION:", response.body.session_id);
+        console.log(response.body.tasks);
+    });
+%}
+
+### Clear Session
+# Wipes all data from your session on the server.
+POST {{host}}/session/clear
+
+> {%
+    client.test("Clear Session", function() {
+        client.assert(response.status === 200, "Request should succeed.");
+        client.global.clear("session_id");
+        client.global.clear("task_id");
+        console.log("🧹 SESSION CLEARED.");
+    });
+%}
+
+### Download PROCESSED messages
+# (Get the data after initial parsing, before filtering)
+GET {{host}}/data/processed
+
+### Download FILTERED messages
+# (Get the data after you have run the '/filter' endpoint)
+GET {{host}}/data/filtered
+
+### Download the ANALYSIS report
+# (Get the final JSON report after the analysis task is complete)
+GET {{host}}/data/report
