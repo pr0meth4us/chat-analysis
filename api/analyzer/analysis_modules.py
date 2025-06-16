@@ -1,8 +1,7 @@
 # analyzer/analysis_modules.py
-
+import re
 import pandas as pd
 import numpy as np
-import emoji
 from collections import Counter, defaultdict
 from datetime import datetime, timedelta
 from urllib.parse import urlparse
@@ -598,3 +597,245 @@ def analyze_sexual_tone(df: pd.DataFrame, sexual_words: set):
     report[
         'disclaimer'] = "This analysis is based on a predefined list of keywords and may not capture all nuances. It is intended for analytical purposes only."
     return report
+
+
+def analyze_rapid_fire_conversations(df: pd.DataFrame, min_messages=10, max_gap_minutes=2):
+    """
+    Identify intense rapid-fire conversations where messages are exchanged very quickly
+    over an extended period. Looks for sustained back-and-forth exchanges.
+    """
+    if df.empty or 'conversation_id' not in df.columns:
+        return {}
+
+    analysis_df = df[~df['is_reaction']] if 'is_reaction' in df.columns else df
+    if len(analysis_df) < min_messages:
+        return {'total_rapid_fire_sessions': 0, 'top_10_rapid_fire_conversations': []}
+
+    rapid_fire_sessions = []
+
+    # Calculate time gap within each conversation group to be more accurate
+    analysis_df['time_gap_minutes'] = analysis_df.groupby('conversation_id')[
+                                          'datetime'].diff().dt.total_seconds().fillna(0) / 60
+
+    # Identify messages that are part of a rapid exchange
+    analysis_df['is_rapid'] = analysis_df['time_gap_minutes'] <= max_gap_minutes
+
+    # Use cumsum() to create a unique ID for each block of consecutive non-rapid messages.
+    # This effectively groups the rapid messages that fall between them.
+    analysis_df['rapid_block'] = (analysis_df['is_rapid'] == False).cumsum()
+
+    # Group by the original conversation and the new rapid block ID
+    for _, group in analysis_df.groupby(['conversation_id', 'rapid_block']):
+        # We only care about the groups that are marked as rapid
+        rapid_group = group[group['is_rapid']]
+
+        if len(rapid_group) < min_messages:
+            continue
+
+        participants = list(rapid_group['sender'].unique())
+        if len(participants) < 2:  # Need at least 2 people for a back-and-forth
+            continue
+
+        start_time = rapid_group['datetime'].min()
+        end_time = rapid_group['datetime'].max()
+        duration_minutes = max((end_time - start_time).total_seconds() / 60, 0.1)  # Avoid division by zero
+
+        # Calculate back-and-forth intensity
+        sender_changes = (rapid_group['sender'] != rapid_group['sender'].shift(1)).sum()
+        exchange_rate = sender_changes / len(rapid_group)
+
+        if exchange_rate > 0.3:  # Ensure it's not just one person spamming
+            intensity_score = (len(rapid_group) / duration_minutes) * exchange_rate
+
+            rapid_fire_sessions.append({
+                'start_time': start_time,
+                'end_time': end_time,
+                'duration_minutes': duration_minutes,
+                'total_messages': len(rapid_group),
+                'participants': participants,
+                'messages_per_minute': len(rapid_group) / duration_minutes,
+                'exchange_rate': exchange_rate,
+                'intensity_score': intensity_score,
+            })
+
+    rapid_fire_sessions.sort(key=lambda x: x['intensity_score'], reverse=True)
+
+    participant_counts = Counter(p for session in rapid_fire_sessions for p in session['participants'])
+
+    return {
+        'total_rapid_fire_sessions': len(rapid_fire_sessions),
+        'total_messages_in_rapid_sessions': sum(s['total_messages'] for s in rapid_fire_sessions),
+        'average_intensity_score': np.mean(
+            [s['intensity_score'] for s in rapid_fire_sessions]) if rapid_fire_sessions else 0,
+        'most_active_in_rapid_sessions': dict(participant_counts.most_common(5)),
+        'top_10_rapid_fire_conversations': rapid_fire_sessions[:10]
+    }
+
+
+def analyze_argument_language(df: pd.DataFrame, argument_words=None):
+    """
+    Analyze usage of aggressive/argumentative language including profanity and heated exchanges.
+    Identifies potential arguments based on language patterns.
+    """
+    if df.empty:
+        return {}
+
+    # Default argument/aggressive words if none provided
+    if argument_words is None:
+        argument_words = {
+            'bitch', 'whore', 'hoe', 'fucker', 'fuck you', 'fucking', 'shit', 'damn', 'hell',
+            'stupid', 'idiot', 'moron', 'asshole', 'bastard', 'dumbass', 'retard', 'loser',
+            'shut up', 'piss off', 'go to hell', 'screw you', 'bite me', 'whatever', 'bullshit',
+            'crap', 'suck', 'hate you', 'annoying', 'ridiculous', 'pathetic', 'disgusting',
+            'wtf', 'stfu', 'gtfo', 'ffs', 'omfg'
+        }
+
+    # Filter out reactions for this analysis
+    analysis_df = df[~df['is_reaction']] if 'is_reaction' in df.columns else df
+
+    if analysis_df.empty:
+        return {'argument_language_analysis': {}}
+
+    # Create pattern for argument words (case insensitive, word boundaries)
+    pattern = r'\b(' + '|'.join(re.escape(word) for word in argument_words) + r')\b'
+
+    # Find messages containing argument language
+    argument_mask = analysis_df['message'].str.contains(pattern, case=False, regex=True, na=False)
+    argument_msgs = analysis_df[argument_mask].copy()
+
+    if argument_msgs.empty:
+        return {
+            'total_argument_messages': 0,
+            'argument_intensity_percent': 0.0,
+            'users_argument_stats': {},
+            'potential_argument_sessions': [],
+            'most_used_argument_words': {},
+            'argument_temporal_patterns': {}
+        }
+
+    # Extract specific argument words used
+    all_argument_words_found = []
+    for message in argument_msgs['message']:
+        found_words = re.findall(pattern, message.lower(), re.IGNORECASE)
+        all_argument_words_found.extend(found_words)
+
+    argument_word_counts = Counter(all_argument_words_found)
+
+    # Analyze per-user argument language usage
+    user_argument_stats = {}
+    for sender in analysis_df['sender'].unique():
+        user_msgs = analysis_df[analysis_df['sender'] == sender]
+        user_argument_msgs = argument_msgs[argument_msgs['sender'] == sender]
+
+        if len(user_msgs) > 0:
+            argument_rate = len(user_argument_msgs) / len(user_msgs) * 100
+            user_argument_words = []
+            for message in user_argument_msgs['message']:
+                found_words = re.findall(pattern, message.lower(), re.IGNORECASE)
+                user_argument_words.extend(found_words)
+
+            user_argument_stats[str(sender)] = {
+                'total_argument_messages': int(len(user_argument_msgs)),
+                'argument_rate_percent': float(argument_rate),
+                'most_used_argument_words': dict(Counter(user_argument_words).most_common(10)),
+                'sample_argument_messages': [
+                    {
+                        'message': msg['message'][:150] + ('...' if len(msg['message']) > 150 else ''),
+                        'datetime': msg['datetime']
+                    }
+                    for _, msg in user_argument_msgs.head(3).iterrows()
+                ]
+            }
+
+    # Identify potential argument sessions (clusters of argument messages)
+    argument_sessions = []
+    if len(argument_msgs) > 1:
+        # Group argument messages by conversation and time proximity
+        for conv_id in argument_msgs['conversation_id'].unique():
+            conv_argument_msgs = argument_msgs[argument_msgs['conversation_id'] == conv_id].copy()
+            if len(conv_argument_msgs) < 2:
+                continue
+
+            # Look for clusters of argument messages within 30 minutes of each other
+            conv_argument_msgs['time_gap_minutes'] = conv_argument_msgs['datetime'].diff().dt.total_seconds().fillna(
+                0) / 60
+
+            # Group messages that are close in time
+            session_groups = []
+            current_session = []
+
+            for idx, row in conv_argument_msgs.iterrows():
+                if len(current_session) == 0 or row['time_gap_minutes'] <= 30:
+                    current_session.append(idx)
+                else:
+                    if len(current_session) >= 2:  # At least 2 argument messages
+                        session_groups.append(current_session)
+                    current_session = [idx]
+
+            # Don't forget the last session
+            if len(current_session) >= 2:
+                session_groups.append(current_session)
+
+            # Analyze each argument session
+            for session_indices in session_groups:
+                session_msgs = conv_argument_msgs.loc[session_indices]
+                participants = list(session_msgs['sender'].unique())
+
+                if len(participants) >= 2:  # Need multiple people for an argument
+                    start_time = session_msgs['datetime'].min()
+                    end_time = session_msgs['datetime'].max()
+                    duration_minutes = (end_time - start_time).total_seconds() / 60
+
+                    # Count argument words in this session
+                    session_argument_words = []
+                    for message in session_msgs['message']:
+                        found_words = re.findall(pattern, message.lower(), re.IGNORECASE)
+                        session_argument_words.extend(found_words)
+
+                    argument_sessions.append({
+                        'conversation_id': int(conv_id),
+                        'start_time': start_time,
+                        'end_time': end_time,
+                        'duration_minutes': float(duration_minutes),
+                        'total_argument_messages': int(len(session_msgs)),
+                        'participants': [str(p) for p in participants],
+                        'argument_words_used': dict(Counter(session_argument_words)),
+                        'intensity_score': float(len(session_argument_words) / max(duration_minutes, 1)),
+                        'sample_messages': [
+                            {
+                                'sender': str(row['sender']),
+                                'message': row['message'][:150] + ('...' if len(row['message']) > 150 else ''),
+                                'datetime': row['datetime']
+                            }
+                            for _, row in session_msgs.head(5).iterrows()
+                        ]
+                    })
+
+    # Sort argument sessions by intensity
+    argument_sessions.sort(key=lambda x: x['intensity_score'], reverse=True)
+
+    # Analyze temporal patterns of arguments
+    argument_temporal = {}
+    if not argument_msgs.empty:
+        hourly_arguments = argument_msgs['hour'].value_counts().sort_index()
+        daily_arguments = argument_msgs['day_of_week'].value_counts()
+
+        argument_temporal = {
+            'peak_argument_hour': int(hourly_arguments.idxmax()) if not hourly_arguments.empty else None,
+            'peak_argument_day': daily_arguments.idxmax() if not daily_arguments.empty else None,
+            'hourly_distribution': {i: int(hourly_arguments.get(i, 0)) for i in range(24)},
+            'daily_distribution': daily_arguments.to_dict()
+        }
+
+    total_messages = len(analysis_df)
+    argument_intensity = (len(argument_msgs) / total_messages * 100) if total_messages > 0 else 0.0
+
+    return {
+        'total_argument_messages': int(len(argument_msgs)),
+        'argument_intensity_percent': float(argument_intensity),
+        'users_argument_stats': user_argument_stats,
+        'potential_argument_sessions': argument_sessions[:10],  # Top 10 most intense
+        'most_used_argument_words': dict(argument_word_counts.most_common(20)),
+        'argument_temporal_patterns': argument_temporal,
+        'total_argument_sessions_detected': len(argument_sessions)
+    }

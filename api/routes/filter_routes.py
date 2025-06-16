@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from api.session_manager import session_manager
-from utils import log
+from api.utils import log
 from api.helpers.response_helpers import make_json_response
 
 filter_bp = Blueprint('filter', __name__)

@@ -80,9 +80,16 @@ romance_words = {
     'handsome', 'gorgeous'
 }
 
-# Keywords for detecting sexual conversation.
 # Note: This list contains sensitive terms for analysis purposes.
 sexual_words = {
     'horny', 'sexy', 'naked', 'turn on', 'kinky', 'fetish', 'fuck', 'sex', 'pussy', 'dick', 'cock',
-    'boobs', 'tits', 'ass', 'orgasm', 'cum', 'intercourse', 'making love', 'get laid'
+    'boobs', 'tits', 'ass', 'orgasm', 'cum', 'intercourse', 'making love', 'get laid', 'make out'
 }
+
+argument_words = {
+            'bitch', 'whore', 'hoe', 'fucker', 'fuck you', 'fucking', 'shit', 'damn', 'hell',
+            'stupid', 'idiot', 'moron', 'asshole', 'bastard', 'dumbass', 'retard', 'loser',
+            'shut up', 'piss off', 'go to hell', 'screw you', 'bite me', 'whatever', 'bullshit',
+            'crap', 'suck', 'hate you', 'annoying', 'ridiculous', 'pathetic', 'disgusting',
+            'wtf', 'stfu', 'gtfo', 'ffs', 'omfg'
+        }

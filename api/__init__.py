@@ -2,8 +2,8 @@
 from flask import Flask
 from flask_cors import CORS
 import os
-from config import Config
-from utils import ensure_dir
+from api.config import Config
+from api.utils import ensure_dir
 
 def create_app():
     app = Flask(__name__)

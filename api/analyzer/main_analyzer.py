@@ -52,6 +52,7 @@ class ChatAnalyzer:
         self.sad_words = sentiment_lexicons.sad_words
         self.romance_words = sentiment_lexicons.romance_words
         self.sexual_words = sentiment_lexicons.sexual_words
+        self.argument_words = sentiment_lexicons.argument_words
 
     def _update_progress(self, step_name, status='in_progress', **kwargs):
         """Internal helper to calculate and send progress."""
@@ -147,84 +148,105 @@ class ChatAnalyzer:
         self.df = df
         self._update_progress("Preprocessing complete!")
 
-    def generate_comprehensive_report(self):
-        """Generate complete JSON report by calling modularized analysis functions."""
+    def generate_comprehensive_report(self, modules_to_run=None):
+        """
+        Generate a report by running specific or all analysis modules.
+
+        Args:
+            modules_to_run (list, optional): A list of module names to run.
+                                            If None, all modules will be run.
+                                            Example: ['dataset_overview', 'sentiment_analysis']
+        """
         if self.df.empty:
             self.report = {"error": "No data available for analysis."}
-            self._update_progress("Report generation failed.", status='failed')
             return self.report
 
-        self._update_progress("Generating comprehensive report")
+        # Register of all available analysis modules and their functions
+        ANALYSIS_REGISTRY = {
+            'dataset_overview': af.dataset_overview,
+            'first_last_messages': af.first_last_messages,
+            'icebreaker_analysis': af.icebreaker_analysis,
+            'conversation_patterns': af.analyze_conversation_patterns,
+            'response_metrics': af.calculate_response_metrics,
+            'relationship_metrics': af.calculate_relationship_metrics,  # Depends on the two above
+            'ghost_periods': af.detect_ghost_periods,
+            'user_behavior': af.analyze_user_behavior,
+            'temporal_patterns': af.temporal_patterns,
+            'word_analysis': lambda df: af.analyze_word_patterns(df, self.word_pattern, self.english_pattern,
+                                                                 self.khmer_pattern, self.generic_words,
+                                                                 self.khmer_stopwords),
+            'emoji_analysis': af.emoji_analysis,
+            'consecutive_day_streak': af.analyze_unbroken_streaks,
+            'questions_analysis': lambda df: af.analyze_questions(df, self.sentence_pattern),
+            'reaction_analysis': af.analyze_reactions,
+            'sentiment_analysis': lambda df: af.analyze_sentiment(df, self.word_pattern, self.positive_words,
+                                                                  self.negative_words),
+            'shared_links_analysis': lambda df: af.analyze_shared_links(df, self.url_pattern),
+            'topic_modeling': lambda df: af.analyze_topics_with_nmf(df, self.generic_words),
+            'sad_tone_analysis': lambda df: af.analyze_sad_tone(df, self.sad_words),
+            'romance_tone_analysis': lambda df: af.analyze_romance_tone(df, self.romance_words),
+            'sexual_tone_analysis': lambda df: af.analyze_sexual_tone(df, self.sexual_words),
+            'rapid_fire_analysis': af.analyze_rapid_fire_conversations,
+            'argument_analysis': af.analyze_argument_language,
+        }
 
-        # --- Call analysis functions one by one ---
-        self.report['dataset_overview'] = af.dataset_overview(self.df)
-        self._update_progress("Calculated dataset overview")
+        # Determine which modules to run
+        if modules_to_run is None:
+            # If no specific modules are requested, run all of them
+            active_modules = list(ANALYSIS_REGISTRY.keys())
+        else:
+            # Run only the requested modules that exist in the registry
+            active_modules = [m for m in modules_to_run if m in ANALYSIS_REGISTRY]
 
-        self.report['first_last_messages'] = af.first_last_messages(self.df)
-        self._update_progress("Extracted first and last messages")
+            # --- Handle Dependencies ---
+            # If relationship_metrics is requested, ensure its dependencies are also run
+            if 'relationship_metrics' in active_modules:
+                if 'conversation_patterns' not in active_modules:
+                    active_modules.insert(0, 'conversation_patterns')
+                if 'response_metrics' not in active_modules:
+                    active_modules.insert(0, 'response_metrics')
 
-        self.report['icebreaker_analysis'] = af.icebreaker_analysis(self.df)
-        self._update_progress("Analyzed icebreakers")
+        # Adjust total steps for progress tracking
+        self.total_steps = len(active_modules)
+        self.current_step_index = 0
+        self._update_progress(f"Starting analysis of {self.total_steps} selected modules.")
 
-        # Dependent analyses
-        conversation_patterns = af.analyze_conversation_patterns(self.df)
-        self.report['conversation_patterns'] = conversation_patterns
-        self._update_progress("Analyzed conversation patterns")
+        # --- Run the selected modules ---
+        # Special handling for dependent modules
+        conversation_patterns_result = None
+        response_metrics_result = None
 
-        response_metrics = af.calculate_response_metrics(self.df)
-        self.report['response_metrics'] = response_metrics
-        self._update_progress("Calculated response metrics")
+        for module_name in active_modules:
+            try:
+                if module_name == 'relationship_metrics':
+                    # Ensure dependencies are calculated if not already present
+                    if 'conversation_patterns' not in self.report:
+                        self.report['conversation_patterns'] = ANALYSIS_REGISTRY['conversation_patterns'](self.df)
+                    if 'response_metrics' not in self.report:
+                        self.report['response_metrics'] = ANALYSIS_REGISTRY['response_metrics'](self.df)
 
-        self.report['relationship_metrics'] = af.calculate_relationship_metrics(self.df, conversation_patterns, response_metrics)
-        self._update_progress("Calculated relationship metrics")
+                    # Call with dependency results
+                    result = af.calculate_relationship_metrics(self.df, self.report['conversation_patterns'],
+                                                               self.report['response_metrics'])
+                else:
+                    # Call the function from the registry
+                    module_function = ANALYSIS_REGISTRY[module_name]
+                    result = module_function(self.df)
 
-        self.report['ghost_periods'] = af.detect_ghost_periods(self.df)
-        self._update_progress("Detected ghost periods")
+                self.report[module_name] = result
+                self._update_progress(f"Completed: {module_name}")
 
-        self.report['user_behavior'] = af.analyze_user_behavior(self.df)
-        self._update_progress("Analyzed user behavior")
-
-        self.report['temporal_patterns'] = af.temporal_patterns(self.df)
-        self._update_progress("Analyzed temporal patterns")
-
-        self.report['word_analysis'] = af.analyze_word_patterns(self.df, self.word_pattern, self.english_pattern, self.khmer_pattern, self.generic_words, self.khmer_stopwords)
-        self._update_progress("Analyzed word patterns")
-
-        self.report['emoji_analysis'] = af.emoji_analysis(self.df)
-        self._update_progress("Analyzed emoji usage")
-
-        self.report['consecutive_day_streak'] = af.analyze_unbroken_streaks(self.df)
-        self._update_progress("Analyzed unbroken message streaks")
-
-        self.report['questions_analysis'] = af.analyze_questions(self.df, self.sentence_pattern)
-        self._update_progress("Analyzed questions")
-
-        self.report['reaction_analysis'] = af.analyze_reactions(self.df)
-        self._update_progress("Analyzed message reactions")
-
-        self.report['sentiment_analysis'] = af.analyze_sentiment(self.df, self.word_pattern, self.positive_words, self.negative_words)
-        self._update_progress("Performed sentiment analysis")
-
-        self.report['shared_links_analysis'] = af.analyze_shared_links(self.df, self.url_pattern)
-        self._update_progress("Analyzed shared links")
-
-        self.report['topic_modeling'] = af.analyze_topics_with_nmf(self.df, self.generic_words)
-        self._update_progress("Performed NMF topic modeling")
-        self.report['sad_tone_analysis'] = af.analyze_sad_tone(self.df, self.sad_words)
-        self._update_progress("Analyzing for sad tone")
-
-        self.report['romance_tone_analysis'] = af.analyze_romance_tone(self.df, self.romance_words)
-        self._update_progress("Analyzing for romantic tone")
-
-        self.report['sexual_tone_analysis'] = af.analyze_sexual_tone(self.df, self.sexual_words)
-        self._update_progress("Analyzing for sexual content")
+            except Exception as e:
+                error_message = f"Error in module '{module_name}': {e}"
+                print(error_message)
+                self.report[module_name] = {"error": error_message}
+                self._update_progress(f"Failed: {module_name}", status='failed', error=error_message)
 
         # Final serialization step
         self.report = self.convert_to_serializable(self.report)
-        self._update_progress("Comprehensive report generation complete!")
+        self._update_progress("Report generation complete!")
 
         return self.report
-
     def run_analysis(self):
         """Run complete analysis and return minified JSON response."""
         self.start_time = time.time()
