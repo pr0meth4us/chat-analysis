@@ -38,8 +38,5 @@ def process_data_endpoint():
     task_id = task_manager.submit_task(session_id, process_file_worker, session_id, temp_path)
 
     log(f"Started processing task {task_id} for file {uploaded_file.filename}")
-    return jsonify({
-        "message": "Upload accepted. Processing has started in the background.",
-        "task_id": task_id,
-        "session_id": session_id
-    }), 202
+    initial_task_status = task_manager.get_task_status(task_id)
+    return jsonify(initial_task_status), 202

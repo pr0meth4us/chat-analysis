@@ -33,7 +33,7 @@ def create_app():
     app.register_blueprint(filter_bp)
     app.register_blueprint(data_bp)
     app.register_blueprint(proces_bp)
-    app.register_blueprint(tasks_bp)
+    app.register_blueprint(tasks_bp, url_prefix='/tasks')
 
     # Register error handlers
     from api.error_handlers import register_error_handlers

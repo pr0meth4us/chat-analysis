@@ -29,8 +29,5 @@ def analyze_data_endpoint():
     )
 
     log(f"Submitted analysis task {task_id} for session {session_id}")
-    return jsonify({
-        "message": f"Analysis of {len(messages)} messages has started in the background.",
-        "task_id": task_id,
-        "session_id": session_id,
-    }), 202
+    initial_task_status = task_manager.get_task_status(task_id)
+    return jsonify(initial_task_status), 202
