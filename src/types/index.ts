@@ -142,13 +142,10 @@ export interface AnalysisRequest {
   modules_to_run: string[] | null;
 }
 
-// ==============================================================================
-// 3. COMPONENT PROP TYPES
-// ==============================================================================
-
 export interface FileUploadProps {
-  onFileSelected: (file: File) => void;
-  isUploading: boolean;
+  onFilesSelected: (files: File[]) => void;
+  selectedFiles: File[];
+  disabled: boolean;
 }
 
 export interface ChatAnalysisDashboardProps {
@@ -156,7 +153,7 @@ export interface ChatAnalysisDashboardProps {
 }
 
 export interface TaskProgressProps {
-  task: Task | null;
+    task: Task | null;
 }
 
 export interface SenderGroupProps {
