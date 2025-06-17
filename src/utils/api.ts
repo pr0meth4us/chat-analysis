@@ -39,17 +39,19 @@ const triggerJsonDownload = (data: unknown, filename: string) => {
 
 // --- Core Workflow API Calls ---
 
-export const processFile = async (file: File): Promise<Task> => {
+export const processFiles = async (files: File[]): Promise<Task[]> => {
   try {
     const formData = new FormData();
-    formData.append('file', file);
-    const response = await api.post<Task>('/process', formData);
+    // Append all files with the same key 'file'
+    files.forEach((file) => formData.append('file', file));
+
+    // The backend now returns an array of tasks
+    const response = await api.post<Task[]>('/process', formData);
     return response.data;
   } catch (error) {
     throw handleError(error, 'File processing failed to start.');
   }
 };
-
 export const filterMessages = async (data: FilterRequest): Promise<{ message: string }> => {
   try {
     const response = await api.post<{ message: string }>('/filter', data);
