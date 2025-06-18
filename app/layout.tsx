@@ -1,26 +1,27 @@
-import './globals.css';
+import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
-import React from "react";
-import {ChatProvider} from "@/contexts/ChatContext";
+import './globals.css';
+import {AppProvider} from "@/context/AppContext";
 
 const inter = Inter({ subsets: ['latin'] });
 
-export const metadata = {
-  title: 'Chat Analysis',
+export const metadata: Metadata = {
+    title: 'Chat Analyzer',
+    description: 'Analyze your chat history with AI-powered insights',
 };
 
 export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
+                                       children,
+                                   }: {
+    children: React.ReactNode;
 }) {
-  return (
-    <html lang="en">
-      <body className={inter.className}>
-      <ChatProvider>
-        {children}
-      </ChatProvider>
-      </body>
-    </html>
-  );
+    return (
+        <html lang="en">
+        <body className={inter.className}>
+        <AppProvider>
+            {children}
+        </AppProvider>
+        </body>
+        </html>
+    );
 }

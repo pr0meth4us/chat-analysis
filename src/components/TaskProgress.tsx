@@ -1,40 +1,134 @@
-"use client";
+'use client';
 
-import { Task } from "@/types";
-import { Loader2 } from "lucide-react";
-import React from "react";
+import { useAppContext } from '@/context/AppContext';
+import { getTaskStatus, getProcessedMessages, getAnalysisReport } from '@/utils/api';
+import { usePolling } from '@/hooks/usePolling';
+import { TaskStatus } from '@/types';
+import { CheckCircle, XCircle, Loader, Clock } from 'lucide-react';
 
 interface TaskProgressProps {
-    task: Task | null;
+    task: TaskStatus;
+    taskType: 'process' | 'analysis'; // <-- FIX: Added explicit prop
 }
 
-export const TaskProgress: React.FC<TaskProgressProps> = ({ task }) => {
-    if (!task) return null;
+export default function TaskProgress({ task, taskType }: TaskProgressProps) {
+    const { dispatch } = useAppContext();
 
-    const progress = task.progress || 0;
-    const stage = task.stage || "Processing...";
-    const message = task.message || "";
+    const pollTaskStatus = async () => {
+        // Stop polling if the task is no longer active
+        if (task.status !== 'pending' && task.status !== 'running') {
+            return;
+        }
+
+        try {
+            const updatedTask = await getTaskStatus(task.task_id);
+
+            // FIX: Use the 'taskType' prop to correctly handle different tasks
+            if (taskType === 'process') {
+                dispatch({ type: 'SET_PROCESS_TASK', payload: updatedTask });
+
+                if (updatedTask.status === 'completed') {
+                    const messages = await getProcessedMessages();
+                    dispatch({ type: 'SET_PROCESSED_MESSAGES', payload: messages });
+                    // Give a small delay for the user to see the "Completed" status
+                    setTimeout(() => {
+                        dispatch({ type: 'SET_CURRENT_STEP', payload: 'filter' });
+                    }, 1000);
+                }
+            } else { // taskType === 'analysis'
+                dispatch({ type: 'SET_ANALYSIS_TASK', payload: updatedTask });
+
+                if (updatedTask.status === 'completed') {
+                    const report = await getAnalysisReport();
+                    dispatch({ type: 'SET_ANALYSIS_REPORT', payload: report });
+                    // Give a small delay for the user to see the "Completed" status
+                    setTimeout(() => {
+                        dispatch({ type: 'SET_CURRENT_STEP', payload: 'results' });
+                    }, 1000);
+                }
+            }
+
+            // If the task fails, set an error message in the global state
+            if (updatedTask.status === 'failed' || updatedTask.status === 'timeout') {
+                dispatch({ type: 'SET_ERROR', payload: updatedTask.error || `Task ${updatedTask.status}`});
+            }
+
+        } catch (error) {
+            dispatch({ type: 'SET_ERROR', payload: error instanceof Error ? error.message : 'Failed to update task' });
+        }
+    };
+
+    usePolling(
+        pollTaskStatus,
+        2000,
+        task.status === 'pending' || task.status === 'running'
+    );
+
+    const getStatusIcon = () => {
+        switch (task.status) {
+            case 'pending':
+                return <Clock className="w-5 h-5 text-yellow-500" />;
+            case 'running':
+                return <Loader className="w-5 h-5 text-blue-500 animate-spin" />;
+            case 'completed':
+                return <CheckCircle className="w-5 h-5 text-green-500" />;
+            case 'failed':
+            case 'timeout':
+                return <XCircle className="w-5 h-5 text-red-500" />;
+            default:
+                return <Clock className="w-5 h-5 text-gray-500" />;
+        }
+    };
+
+    const getStatusText = () => {
+        switch (task.status) {
+            case 'pending':
+                return 'Waiting to start...';
+            case 'running':
+                return task.stage || 'Processing...';
+            case 'completed':
+                return 'Completed successfully';
+            case 'failed':
+                return task.error || 'Task failed';
+            case 'timeout':
+                return 'Task timed out';
+            default:
+                return 'Unknown status';
+        }
+    };
 
     return (
-        <div className="w-full bg-slate-800 text-white p-4 rounded-xl shadow-lg border border-slate-700 my-6 transition-all duration-500 ease-in-out">
-            <div className="flex items-center space-x-4">
-                <Loader2 className="w-6 h-6 animate-spin text-blue-400 flex-shrink-0" />
-                <div className="flex-grow">
-                    <div className="flex justify-between items-center mb-1">
-                        <p className="font-semibold text-slate-200">{stage}</p>
-                        <p className="text-sm font-mono text-blue-300">{progress.toFixed(0)}%</p>
+        <div className="card">
+            <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900">Task Progress</h3>
+                {getStatusIcon()}
+            </div>
+
+            <div className="space-y-4">
+                <div>
+                    <div className="flex justify-between text-sm text-gray-600 mb-1">
+                        <span>{getStatusText()}</span>
+                        <span>{Math.round(task.progress)}%</span>
                     </div>
-                    <div className="w-full bg-slate-700 rounded-full h-2.5 overflow-hidden">
+                    <div className="w-full bg-gray-200 rounded-full h-2">
                         <div
-                            className="bg-gradient-to-r from-blue-500 to-cyan-400 h-2.5 rounded-full transition-all duration-500 ease-out"
-                            style={{ width: `${progress}%` }}
-                        ></div>
+                            className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                            style={{ width: `${task.progress}%` }}
+                        />
                     </div>
-                    {message && (
-                        <p className="text-xs text-slate-400 mt-2 truncate">{message}</p>
-                    )}
                 </div>
+
+                {task.message && (
+                    <p className="text-sm text-gray-600">{task.message}</p>
+                )}
+
+                {task.status === 'failed' && task.error && (
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                        <p className="text-red-800 text-sm font-medium">Error Details:</p>
+                        <p className="text-red-600 text-sm">{task.error}</p>
+                    </div>
+                )}
             </div>
         </div>
     );
-};
+}

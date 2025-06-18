@@ -1,120 +1,106 @@
-import axios, { AxiosError } from 'axios';
-import {
-  AnalysisRequest,
-  FilterRequest,
-  Task,
-  Message
-} from "@/types";
+import { TaskStatus, ProcessedMessage, AnalysisReport } from '@/types';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
+const API_BASE = 'http://127.0.0.1:5001';
 
-const api = axios.create({
-  baseURL: API_URL,
-  withCredentials: true,
-});
-
-/**
- * A helper function to handle API errors consistently.
- */
-const handleError = (error: unknown, defaultMessage: string): Error => {
-  const err = error as AxiosError<{ error?: string }>;
-  if (err.response && err.response.data?.error) {
-    return new Error(err.response.data.error);
-  }
-  return new Error(defaultMessage);
-};
-
-/**
- * A helper function to trigger a browser download for any JSON data.
- */
-const triggerJsonDownload = (data: unknown, filename: string) => {
-  const jsonString = `data:text/json;charset=utf-8,${encodeURIComponent(
-      JSON.stringify(data, null, 2)
-  )}`;
-  const link = document.createElement("a");
-  link.href = jsonString;
-  link.download = filename;
-  link.click();
-};
-
-// --- Core Workflow API Calls ---
-
-export const processFiles = async (files: File[]): Promise<Task[]> => {
-  try {
+export async function uploadFile(file: File): Promise<TaskStatus> {
     const formData = new FormData();
-    // Append all files with the same key 'file'
-    files.forEach((file) => formData.append('file', file));
+    formData.append('file', file);
 
-    // The backend now returns an array of tasks
-    const response = await api.post<Task[]>('/process', formData);
-    return response.data;
-  } catch (error) {
-    throw handleError(error, 'File processing failed to start.');
-  }
-};
-export const filterMessages = async (data: FilterRequest): Promise<{ message: string }> => {
-  try {
-    const response = await api.post<{ message: string }>('/filter', data);
-    return response.data;
-  } catch (error) {
-    throw handleError(error, 'Filtering messages failed.');
-  }
-};
+    const response = await fetch(`${API_BASE}/process`, {
+        method: 'POST',
+        body: formData,
+        credentials: 'include',
+    });
 
-export const analyzeMessages = async (data: AnalysisRequest): Promise<Task> => {
-  try {
-    const response = await api.post<Task>('/analyze', data);
-    return response.data;
-  } catch (error) {
-    throw handleError(error, 'Analysis failed to start.');
-  }
-};
+    if (!response.ok) {
+        throw new Error(`Upload failed: ${response.statusText}`);
+    }
 
-// --- Task & Session Management ---
+    return response.json();
+}
 
-export const getTaskStatus = async (taskId: string): Promise<Task> => {
-  try {
-    const response = await api.get<Task>(`/tasks/status/${taskId}`);
-    return response.data;
-  } catch (error) {
-    throw handleError(error, 'Failed to get task status.');
-  }
-};
+export async function getTaskStatus(taskId: string): Promise<TaskStatus> {
+    const response = await fetch(`${API_BASE}/tasks/status/${taskId}`, {
+        credentials: 'include',
+    });
 
-export const clearSession = async (): Promise<{ message: string }> => {
-  try {
-    const response = await api.post<{ message: string }>('/session/clear');
-    return response.data;
-  } catch (error) {
-    throw handleError(error, 'Failed to clear session.');
-  }
-};
+    if (!response.ok) {
+        throw new Error(`Failed to get task status: ${response.statusText}`);
+    }
 
-// --- New Download API Calls ---
+    return response.json();
+}
 
-export const downloadProcessedMessages = async (): Promise<void> => {
-  try {
-    const response = await api.get<Message[]>('/data/processed');
-    triggerJsonDownload(response.data, 'processed_messages.json');
-  } catch (error) {
-    throw handleError(error, 'Failed to download processed messages.');
-  }
-};
+export async function getProcessedMessages(): Promise<ProcessedMessage[]> {
+    const response = await fetch(`${API_BASE}/data/processed`, {
+        credentials: 'include',
+    });
 
-export const downloadFilteredMessages = async (): Promise<void> => {
-  try {
-    const response = await api.get<Message[]>('/data/filtered');
-    triggerJsonDownload(response.data, 'filtered_messages.json');
-  } catch (error) {
-    throw handleError(error, 'Failed to download filtered messages.');
-  }
-};
+    if (!response.ok) {
+        throw new Error(`Failed to get processed messages: ${response.statusText}`);
+    }
 
-export const downloadAnalysisReport = async (): Promise<void> => {
-  try {
-    const response = await api.get<any>('/data/report');
-    triggerJsonDownload(response.data, 'analysis_report.json');
-  } catch (error) {
-    throw handleError(error, 'Failed to download analysis report.');
-  }
-};
+    return response.json();
+}
+
+export async function filterMessages(filterOptions: {
+    me: string[];
+    remove: string[];
+    other_label: string;
+}): Promise<{ message: string }> {
+    const response = await fetch(`${API_BASE}/filter`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(filterOptions),
+        credentials: 'include',
+    });
+
+    if (!response.ok) {
+        throw new Error(`Failed to filter messages: ${response.statusText}`);
+    }
+
+    return response.json();
+}
+
+export async function getFilteredMessages(): Promise<ProcessedMessage[]> {
+    const response = await fetch(`${API_BASE}/data/filtered`, {
+        credentials: 'include',
+    });
+
+    if (!response.ok) {
+        throw new Error(`Failed to get filtered messages: ${response.statusText}`);
+    }
+
+    return response.json();
+}
+
+export async function startAnalysis(modules?: string[]): Promise<TaskStatus> {
+    const response = await fetch(`${API_BASE}/analyze`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ modules_to_run: modules }),
+        credentials: 'include',
+    });
+
+    if (!response.ok) {
+        throw new Error(`Failed to start analysis: ${response.statusText}`);
+    }
+
+    return response.json();
+}
+
+export async function getAnalysisReport(): Promise<AnalysisReport> {
+    const response = await fetch(`${API_BASE}/data/report`, {
+        credentials: 'include',
+    });
+
+    if (!response.ok) {
+        throw new Error(`Failed to get analysis report: ${response.statusText}`);
+    }
+
+    return response.json();
+}
