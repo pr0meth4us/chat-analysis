@@ -1,13 +1,13 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
-import {AppProvider} from "@/context/AppContext";
+import { AppProvider } from './providers';
 
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-    title: 'Chat Analyzer',
-    description: 'Analyze your chat history with AI-powered insights',
+    title: 'Message Analyzer',
+    description: 'Analyze and explore your message data with powerful insights',
 };
 
 export default function RootLayout({
@@ -16,10 +16,12 @@ export default function RootLayout({
     children: React.ReactNode;
 }) {
     return (
-        <html lang="en">
+        <html lang="en" className="dark">
         <body className={inter.className}>
         <AppProvider>
-            {children}
+            <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800">
+                {children}
+            </div>
         </AppProvider>
         </body>
         </html>

@@ -328,3 +328,13 @@ GET {{host}}/session-tasks
 
 ### Emergency: Clear everything
 POST {{host}}/clear
+
+###
+POST {{host}}/search/fuzzy
+Content-Type: application/json
+
+{
+  "query": "saek tv der lg nv na ot",
+  "cutoff": 70
+}
+

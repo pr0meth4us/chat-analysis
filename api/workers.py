@@ -11,10 +11,6 @@ from utils import log
 
 
 def process_file_worker(session_id: str, temp_file_path: str, progress_callback: callable = None):
-    """
-    A worker that prepares files and calls the main parser,
-    passing the progress_callback down for granular updates.
-    """
     file_objs = []
     archive = None
     try:
@@ -40,15 +36,11 @@ def process_file_worker(session_id: str, temp_file_path: str, progress_callback:
         if not file_objs:
             raise ValueError("No processable files were found.")
 
-        # --- THIS IS THE KEY FIX ---
-        # We now pass the progress_callback directly to YOUR function.
-        # Your parser will now control the progress bar from 5% to 95%.
         processed_messages = process_uploaded_files(
             file_objs,
             progress_callback=progress_callback
         )
 
-        # Final steps after your parser is done
         session_manager.store_processed_messages(session_id, processed_messages)
 
         if progress_callback:
@@ -63,7 +55,6 @@ def process_file_worker(session_id: str, temp_file_path: str, progress_callback:
         log(f"ERROR in file processing worker for session {session_id}: {str(e)}")
         raise
     finally:
-        # Clean up all opened file resources
         for f in file_objs:
             try:
                 f.close()

@@ -1,60 +1,79 @@
-export interface TaskStatus {
-    task_id: string;
-    status: 'pending' | 'running' | 'completed' | 'failed' | 'timeout';
-    result?: any;
-    error?: string;
-    progress: number;
-    stage?: string;
-    message?: string;
-    created_at?: string;
-    started_at?: string;
-    completed_at?: string;
-}
-
-export interface ProcessedMessage {
+export interface Message {
     sender: string;
     message: string;
-    timestamp: string;
-    source?: string;
+    timestamp?: string;
+    [key: string]: any;
 }
 
-export interface FilterOptions {
+export interface TaskStatus {
+    task_id: string;
+    status: 'pending' | 'running' | 'completed' | 'failed';
+    progress: number;
+    message?: string;
+    result?: any;
+    error?: string;
+    start_time?: string;
+    end_time?: string;
+}
+
+export interface AppState {
+    processedMessages: Message[];
+    filteredMessages: Message[];
+    senders: string[];
+    tasks: TaskStatus[];
+    analysisResult: any;
+    isLoading: boolean;
+    error: string | null;
+}
+
+export interface FilterConfig {
     me: string[];
     remove: string[];
     other_label: string;
 }
 
-export interface AnalysisReport {
-    basic_stats: {
-        total_messages: number;
-        unique_senders: number;
-        date_range: {
-            start: string;
-            end: string;
-        };
-    };
-    sender_stats: Record<string, any>;
-    time_analysis: any;
-    word_analysis: any;
-    sentiment_analysis?: any;
+export interface SearchResult {
+    matches: Message[];
+    match_count: number;
+    total_messages_searched: number;
+    query: string;
+    similarity_cutoff?: number;
 }
 
-export interface AppState {
-    // File processing
-    uploadedFile: File | null;
-    processTask: TaskStatus | null;
-    processedMessages: ProcessedMessage[];
-
-    // Filtering
-    filteredMessages: ProcessedMessage[];
-    filterOptions: FilterOptions;
-
-    // Analysis
-    analysisTask: TaskStatus | null;
-    analysisReport: AnalysisReport | null;
-
-    // UI state
-    currentStep: 'upload' | 'filter' | 'analyze' | 'results';
-    isLoading: boolean;
-    error: string | null;
+export interface KeywordCountResult {
+    counts: Record<string, number>;
+    total_matches: number;
+    message_count: number;
 }
+
+export interface AnalysisModule {
+    key: string;
+    name: string;
+    description: string;
+    enabled: boolean;
+}
+
+export const ANALYSIS_MODULES: AnalysisModule[] = [
+    { key: 'dataset_overview', name: 'Dataset Overview', description: 'General statistics about your messages', enabled: true },
+    { key: 'first_last_messages', name: 'First & Last Messages', description: 'Timeline boundaries of conversations', enabled: true },
+    { key: 'temporal_patterns', name: 'Temporal Patterns', description: 'Time-based messaging patterns', enabled: true },
+    { key: 'unbroken_streaks', name: 'Unbroken Streaks', description: 'Consecutive messaging periods', enabled: false },
+    { key: 'ghost_periods', name: 'Ghost Periods', description: 'Periods of inactivity', enabled: false },
+    { key: 'reaction_analysis', name: 'Reaction Analysis', description: 'Message reactions and responses', enabled: false },
+    { key: 'icebreaker_analysis', name: 'Icebreaker Analysis', description: 'Conversation starters', enabled: false },
+    { key: 'response_metrics', name: 'Response Metrics', description: 'Response time patterns', enabled: true },
+    { key: 'conversation_patterns', name: 'Conversation Patterns', description: 'Communication flow analysis', enabled: true },
+    { key: 'rapid_fire_analysis', name: 'Rapid Fire Analysis', description: 'Quick message exchanges', enabled: false },
+    { key: 'word_analysis', name: 'Word Analysis', description: 'Word frequency and usage', enabled: true },
+    { key: 'emoji_analysis', name: 'Emoji Analysis', description: 'Emoji usage patterns', enabled: true },
+    { key: 'question_analysis', name: 'Question Analysis', description: 'Question patterns and types', enabled: false },
+    { key: 'link_analysis', name: 'Link Analysis', description: 'Shared links and media', enabled: false },
+    { key: 'sentiment_analysis', name: 'Sentiment Analysis', description: 'Emotional tone analysis', enabled: true },
+    { key: 'topic_modeling', name: 'Topic Modeling', description: 'Conversation topics', enabled: false },
+    { key: 'user_behavior', name: 'User Behavior', description: 'Individual behavior patterns', enabled: true },
+    { key: 'argument_analysis', name: 'Argument Analysis', description: 'Conflict detection', enabled: false },
+    { key: 'sad_tone_analysis', name: 'Sad Tone Analysis', description: 'Negative emotion detection', enabled: false },
+    { key: 'romance_tone_analysis', name: 'Romance Tone Analysis', description: 'Romantic sentiment analysis', enabled: false },
+    { key: 'sexual_tone_analysis', name: 'Sexual Tone Analysis', description: 'Adult content detection', enabled: false },
+    { key: 'relationship_metrics', name: 'Relationship Metrics', description: 'Relationship health indicators', enabled: false },
+];

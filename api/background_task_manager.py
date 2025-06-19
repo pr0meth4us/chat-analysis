@@ -6,7 +6,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from typing import Dict, Any, Optional, Callable, List
 from utils import log
-
+import inspect # For checking function signature
 
 class TaskStatus(Enum):
     """Enumeration for the status of a background task."""
@@ -15,7 +15,6 @@ class TaskStatus(Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     TIMEOUT = "timeout"
-
 
 @dataclass
 class TaskResult:
@@ -28,8 +27,7 @@ class TaskResult:
     started_at: Optional[datetime] = None
     completed_at: Optional[datetime] = None
     progress: float = 0.0
-    # --- CHANGED: Added fields to store richer progress info ---
-    stage: Optional[str] = None
+    stage: Optional[str] = "Queued"
     message: Optional[str] = None
 
     def to_dict(self) -> Dict[str, Any]:
@@ -43,18 +41,16 @@ class TaskResult:
             'started_at': self.started_at.isoformat() if self.started_at else None,
             'completed_at': self.completed_at.isoformat() if self.completed_at else None,
             'progress': self.progress,
-            # --- CHANGED: Added fields to the response ---
             'stage': self.stage,
-            'message': self.message
+            'message': self.message,
         }
-
 
 class BackgroundTaskManager:
     """Manages a queue and worker pool for running tasks in the background."""
 
     def __init__(self, max_workers: int = 4, task_timeout: int = 300):
         self.max_workers = max_workers
-        self.task_timeout = task_timeout
+        self.task_timeout = timedelta(seconds=task_timeout)
         self.tasks: Dict[str, TaskResult] = {}
         self.session_tasks: Dict[str, set] = {}
         self.task_queue: List[tuple] = []
@@ -97,6 +93,16 @@ class BackgroundTaskManager:
                 for task_id in session_task_ids if task_id in self.tasks
             }
 
+    # --- NEW METHOD ---
+    def clear_session_tasks(self, session_id: str):
+        """Removes all tasks associated with a given session."""
+        with self.tasks_lock:
+            if session_id in self.session_tasks:
+                task_ids_to_remove = self.session_tasks.pop(session_id, set())
+                for task_id in task_ids_to_remove:
+                    self.tasks.pop(task_id, None)
+                log(f"Cleared {len(task_ids_to_remove)} tasks for session {session_id}")
+
     def _worker(self):
         """The main loop for worker threads, processing tasks from the queue."""
         while self.running:
@@ -117,31 +123,24 @@ class BackgroundTaskManager:
                     continue
                 task.status = TaskStatus.RUNNING
                 task.started_at = datetime.now()
-                task.stage = "Initializing..."
+                task.stage = "Initializing"
 
             log(f"Worker starting task {task_id}")
 
             try:
-                # --- CHANGED: The progress callback is now much more robust ---
                 def update_progress(**progress_kwargs):
-                    """
-                    A more robust progress callback that accepts arbitrary keyword args
-                    and updates the richer TaskResult object.
-                    """
                     with self.tasks_lock:
                         if task_id in self.tasks:
                             task = self.tasks[task_id]
-                            # Update progress with new values, keeping old if not provided
-                            task.progress = progress_kwargs.get('progress_percent', task.progress)
-                            task.stage = progress_kwargs.get('step_name', task.stage)
+                            task.progress = progress_kwargs.get('progress', task.progress)
+                            task.stage = progress_kwargs.get('stage', task.stage)
                             task.message = progress_kwargs.get('message', task.message)
 
                 # Check if the target function can accept a 'progress_callback'
-                # This introspection is good practice.
-                if 'progress_callback' in func.__code__.co_varnames:
+                if 'progress_callback' in inspect.signature(func).parameters:
                     kwargs['progress_callback'] = update_progress
 
-                result = self._execute_with_timeout(func, self.task_timeout, *args, **kwargs)
+                result = self._execute_with_timeout(func, self.task_timeout.total_seconds(), *args, **kwargs)
 
                 with self.tasks_lock:
                     if task_id in self.tasks:
@@ -151,26 +150,28 @@ class BackgroundTaskManager:
                         task.completed_at = datetime.now()
                         task.progress = 100.0
                         task.stage = "Completed"
-                log(f"Task {task_id} completed successfully.")
+                        log(f"Task {task_id} completed successfully.")
 
             except TimeoutError:
                 with self.tasks_lock:
                     if task_id in self.tasks:
-                        self.tasks[task_id].status = TaskStatus.TIMEOUT
-                        self.tasks[task_id].error = f"Task exceeded {self.task_timeout}s timeout."
-                        self.tasks[task_id].completed_at = datetime.now()
-                        self.tasks[task_id].stage = "Timeout"
-                log(f"Task {task_id} failed: Timeout.")
+                        task = self.tasks[task_id]
+                        task.status = TaskStatus.TIMEOUT
+                        task.error = f"Task exceeded {self.task_timeout.total_seconds()}s timeout."
+                        task.completed_at = datetime.now()
+                        task.stage = "Timeout"
+                        log(f"Task {task_id} failed: Timeout.")
 
             except Exception as e:
                 error_message = str(e)
                 log(f"Task {task_id} failed with exception: {error_message}")
                 with self.tasks_lock:
                     if task_id in self.tasks:
-                        self.tasks[task_id].status = TaskStatus.FAILED
-                        self.tasks[task_id].error = error_message
-                        self.tasks[task_id].completed_at = datetime.now()
-                        self.tasks[task_id].stage = "Failed"
+                        task = self.tasks[task_id]
+                        task.status = TaskStatus.FAILED
+                        task.error = error_message
+                        task.completed_at = datetime.now()
+                        task.stage = "Failed"
 
     def _execute_with_timeout(self, func, timeout, *args, **kwargs):
         """Executes a function in a separate thread and imposes a timeout."""
@@ -188,7 +189,10 @@ class BackgroundTaskManager:
         thread.join(timeout)
 
         if thread.is_alive():
+            # This is tricky because you can't kill a thread in Python.
+            # The task will continue running in the background, but we'll report a timeout.
             raise TimeoutError("Function execution timed out.")
+
         if exception_container[0]:
             raise exception_container[0]
 
@@ -199,7 +203,6 @@ class BackgroundTaskManager:
         while self.running:
             time.sleep(3600)  # Run cleanup every hour
             cutoff = datetime.now() - timedelta(hours=24)
-
             with self.tasks_lock:
                 tasks_to_remove = [
                     tid for tid, task in self.tasks.items()
@@ -208,10 +211,12 @@ class BackgroundTaskManager:
                 if tasks_to_remove:
                     for task_id in tasks_to_remove:
                         self.tasks.pop(task_id, None)
-                        for sid in self.session_tasks:
-                            self.session_tasks[sid].discard(task_id)
+                        for sid in list(self.session_tasks.keys()):
+                            if task_id in self.session_tasks[sid]:
+                                self.session_tasks[sid].discard(task_id)
+                            if not self.session_tasks[sid]:
+                                self.session_tasks.pop(sid) # Clean up empty session sets
                     log(f"Cleaned up {len(tasks_to_remove)} old tasks.")
 
-
-# Global instance to be used across the application
+# Global instance
 task_manager = BackgroundTaskManager()
