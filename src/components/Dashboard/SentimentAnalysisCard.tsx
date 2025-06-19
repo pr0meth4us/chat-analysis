@@ -12,7 +12,7 @@ export function SentimentAnalysisCard({ analysis }: { analysis: any }) {
         if (score > 0.05) return 'text-green-400';
         if (score < -0.05) return 'text-red-400';
         return 'text-yellow-400';
-    }
+    };
 
     return (
         <Card className="glass">

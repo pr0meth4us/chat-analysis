@@ -56,7 +56,7 @@ function appReducer(state: AppState, action: AppAction): AppState {
 
         // --- MODIFIED LOGIC START ---
         case 'UPDATE_TASK': {
-            let newTasks = [...state.tasks];
+            const newTasks = [...state.tasks];
             const taskIndex = state.tasks.findIndex(
                 (task) => task.task_id === action.payload.task_id
             );
