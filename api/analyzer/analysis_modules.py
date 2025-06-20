@@ -432,35 +432,83 @@ def analyze_sentiment(df: pd.DataFrame, word_pattern: re.Pattern, positive_words
         'neutral_message_count': int((analysis_df['sentiment_raw'] == 0).sum())
     }
 
-def analyze_topics_with_nmf(df: pd.DataFrame, generic_words: set, n_topics: int = 7, n_top_words: int = 10) -> dict:
-    """Uses Non-Negative Matrix Factorization (NMF) for topic modeling."""
-    if df.empty: return {}
-    analysis_df = df[~df['is_reaction'] & (df['word_count'] > 3)].copy()
-    if len(analysis_df) < n_topics: return {"error": f"Not enough messages for {n_topics}-topic modeling."}
 
-    vectorizer = TfidfVectorizer(max_df=0.90, min_df=3, stop_words=list(generic_words), lowercase=True, ngram_range=(1, 2))
-    try:
-        tfidf = vectorizer.fit_transform(analysis_df['message'])
-    except ValueError:
-        return {"error": "Not enough vocabulary to build topics."}
+def analyze_topics(df: pd.DataFrame,
+                   generic_words: set,
+                   n_topics: int = 7,
+                   n_top_words: int = 10,
+                   method: str = "nmf", bertopic=None) -> dict:
+    from bertopic import BERTopic
 
-    nmf = NMF(n_components=n_topics, random_state=42, l1_ratio=0.5)
-    W = nmf.fit_transform(tfidf)
-    feature_names = vectorizer.get_feature_names_out()
+    if df.empty:
+        return {"error": "No data provided."}
 
-    topics = []
-    for topic_idx, topic_vec in enumerate(nmf.components_):
-        top_words = [feature_names[i] for i in topic_vec.argsort()[:-n_top_words - 1:-1]]
-        topics.append({"topic_id": topic_idx, "top_words": top_words})
+    # 1) Pre-clean: drop reactions & very short messages
+    clean_df = df[
+        ~df['is_reaction'] &
+        (df['word_count'] > 3)
+        ].copy()
 
-    analysis_df['dominant_topic'] = W.argmax(axis=1)
-    topic_dist = analysis_df['dominant_topic'].value_counts(normalize=True).sort_index()
+    if clean_df.shape[0] < (n_topics if method == "nmf" else 2):
+        return {"error": f"Not enough messages for {method} modeling."}
 
-    for topic in topics:
-        topic['message_percentage'] = topic_dist.get(topic['topic_id'], 0) * 100
+    # 3) Clean text further: strip URLs and non-alphabetic tokens
+    url_re = re.compile(r'https?://\S+|www\.\S+')
+    alpha_re = re.compile(r'[^a-zA-Z\s]')
 
-    return {"discovered_topics": topics}
+    def clean_text(txt):
+        txt = url_re.sub('', txt)  # remove URLs
+        txt = alpha_re.sub(' ', txt)  # drop non-letters
+        return ' '.join(w for w in txt.lower().split()
+                        if len(w) > 2 and w not in generic_words)
 
+    clean_df['cleaned'] = clean_df['message'].map(clean_text)
+    docs = clean_df['cleaned'].tolist()
+
+    if method.lower() == "nmf":
+        # 4a) NMF + TF-IDF
+        tfidf = TfidfVectorizer(
+            max_df=0.80,
+            min_df=5,
+            stop_words=list(generic_words),
+            lowercase=True,
+            ngram_range=(1, 2)
+        ).fit_transform(docs)
+
+        model = NMF(n_components=n_topics, random_state=42, l1_ratio=0.5)
+        W = model.fit_transform(tfidf)
+        feature_names = TfidfVectorizer().fit(tfidf).get_feature_names_out()
+
+        topics = []
+        for idx, comp in enumerate(model.components_):
+            top_ws = [feature_names[i]
+                      for i in comp.argsort()[:-n_top_words - 1:-1]]
+            topics.append({"topic_id": idx, "top_words": top_ws})
+
+        clean_df['dominant'] = W.argmax(axis=1)
+        dist = clean_df['dominant'].value_counts(normalize=True)
+        for t in topics:
+            t['message_percentage'] = round(dist.get(t['topic_id'], 0) * 100, 2)
+
+        return {"discovered_topics": topics}
+
+    else:
+        # 4b) BERTopic (requires embeddings, e.g. sentence-transformers)
+        topic_model = BERTopic(nr_topics=n_topics, calculate_probabilities=False)
+        topics, probs = topic_model.fit_transform(docs)
+
+        # pull out top words per topic
+        tm_info = topic_model.get_topic_info().query("Topic != -1")
+        discovered = []
+        for _, row in tm_info.iterrows():
+            tid = int(row.Topic)
+            top_ws = [w for w, _ in topic_model.get_topic(tid)]
+            discovered.append({
+                "topic_id": tid,
+                "label": row.Name,
+                "top_words": top_ws
+            })
+        return {"discovered_topics": discovered}
 # ==============================================================================
 # 5. BEHAVIORAL & THEMATIC ANALYSIS
 # ==============================================================================

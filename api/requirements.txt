@@ -18,3 +18,4 @@ numpy
 pandas
 flask-cors
 bs4
+bertopic
