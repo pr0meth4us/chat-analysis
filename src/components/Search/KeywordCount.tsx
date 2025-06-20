@@ -3,9 +3,9 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Search, Hash, TrendingUp } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/custom/Button';
+import { Card } from '@/components/ui/custom/Card';
+import { Badge } from '@/components/ui/custom/Badge';
 import { useApi } from '@/hooks/useApi';
 import { api } from '@/utils/api';
 import { KeywordCountResult } from '@/types';

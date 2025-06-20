@@ -8,15 +8,11 @@ from utils import log
 from api.background_task_manager import task_manager
 from api.workers import process_file_worker
 
-proces_bp = Blueprint('process', __name__)
+process_bp = Blueprint('process', __name__)
 
 
-@proces_bp.route('/process', methods=['POST'])
+@process_bp.route('/process', methods=['POST'])
 def process_data_endpoint():
-    """
-    A single endpoint to handle all data uploads (single files or ZIPs).
-    It saves the upload to a temporary file and starts a background task.
-    """
     if 'file' not in request.files:
         return jsonify({"error": "No 'file' part in the request"}), 400
 

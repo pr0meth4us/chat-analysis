@@ -26,14 +26,14 @@ def create_app():
     from api.routes.analysis_routes import analysis_bp
     from api.routes.data_routes import data_bp
     from api.routes.filter_routes import filter_bp
-    from api.routes.process_routes import proces_bp
+    from api.routes.process_routes import process_bp
     from api.routes.task_routes import tasks_bp
     from api.routes.search_routes import search_bp
 
     app.register_blueprint(analysis_bp)
     app.register_blueprint(filter_bp)
     app.register_blueprint(data_bp)
-    app.register_blueprint(proces_bp)
+    app.register_blueprint(process_bp)
     app.register_blueprint(tasks_bp, url_prefix='/tasks')
     app.register_blueprint(search_bp, url_prefix='/search')
 

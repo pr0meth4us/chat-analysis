@@ -3,12 +3,13 @@
 import React, { useState, useTransition } from 'react';
 import { Download, FileText, FileJson, Info } from 'lucide-react';
 import { useAppContext } from '@/context/AppContext';
-import { Button } from '@/components/ui/Button';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/RadioGroup';
-import { Label } from '@/components/ui/Label';
-import { Progress } from '@/components/ui/Progress';
+import { Button } from '@/components/ui/custom/Button';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/custom/Card';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/custom/RadioGroup';
+import { Label } from '@/components/ui/radix/Label';
+import { Progress } from '@/components/ui/custom/Progress';
 import { api } from '@/utils/api';
+import { Message } from '@/types';
 
 type DownloadFormat = 'json' | 'html';
 
@@ -19,11 +20,6 @@ export default function DataExport() {
     const [progress, setProgress] = useState(0);
     const [error, setError] = useState<string | null>(null);
 
-    /**
-     * Helper function to create a download link and trigger the download.
-     * @param blob The data blob to download.
-     * @param filename The desired filename for the download.
-     */
     const downloadFile = (blob: Blob, filename: string) => {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -35,7 +31,7 @@ export default function DataExport() {
         URL.revokeObjectURL(url);
     };
 
-    const handleChatDownload = (data: any[], baseFilename: string) => {
+    const handleChatDownload = (data: Message[], baseFilename: string) => {
         if (!data || data.length === 0) return;
         setError(null);
         setProgress(0);
@@ -48,7 +44,7 @@ export default function DataExport() {
                 try {
                     const htmlBlob = await api.downloadChatAsHtml(data, (p) => setProgress(p));
                     downloadFile(htmlBlob, `${baseFilename}.html`);
-                } catch (err: any) {
+                } catch (err: unknown) {
                     setError('Failed to render HTML. Please try again.');
                     console.error(err);
                 }

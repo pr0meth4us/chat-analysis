@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useReducer, useEffect, useState } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useState, useRef, useCallback } from 'react';
 import { AppState, TaskStatus, Message } from '@/types';
 import { api } from '@/utils/api';
 
@@ -50,11 +50,9 @@ function appReducer(state: AppState, action: AppAction): AppState {
         case 'SET_SENDERS':
             return { ...state, senders: action.payload };
         case 'SET_ANALYSIS_RESULT':
-            return { ...state, analysisResult: action.payload };
+            return { ...state, analysisResult: action.payload, isLoading: false };
         case 'RESET_STATE':
             return initialState;
-
-        // --- MODIFIED LOGIC START ---
         case 'UPDATE_TASK': {
             const newTasks = [...state.tasks];
             const taskIndex = state.tasks.findIndex(
@@ -66,50 +64,11 @@ function appReducer(state: AppState, action: AppAction): AppState {
             } else {
                 newTasks.push(action.payload);
             }
-
-            // After updating a task, check if it contains the analysis report.
-            const analysisTask = action.payload;
-            if (
-                analysisTask.status === 'completed' &&
-                analysisTask.result?.analysis_report
-            ) {
-                console.log('Analysis result found in updated task, setting state.');
-                return {
-                    ...state,
-                    tasks: newTasks,
-                    analysisResult: analysisTask.result
-                };
-            }
-
             return { ...state, tasks: newTasks };
         }
-
         case 'SET_TASKS': {
-            const newTasks = action.payload;
-
-            // When setting all tasks (e.g., on page load), find the latest analysis report.
-            const latestAnalysisTask = newTasks
-                .filter(task =>
-                    task.status === 'completed' &&
-                    task.result?.analysis_report &&
-                    task.end_time // Ensure task has an end time to sort by
-                )
-                .sort((a, b) => new Date(b.end_time!).getTime() - new Date(a.end_time!).getTime())
-                [0]; // Get the most recent one
-
-            if (latestAnalysisTask) {
-                console.log('Analysis result found in initial task list, setting state.');
-                return {
-                    ...state,
-                    tasks: newTasks,
-                    analysisResult: latestAnalysisTask.result
-                };
-            }
-
-            return { ...state, tasks: newTasks };
+            return { ...state, tasks: action.payload };
         }
-        // --- MODIFIED LOGIC END ---
-
         default:
             return state;
     }
@@ -120,6 +79,53 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export function AppContextProvider({ children }: { children: React.ReactNode }) {
     const [state, dispatch] = useReducer(appReducer, initialState);
     const [isPolling, setIsPolling] = useState(false);
+    const prevTasksRef = useRef<TaskStatus[]>([]);
+
+    const refreshData = useCallback(async () => {
+        console.log("Refreshing all data...");
+        dispatch({ type: 'SET_LOADING', payload: true });
+        try {
+            await Promise.all([
+                (async () => {
+                    try {
+                        const processed = await api.getProcessedMessages();
+                        dispatch({ type: 'SET_PROCESSED_MESSAGES', payload: processed });
+                        const senders = Array.from(new Set(processed.map(msg => msg.sender)));
+                        dispatch({ type: 'SET_SENDERS', payload: senders });
+                    } catch (error) {
+                        console.log('No processed messages yet.');
+                        dispatch({ type: 'SET_PROCESSED_MESSAGES', payload: [] });
+                        dispatch({ type: 'SET_SENDERS', payload: [] });
+                    }
+                })(),
+                (async () => {
+                    try {
+                        const filtered = await api.getFilteredMessages();
+                        dispatch({ type: 'SET_FILTERED_MESSAGES', payload: filtered });
+                    } catch (error) {
+                        console.log('No filtered messages yet.');
+                        dispatch({ type: 'SET_FILTERED_MESSAGES', payload: [] });
+                    }
+                })(),
+                (async () => {
+                    try {
+                        const analysis = await api.getAnalysisReport();
+                        if (analysis) {
+                            dispatch({ type: 'SET_ANALYSIS_RESULT', payload: analysis });
+                        }
+                    } catch (error) {
+                        console.log('No analysis result yet.');
+                        dispatch({ type: 'SET_ANALYSIS_RESULT', payload: null });
+                    }
+                })(),
+            ]);
+        } catch (error) {
+            console.error('Failed to refresh data:', error);
+            dispatch({ type: 'SET_ERROR', payload: 'Could not refresh application data.' });
+        } finally {
+            dispatch({ type: 'SET_LOADING', payload: false });
+        }
+    }, []);
 
     // Effect to control polling based on task status
     useEffect(() => {
@@ -131,7 +137,7 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
         }
     }, [state.tasks, isPolling]);
 
-    // Effect to run the polling interval
+    // FIXED POLLING LOGIC - Now includes refreshData in dependencies
     useEffect(() => {
         if (!isPolling) {
             return;
@@ -140,65 +146,40 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
         const pollTasks = async () => {
             try {
                 const response = await api.getSessionTasks();
-                const tasksArray = Array.isArray(response.tasks)
+                const newTasksArray = Array.isArray(response.tasks)
                     ? response.tasks
                     : Object.values(response.tasks || {});
-                // Dispatching SET_TASKS will now automatically check for the analysis result
-                dispatch({ type: 'SET_TASKS', payload: tasksArray });
+
+                // Find if any task has just completed since the last check
+                const justCompletedTasks = newTasksArray.filter(currentTask => {
+                    const prevTask = prevTasksRef.current.find(t => t.task_id === currentTask.task_id);
+                    // A task just completed if its previous state was running/pending and now it's completed.
+                    return prevTask &&
+                        (prevTask.status === 'running' || prevTask.status === 'pending') &&
+                        currentTask.status === 'completed';
+                });
+
+                // Update the tasks in the state
+                dispatch({ type: 'SET_TASKS', payload: newTasksArray });
+
+                // If any task just finished, refresh all app data to get the latest results
+                if (justCompletedTasks.length > 0) {
+                    console.log(`${justCompletedTasks.length} task(s) completed. Refreshing data.`);
+                    await refreshData();
+                }
+
+                // Update the ref for the next poll
+                prevTasksRef.current = newTasksArray;
+
             } catch (error) {
                 console.error('Failed to poll tasks:', error);
+                dispatch({ type: 'SET_ERROR', payload: 'Task polling failed.' });
             }
         };
 
         const intervalId = setInterval(pollTasks, 2000);
         return () => clearInterval(intervalId);
-    }, [isPolling]);
-
-    const refreshData = async () => {
-        try {
-            // Get processed messages
-            try {
-                const processed = await api.getProcessedMessages();
-                dispatch({ type: 'SET_PROCESSED_MESSAGES', payload: processed });
-                const senders = [...new Set(processed.map(msg => msg.sender))];
-                dispatch({ type: 'SET_SENDERS', payload: senders });
-            } catch (error) {
-                console.log('No processed messages yet');
-            }
-
-            // Get filtered messages
-            try {
-                const filtered = await api.getFilteredMessages();
-                dispatch({ type: 'SET_FILTERED_MESSAGES', payload: filtered });
-            } catch (error) {
-                console.log('No filtered messages yet');
-            }
-
-            // This call now acts as a fallback.
-            // The primary logic is now in the reducer for SET_TASKS.
-            try {
-                const analysis = await api.getAnalysisReport();
-                if (analysis) {
-                    dispatch({ type: 'SET_ANALYSIS_RESULT', payload: analysis });
-                }
-            } catch (error) {
-                console.log('No analysis result from direct /data/report endpoint.');
-            }
-
-            // Get current tasks, which will trigger our new reducer logic to find the report.
-            try {
-                const response = await api.getSessionTasks();
-                const tasksArray = Array.isArray(response.tasks)
-                    ? response.tasks
-                    : Object.values(response.tasks || {});
-                dispatch({ type: 'SET_TASKS', payload: tasksArray });
-            } catch (error) {
-                console.error('Failed to get tasks during refresh:', error);
-            }
-        } catch (error) {
-            console.error('Failed to refresh data:', error);
-        }
-    };
+    }, [isPolling, refreshData]); // Now includes refreshData
 
     const actions = {
         uploadFile: async (file: File) => {
@@ -207,9 +188,8 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
                 dispatch({ type: 'SET_ERROR', payload: null });
                 const task = await api.uploadFile(file);
                 dispatch({ type: 'UPDATE_TASK', payload: task });
-            } catch (error: any) {
-                dispatch({ type: 'SET_ERROR', payload: error.message });
-            } finally {
+            } catch (error: unknown) {
+                dispatch({ type: 'SET_ERROR', payload: String(error) });
                 dispatch({ type: 'SET_LOADING', payload: false });
             }
         },
@@ -218,11 +198,15 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
             try {
                 dispatch({ type: 'SET_LOADING', payload: true });
                 dispatch({ type: 'SET_ERROR', payload: null });
-                await api.filterMessages(config);
-                await refreshData();
-            } catch (error: any) {
-                dispatch({ type: 'SET_ERROR', payload: error.message });
-            } finally {
+                const result = await api.filterMessages(config);
+                if ('task_id' in result) {
+                    dispatch({ type: 'UPDATE_TASK', payload: result });
+                } else {
+                    console.log('Filter executed immediately, refreshing data...');
+                    await refreshData();
+                }
+            } catch (error: unknown) {
+                dispatch({ type: 'SET_ERROR', payload: String(error) });
                 dispatch({ type: 'SET_LOADING', payload: false });
             }
         },
@@ -233,9 +217,8 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
                 dispatch({ type: 'SET_ERROR', payload: null });
                 const task = await api.startAnalysis(modules);
                 dispatch({ type: 'UPDATE_TASK', payload: task });
-            } catch (error: any) {
-                dispatch({ type: 'SET_ERROR', payload: error.message });
-            } finally {
+            } catch (error: unknown) {
+                dispatch({ type: 'SET_ERROR', payload: String(error) });
                 dispatch({ type: 'SET_LOADING', payload: false });
             }
         },
@@ -246,8 +229,8 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
             try {
                 await api.clearSession();
                 dispatch({ type: 'RESET_STATE' });
-            } catch (error: any) {
-                dispatch({ type: 'SET_ERROR', payload: error.message });
+            } catch (error: unknown) {
+                dispatch({ type: 'SET_ERROR', payload: String(error) });
             }
         },
     };
@@ -255,7 +238,21 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     // Initial data load on component mount
     useEffect(() => {
         refreshData();
-    }, []);
+        // Also fetch initial tasks
+        const fetchInitialTasks = async () => {
+            try {
+                const response = await api.getSessionTasks();
+                const tasksArray = Array.isArray(response.tasks)
+                    ? response.tasks
+                    : Object.values(response.tasks || {});
+                dispatch({ type: 'SET_TASKS', payload: tasksArray });
+                prevTasksRef.current = tasksArray; // Initialize prevTasksRef
+            } catch (error) {
+                console.error('Failed to get initial tasks:', error);
+            }
+        };
+        fetchInitialTasks();
+    }, [refreshData]); // Include refreshData in dependencies
 
     return (
         <AppContext.Provider value={{ state, dispatch, actions }}>

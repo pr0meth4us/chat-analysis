@@ -4,8 +4,8 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { useAppContext } from '@/context/AppContext';
 import { ResultsDashboard } from '@/components/Dashboard/ResultsDashboard';
-import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/custom/Card';
+import { Button } from '@/components/ui/custom/Button';
 import Link from 'next/link';
 
 export default function DashboardPage() {

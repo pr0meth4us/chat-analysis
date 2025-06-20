@@ -4,9 +4,9 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { User, Trash2, Plus, X } from 'lucide-react';
 import { useAppContext } from '@/context/AppContext';
-import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/custom/Button';
+import { Card } from '@/components/ui/custom/Card';
+import { Badge } from '@/components/ui/custom/Badge';
 
 export default function FilterSection() {
     const { state, actions } = useAppContext();

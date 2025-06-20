@@ -1,4 +1,5 @@
-import { FilterConfig, TaskStatus, SearchResult, KeywordCountResult } from '@/types';
+import { FilterConfig, TaskStatus, SearchResult, KeywordCountResult, Message } from '@/types';
+import { AnalysisResult } from '@/types/analysis';
 
 const API_BASE = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:5001';
 
@@ -8,6 +9,7 @@ class ApiError extends Error {
         this.name = 'ApiError';
     }
 }
+
 async function handleFileDownload(response: Response, defaultFilename: string): Promise<void> {
     if (!response.ok) {
         const errorText = await response.text();
@@ -29,41 +31,35 @@ async function handleResponse<T>(response: Response): Promise<T> {
         const errorText = await response.text();
         throw new ApiError(response.status, errorText || `HTTP ${response.status}`);
     }
-
     const contentType = response.headers.get('content-type');
     if (contentType?.includes('application/json')) {
-        return response.json();
+        return response.json() as Promise<T>;
     }
-
-    return response.text() as unknown as T;
+    return response.text() as unknown as Promise<T>;
 }
 
 export const api = {
-    // Upload and Processing
     async uploadFile(file: File): Promise<TaskStatus> {
         const formData = new FormData();
         formData.append('file', file);
-
         const response = await fetch(`${API_BASE}/process`, {
             method: 'POST',
             body: formData,
-            credentials: 'include', // Send session cookie
+            credentials: 'include',
         });
-
         return handleResponse<TaskStatus>(response);
     },
 
-    // Task Management
     async getTaskStatus(taskId: string): Promise<TaskStatus> {
         const response = await fetch(`${API_BASE}/tasks/status/${taskId}`, {
-            credentials: 'include', // Send session cookie
+            credentials: 'include',
         });
         return handleResponse<TaskStatus>(response);
     },
 
     async getSessionTasks(): Promise<{ session_id: string; tasks: { [taskId: string]: TaskStatus } }> {
         const response = await fetch(`${API_BASE}/tasks/session`, {
-            credentials: 'include', // Send session cookie
+            credentials: 'include',
         });
         return handleResponse<{ session_id: string; tasks: { [taskId: string]: TaskStatus } }>(response);
     },
@@ -71,47 +67,51 @@ export const api = {
     async clearSession(): Promise<{ message: string }> {
         const response = await fetch(`${API_BASE}/tasks/session/clear`, {
             method: 'POST',
-            credentials: 'include', // Send session cookie
+            credentials: 'include',
         });
         return handleResponse<{ message: string }>(response);
     },
 
-    // Data Downloads
-    async getProcessedMessages(): Promise<any[]> {
+    async getProcessedMessages(): Promise<Message[]> {
         const response = await fetch(`${API_BASE}/data/processed`, {
             credentials: 'include',
         });
-        return handleResponse<any[]>(response);
+        return handleResponse<Message[]>(response);
     },
 
-    async getFilteredMessages(): Promise<any[]> {
+    async getFilteredMessages(): Promise<Message[]> {
         const response = await fetch(`${API_BASE}/data/filtered`, {
             credentials: 'include',
         });
-        return handleResponse<any[]>(response);
+        return handleResponse<Message[]>(response);
     },
 
-    async getAnalysisReport(): Promise<any> {
+    async getAnalysisReport(): Promise<AnalysisResult> {
         const response = await fetch(`${API_BASE}/data/report`, {
             credentials: 'include',
         });
-        return handleResponse<any>(response);
+        return handleResponse<AnalysisResult>(response);
     },
 
-    // Filtering
-    async filterMessages(config: FilterConfig): Promise<TaskStatus> {
+    async filterMessages(config: FilterConfig): Promise<TaskStatus | Message[]> {
         const response = await fetch(`${API_BASE}/filter`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify(config),
-            credentials: 'include', // Send session cookie
+            credentials: 'include',
         });
-        return handleResponse<TaskStatus>(response);
+
+        if (response.status === 202) {
+            return handleResponse<TaskStatus>(response);
+        } else if (response.status === 200) {
+            return handleResponse<Message[]>(response);
+        } else {
+            return handleResponse<TaskStatus>(response);
+        }
     },
 
-    // Analysis
     async startAnalysis(modulesToRun?: string[]): Promise<TaskStatus> {
         const response = await fetch(`${API_BASE}/analyze`, {
             method: 'POST',
@@ -119,12 +119,11 @@ export const api = {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({ modules_to_run: modulesToRun }),
-            credentials: 'include', // Send session cookie
+            credentials: 'include',
         });
         return handleResponse<TaskStatus>(response);
     },
 
-    // Search
     async countKeyword(keyword: string): Promise<KeywordCountResult> {
         const response = await fetch(`${API_BASE}/search/count_keyword`, {
             method: 'POST',
@@ -132,7 +131,7 @@ export const api = {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({ keyword }),
-            credentials: 'include', // Send session cookie
+            credentials: 'include',
         });
         return handleResponse<KeywordCountResult>(response);
     },
@@ -144,7 +143,7 @@ export const api = {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({ query, cutoff }),
-            credentials: 'include', // Send session cookie
+            credentials: 'include',
         });
         return handleResponse<SearchResult>(response);
     },
@@ -163,9 +162,8 @@ export const api = {
         await handleFileDownload(response, 'filtered_messages.json');
     },
 
-    // MODIFIED: downloadChatAsHtml now includes the message source
     async downloadChatAsHtml(
-        messages: any[],
+        messages: Message[],
         onProgress: (progress: number) => void
     ): Promise<Blob> {
         return new Promise((resolve, reject) => {
@@ -185,7 +183,6 @@ export const api = {
                 .message.me { background-color: #007aff; color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
                 .message.other { background-color: #e5e5ea; color: #050505; align-self: flex-start; border-bottom-left-radius: 4px; }
                 .sender { font-weight: 600; margin-bottom: 4px; font-size: 0.8rem; opacity: 0.8; }
-                /* MODIFIED: Styles for the new metadata container */
                 .meta-info { display: flex; justify-content: space-between; align-items: center; font-size: 0.7rem; color: #8e8e93; margin-top: 5px; }
                 .message.me .meta-info { color: #f0f0f0; opacity: 0.9; }
                 .source { font-style: italic; }
@@ -196,32 +193,24 @@ export const api = {
                 <div class="chat-header">Chat Log</div>
                 <div class="chat-body">
       `;
-
             const totalMessages = messages.length;
             if (totalMessages === 0) {
                 renderedHtml += '</div></div></body></html>';
                 resolve(new Blob([renderedHtml], { type: 'text/html' }));
                 return;
             }
-
             let processedCount = 0;
             const processBatch = () => {
                 const batchSize = 50;
                 const batchEnd = Math.min(processedCount + batchSize, totalMessages);
-
                 for (let i = processedCount; i < batchEnd; i++) {
                     const msg = messages[i];
                     const senderClass = msg.sender === 'me' ? 'me' : 'other';
                     const senderName = msg.sender === 'me' ? 'Me' : msg.sender || 'Other';
-
-                    // Sanitize message content to prevent HTML injection
                     const sanitizedMessage = msg.message
                         ? String(msg.message).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;")
                         : '';
-
                     const sourceText = msg.source || 'Unknown';
-
-                    // MODIFIED: Added source to the metadata section
                     renderedHtml += `
             <div class="message ${senderClass}">
               <div class="sender">${senderName}</div>
@@ -233,13 +222,11 @@ export const api = {
             </div>
           `;
                 }
-
                 processedCount = batchEnd;
                 const currentProgress = Math.round((processedCount / totalMessages) * 100);
                 onProgress(currentProgress);
-
                 if (processedCount < totalMessages) {
-                    setTimeout(processBatch, 20); // Simulate delay
+                    setTimeout(processBatch, 20);
                 } else {
                     renderedHtml += `
                 </div>
@@ -250,7 +237,6 @@ export const api = {
                     resolve(new Blob([renderedHtml], { type: 'text/html' }));
                 }
             };
-
             processBatch();
         });
     },

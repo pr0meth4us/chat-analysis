@@ -1,3 +1,4 @@
+// src/hooks/useApi.ts
 import { useState, useCallback } from 'react';
 
 interface UseApiState<T> {
@@ -20,8 +21,8 @@ export function useApi<T>() {
             const result = await apiCall();
             setState({ data: result, loading: false, error: null });
             return result;
-        } catch (error: any) {
-            setState({ data: null, loading: false, error: error.message });
+        } catch (error: unknown) {
+            setState({ data: null, loading: false, error: String(error) });
             throw error;
         }
     }, []);

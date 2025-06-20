@@ -1,13 +1,12 @@
 """
-Main ChatAnalyzer Orchestrator.
+Main ChatAnalyzer Orchestrator - Simplified Progress Reporting.
 
 This class manages the entire analysis pipeline, from loading and preprocessing
 data to running a series of analysis modules and generating a final, comprehensive
-JSON report. It is designed to be modular, extensible, and robust.
+JSON report. Progress reporting has been simplified and made more reliable.
 """
 import json
 import re
-import time
 import warnings
 from datetime import datetime, date
 
@@ -36,8 +35,6 @@ class ChatAnalyzer:
         self.df = pd.DataFrame()
         self.report = {}
         self.progress_callback = progress_callback
-        self.start_time = None
-        self.last_step_time = None
 
         # Pre-compile regex patterns for performance
         self.url_pattern = re.compile(r'https?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(),]|%[0-9a-fA-F][0-9a-fA-F])+|www\.')
@@ -45,7 +42,7 @@ class ChatAnalyzer:
         self.english_pattern = re.compile(r'\b[a-zA-Z]+\b')
         self.khmer_pattern = re.compile(r'[\u1780-\u17FF]+')
         self.sentence_pattern = re.compile(r'(?<!\w\.\w.)(?<![A-Z][a-z]\.)(?<=\.|\?|\!)\s')
-        self.reaction_pattern = re.compile(r'^(Liked|Loved|Laughed at|Emphasized|Questioned|Disliked) “.*”$')
+        self.reaction_pattern = re.compile(r'^(Liked|Loved|Laughed at|Emphasized|Questioned|Disliked) ".*"$')
 
         # Load lexicons from the dedicated module
         self.generic_words = sentiment_lexicons.generic_words
@@ -57,52 +54,44 @@ class ChatAnalyzer:
         self.sexual_words = sentiment_lexicons.sexual_words
         self.argument_words = sentiment_lexicons.argument_words
 
-    def _update_progress(self, current_step: int, total_steps: int, step_name: str, status='in_progress', **kwargs):
-        """Helper to calculate and send progress updates."""
-        if not self.start_time:
-            self.start_time = time.time()
-            self.last_step_time = self.start_time
-
-        current_time = time.time()
-        progress_percent = (current_step / total_steps) * 100
-
-        print(f"[{current_time - self.start_time:.2f}s] ({current_step}/{total_steps}) {step_name}...")
+    def _update_progress(self, progress_percent: float, step_name: str):
+        """Simplified progress update helper."""
         if self.progress_callback:
             try:
                 self.progress_callback(
-                    progress_percent=progress_percent,
-                    step_name=step_name,
-                    status=status,
-                    **kwargs
+                    progress_percent=max(0, min(100, progress_percent)),
+                    step_name=step_name
                 )
             except Exception as e:
-                print(f"Error in progress callback for step '{step_name}': {e}")
-        self.last_step_time = current_time
+                print(f"Progress callback error: {e}")
 
     def convert_to_serializable(self, obj):
         """
         Recursively converts numpy/pandas types and non-string dictionary keys
         to JSON serializable types.
         """
-        if isinstance(obj, (np.integer, np.int64, np.int32)): return int(obj)
-        if isinstance(obj, (np.floating, np.float64, np.float32)): return float(obj)
-        if isinstance(obj, np.ndarray): return obj.tolist()
-        if isinstance(obj, pd.Series): return obj.to_dict()
-        if isinstance(obj, (datetime, pd.Timestamp, date)): return obj.isoformat()
-
-        # --- THIS IS THE CORRECTED LINE ---
-        # It now recursively calls the function on both keys and values.
-        if isinstance(obj, dict): return {self.convert_to_serializable(k): self.convert_to_serializable(v) for k, v in
-                                          obj.items()}
-
-        if isinstance(obj, (list, tuple)): return [self.convert_to_serializable(i) for i in obj]
-        if pd.isna(obj): return None
+        if isinstance(obj, (np.integer, np.int64, np.int32)):
+            return int(obj)
+        if isinstance(obj, (np.floating, np.float64, np.float32)):
+            return float(obj)
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        if isinstance(obj, pd.Series):
+            return obj.to_dict()
+        if isinstance(obj, (datetime, pd.Timestamp, date)):
+            return obj.isoformat()
+        if isinstance(obj, dict):
+            return {self.convert_to_serializable(k): self.convert_to_serializable(v) for k, v in obj.items()}
+        if isinstance(obj, (list, tuple)):
+            return [self.convert_to_serializable(i) for i in obj]
+        if pd.isna(obj):
+            return None
         return obj
 
     def load_and_preprocess(self):
-        """Load and preprocess data with comprehensive feature engineering."""
-        total_steps = 3
-        self._update_progress(1, total_steps, "Loading data")
+        """Load and preprocess data with simplified progress reporting."""
+        self._update_progress(10, "Loading data")
+
         if self.input_type == 'file' and self.file_path:
             with open(self.file_path, 'r', encoding='utf-8') as f:
                 content = f.read().strip()
@@ -112,7 +101,8 @@ class ChatAnalyzer:
         if not self.data:
             raise ValueError("No data to preprocess. Source is empty.")
 
-        self._update_progress(2, total_steps, f"Preprocessing {len(self.data)} messages")
+        self._update_progress(30, f"Preprocessing {len(self.data)} messages")
+
         df = pd.DataFrame(self.data)
 
         df['source'] = df['source'].astype('category')
@@ -124,6 +114,8 @@ class ChatAnalyzer:
 
         if df.empty:
             raise ValueError("No valid messages with timestamps found in data.")
+
+        self._update_progress(50, "Engineering features")
 
         dt = df['datetime'].dt
         df['date'] = pd.to_datetime(dt.date)
@@ -142,19 +134,16 @@ class ChatAnalyzer:
         df.loc[df['is_reaction'], ['message_length', 'word_count']] = 0
 
         df['time_gap_minutes'] = df['datetime'].diff().dt.total_seconds().fillna(0) / 60
-
-        # --- THIS IS THE CORRECTED LOGIC ---
-        # A new conversation now only starts after a 60-minute gap.
         new_conv_mask = df['time_gap_minutes'] > 60
         df['conversation_id'] = new_conv_mask.cumsum().astype(int)
 
         self.df = df
-        self._update_progress(3, total_steps, "Preprocessing complete", status='completed')
+        self._update_progress(70, "Preprocessing completed")
 
     def generate_comprehensive_report(self, modules_to_run: list = None):
         """
         Generates a report by running specified or all analysis modules.
-        Handles dependencies between modules explicitly.
+        Simplified progress reporting.
         """
         if self.df.empty:
             return {"error": "DataFrame is empty, cannot generate report."}
@@ -198,18 +187,27 @@ class ChatAnalyzer:
             },
         }
 
+        # Build execution queue with dependencies
         run_queue = []
         active_modules = modules_to_run if modules_to_run else list(ANALYSIS_REGISTRY.keys())
 
         for module_name in active_modules:
-            if module_name not in ANALYSIS_REGISTRY: continue
+            if module_name not in ANALYSIS_REGISTRY:
+                continue
             for dep in ANALYSIS_REGISTRY[module_name]['deps']:
-                if dep not in run_queue: run_queue.append(dep)
-            if module_name not in run_queue: run_queue.append(module_name)
+                if dep not in run_queue:
+                    run_queue.append(dep)
+            if module_name not in run_queue:
+                run_queue.append(module_name)
 
-        total_steps = len(run_queue)
+        total_modules = len(run_queue)
+        start_progress = 75  # Start after preprocessing
+        progress_range = 25   # Use remaining 25% for analysis
+
         for i, module_name in enumerate(run_queue):
-            self._update_progress(i + 1, total_steps, f"Running: {module_name}")
+            # Calculate progress: 75% + (current_module/total_modules) * 25%
+            current_progress = start_progress + (i / total_modules) * progress_range
+            self._update_progress(current_progress, f"Running {module_name}")
 
             try:
                 module_info = ANALYSIS_REGISTRY[module_name]
@@ -227,6 +225,5 @@ class ChatAnalyzer:
                 print(error_msg)
                 self.report[module_name] = {"error": error_msg}
 
-        self._update_progress(total_steps, total_steps, "Finalizing report", status='completed')
-        # The final conversion will now handle all nested non-string keys
+        self._update_progress(100, "Analysis completed")
         return self.convert_to_serializable(self.report)
