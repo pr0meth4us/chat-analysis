@@ -5,14 +5,10 @@ import { useDropzone } from 'react-dropzone';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Upload, FileText, AlertCircle, Trash2, X, Send } from 'lucide-react';
 import { useAppContext } from '@/context/AppContext';
-import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
+import { Button } from '@/components/ui/custom/Button';
+import { Card } from '@/components/ui/custom/Card';
 import { ACCEPTED_FILE_TYPES, MAX_FILE_SIZE } from '@/utils/constants';
 
-/**
- * UploadSection provides a user interface for selecting and processing files.
- * It supports drag-and-drop, file selection, and managing a list of files before processing.
- */
 export default function UploadSection() {
     const { actions, state } = useAppContext();
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -31,7 +27,7 @@ export default function UploadSection() {
         onDrop,
         accept: ACCEPTED_FILE_TYPES,
         maxSize: MAX_FILE_SIZE,
-        multiple: true, // Enable multiple file selection
+        multiple: true,
     });
 
     const handleRemoveFile = (fileToRemove: File) => {
@@ -45,13 +41,10 @@ export default function UploadSection() {
     const handleProcessFiles = async () => {
         if (selectedFiles.length === 0) return;
 
-        // Process all selected files. The context handles the async nature of the tasks.
         await Promise.all(selectedFiles.map(file => actions.uploadFile(file).catch(error => {
             console.error(`Upload failed for ${file.name}:`, error);
-            // Error is set in the context, no need to handle here.
         })));
 
-        // Clear the file list after starting the processing.
         setSelectedFiles([]);
     };
 

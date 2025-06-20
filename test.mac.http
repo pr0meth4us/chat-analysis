@@ -249,7 +249,7 @@ if (status === "completed") {
 ### ===========================================
 
 ### Get all session tasks
-GET {{host}}/session-tasks
+GET {{host}}/tasks/session
 
 > {%
 console.log("🗂️ Session:", response.body.session_id);

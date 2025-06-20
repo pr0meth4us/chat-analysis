@@ -1,8 +1,10 @@
+import { AnalysisResult } from './analysis';
+
 export interface Message {
     sender: string;
     message: string;
-    timestamp?: string;
-    [key: string]: any;
+    timestamp: string;
+    source?: string;
 }
 
 export interface TaskStatus {
@@ -10,10 +12,12 @@ export interface TaskStatus {
     status: 'pending' | 'running' | 'completed' | 'failed';
     progress: number;
     message?: string;
-    result?: any;
+    result?: AnalysisResult | Message[] | unknown;
     error?: string;
     start_time?: string;
     end_time?: string;
+    name?: string;
+    stage?: string;
 }
 
 export interface AppState {
@@ -21,15 +25,9 @@ export interface AppState {
     filteredMessages: Message[];
     senders: string[];
     tasks: TaskStatus[];
-    analysisResult: any;
+    analysisResult: AnalysisResult | null;
     isLoading: boolean;
     error: string | null;
-}
-
-export interface FilterConfig {
-    me: string[];
-    remove: string[];
-    other_label: string;
 }
 
 export interface SearchResult {
@@ -77,3 +75,30 @@ export const ANALYSIS_MODULES: AnalysisModule[] = [
     { key: 'sexual_tone_analysis', name: 'Sexual Tone Analysis', description: 'Adult content detection', enabled: false },
     { key: 'relationship_metrics', name: 'Relationship Metrics', description: 'Relationship health indicators', enabled: false },
 ];
+
+export interface FilterConfig {
+    me: string[];
+    remove: string[];
+    other_label: string;
+}
+
+export interface SearchResult {
+    matches: Message[];
+    match_count: number;
+    total_messages_searched: number;
+    query: string;
+    similarity_cutoff?: number;
+}
+
+export interface KeywordCountResult {
+    counts: Record<string, number>;
+    total_matches: number;
+    message_count: number;
+}
+
+export interface AnalysisModule {
+    key: string;
+    name: string;
+    description: string;
+    enabled: boolean;
+}

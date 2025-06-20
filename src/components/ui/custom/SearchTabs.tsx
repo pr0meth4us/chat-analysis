@@ -2,16 +2,14 @@
 
 import * as React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { cn } from '@/utils'; // Assuming you have a cn utility for classnames
+import { cn } from '@/utils';
 
-// Define the shape of a single tab object
 interface Tab {
   id: string;
   label: string;
-  icon?: React.ElementType; // Icon component can be passed
+  icon?: React.ElementType;
 }
 
-// Define the props for the main Tabs component
 interface TabsProps {
   tabs: Tab[];
   activeTab: string;
@@ -20,9 +18,6 @@ interface TabsProps {
   containerClassName?: string;
 }
 
-/**
- * A modern, animated tabs component for navigation.
- */
 export function Tabs({
   tabs,
   activeTab,

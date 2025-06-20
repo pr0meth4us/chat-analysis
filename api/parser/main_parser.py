@@ -13,14 +13,9 @@ from .json_parser import parse_generic_json
 
 
 def process_uploaded_files(files, progress_callback=None):
-    """
-    Processes a list of uploaded files, extracts messages, standardizes them,
-    and removes duplicates, with detailed progress reporting.
-    """
     compiled = []
     total_files = len(files)
 
-    # Stage 1: Parsing Files (Progress: 5% -> 70%)
     for i, file in enumerate(files):
         log(f"Processing file {i+1}/{total_files}: {file.filename}")
 
@@ -41,7 +36,6 @@ def process_uploaded_files(files, progress_callback=None):
                 msgs = parse_generic_json(json.loads(content))
             elif file.filename.lower().endswith('.html'):
                 soup = BeautifulSoup(content, 'lxml')
-                # These functions should be part of your project
                 msgs += extract_json_from_html(soup)
                 msgs += extract_telegram(soup)
                 msgs += extract_facebook(soup)
@@ -71,7 +65,6 @@ def process_uploaded_files(files, progress_callback=None):
 
     log(f"Deduplication complete. Removed {len(compiled) - len(unique_messages)} duplicates (Original: {len(compiled)}, New: {len(unique_messages)}).")
 
-    # Stage 3: Standardization (Progress: 85% -> 95%)
     if progress_callback:
         progress_callback(progress_percent=85, stage="Standardizing timestamps...")
 
@@ -85,7 +78,6 @@ def process_uploaded_files(files, progress_callback=None):
         else:
             log(f" [WARNING] Could not parse timestamp: {msg.get('timestamp')} - Skipping")
 
-    # Stage 4: Sorting (Progress: 95% -> 98%)
     if progress_callback:
         progress_callback(progress_percent=95, stage="Sorting messages...")
 

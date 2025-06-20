@@ -4,15 +4,11 @@ import React from 'react';
 import { motion } from 'framer-motion';
 
 interface ProgressProps {
-    value: number; // Expects a value from 0 to 100
+    value: number;
     className?: string;
     showLabel?: boolean;
     color?: 'primary' | 'success' | 'warning' | 'danger';
 }
-
-/**
- * A customizable progress bar component with smooth animations.
- */
 export function Progress({
     value,
     className = '',

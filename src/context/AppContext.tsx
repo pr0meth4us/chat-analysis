@@ -1,10 +1,8 @@
 'use client';
 
-import React, { createContext, useContext, useReducer, useEffect, useState, useRef } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useState, useRef, useCallback } from 'react';
 import { AppState, TaskStatus, Message } from '@/types';
 import { api } from '@/utils/api';
-
-// ... (interface and type definitions remain the same)
 
 interface AppContextType {
     state: AppState;
@@ -39,7 +37,6 @@ const initialState: AppState = {
     error: null,
 };
 
-
 function appReducer(state: AppState, action: AppAction): AppState {
     switch (action.type) {
         case 'SET_LOADING':
@@ -53,11 +50,9 @@ function appReducer(state: AppState, action: AppAction): AppState {
         case 'SET_SENDERS':
             return { ...state, senders: action.payload };
         case 'SET_ANALYSIS_RESULT':
-            // When analysis result is set, stop loading
             return { ...state, analysisResult: action.payload, isLoading: false };
         case 'RESET_STATE':
             return initialState;
-
         case 'UPDATE_TASK': {
             const newTasks = [...state.tasks];
             const taskIndex = state.tasks.findIndex(
@@ -69,16 +64,11 @@ function appReducer(state: AppState, action: AppAction): AppState {
             } else {
                 newTasks.push(action.payload);
             }
-             // No need to check for analysis report here, polling will handle it.
             return { ...state, tasks: newTasks };
         }
-
         case 'SET_TASKS': {
-             // We will let the polling effect handle data refreshing to avoid complexity here.
-             // This reducer will now only be responsible for updating the tasks list in the state.
             return { ...state, tasks: action.payload };
         }
-
         default:
             return state;
     }
@@ -89,24 +79,23 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export function AppContextProvider({ children }: { children: React.ReactNode }) {
     const [state, dispatch] = useReducer(appReducer, initialState);
     const [isPolling, setIsPolling] = useState(false);
-    // Use a ref to track previous task states to detect changes
     const prevTasksRef = useRef<TaskStatus[]>([]);
 
-    const refreshData = async () => {
+    const refreshData = useCallback(async () => {
         console.log("Refreshing all data...");
         dispatch({ type: 'SET_LOADING', payload: true });
         try {
-            // Fetch all data points concurrently for speed
             await Promise.all([
                 (async () => {
                     try {
                         const processed = await api.getProcessedMessages();
                         dispatch({ type: 'SET_PROCESSED_MESSAGES', payload: processed });
-                        const senders = [...new Set(processed.map(msg => msg.sender))];
+                        const senders = Array.from(new Set(processed.map(msg => msg.sender)));
                         dispatch({ type: 'SET_SENDERS', payload: senders });
                     } catch (error) {
                         console.log('No processed messages yet.');
                         dispatch({ type: 'SET_PROCESSED_MESSAGES', payload: [] });
+                        dispatch({ type: 'SET_SENDERS', payload: [] });
                     }
                 })(),
                 (async () => {
@@ -136,8 +125,7 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
         } finally {
             dispatch({ type: 'SET_LOADING', payload: false });
         }
-    };
-
+    }, []);
 
     // Effect to control polling based on task status
     useEffect(() => {
@@ -149,7 +137,7 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
         }
     }, [state.tasks, isPolling]);
 
-    // MODIFIED POLLING LOGIC
+    // FIXED POLLING LOGIC - Now includes refreshData in dependencies
     useEffect(() => {
         if (!isPolling) {
             return;
@@ -163,18 +151,20 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
                     : Object.values(response.tasks || {});
 
                 // Find if any task has just completed since the last check
-                const justCompletedTask = newTasksArray.find(currentTask => {
+                const justCompletedTasks = newTasksArray.filter(currentTask => {
                     const prevTask = prevTasksRef.current.find(t => t.task_id === currentTask.task_id);
                     // A task just completed if its previous state was running/pending and now it's completed.
-                    return prevTask && (prevTask.status === 'running' || prevTask.status === 'pending') && currentTask.status === 'completed';
+                    return prevTask &&
+                        (prevTask.status === 'running' || prevTask.status === 'pending') &&
+                        currentTask.status === 'completed';
                 });
 
                 // Update the tasks in the state
                 dispatch({ type: 'SET_TASKS', payload: newTasksArray });
 
-                // If a task just finished, refresh all app data to get the latest results
-                if (justCompletedTask) {
-                    console.log(`Task '${justCompletedTask.name}' completed. Refreshing data.`);
+                // If any task just finished, refresh all app data to get the latest results
+                if (justCompletedTasks.length > 0) {
+                    console.log(`${justCompletedTasks.length} task(s) completed. Refreshing data.`);
                     await refreshData();
                 }
 
@@ -189,8 +179,7 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
 
         const intervalId = setInterval(pollTasks, 2000);
         return () => clearInterval(intervalId);
-    }, [isPolling]); // Removed refreshData from dependency array as it's stable
-
+    }, [isPolling, refreshData]); // Now includes refreshData
 
     const actions = {
         uploadFile: async (file: File) => {
@@ -199,10 +188,9 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
                 dispatch({ type: 'SET_ERROR', payload: null });
                 const task = await api.uploadFile(file);
                 dispatch({ type: 'UPDATE_TASK', payload: task });
-            } catch (error: any) {
-                dispatch({ type: 'SET_ERROR', payload: error.message });
-            } finally {
-                 // Loading is set to false by the polling mechanism or data refresh
+            } catch (error: unknown) {
+                dispatch({ type: 'SET_ERROR', payload: String(error) });
+                dispatch({ type: 'SET_LOADING', payload: false });
             }
         },
 
@@ -210,12 +198,16 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
             try {
                 dispatch({ type: 'SET_LOADING', payload: true });
                 dispatch({ type: 'SET_ERROR', payload: null });
-                const task = await api.filterMessages(config);
-                dispatch({ type: 'UPDATE_TASK', payload: task });
-            } catch (error: any) {
-                dispatch({ type: 'SET_ERROR', payload: error.message });
-            } finally {
-                 // Loading is set to false by the polling mechanism or data refresh
+                const result = await api.filterMessages(config);
+                if ('task_id' in result) {
+                    dispatch({ type: 'UPDATE_TASK', payload: result });
+                } else {
+                    console.log('Filter executed immediately, refreshing data...');
+                    await refreshData();
+                }
+            } catch (error: unknown) {
+                dispatch({ type: 'SET_ERROR', payload: String(error) });
+                dispatch({ type: 'SET_LOADING', payload: false });
             }
         },
 
@@ -225,10 +217,9 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
                 dispatch({ type: 'SET_ERROR', payload: null });
                 const task = await api.startAnalysis(modules);
                 dispatch({ type: 'UPDATE_TASK', payload: task });
-            } catch (error: any) {
-                dispatch({ type: 'SET_ERROR', payload: error.message });
-            } finally {
-                // Loading is set to false by the polling mechanism or data refresh
+            } catch (error: unknown) {
+                dispatch({ type: 'SET_ERROR', payload: String(error) });
+                dispatch({ type: 'SET_LOADING', payload: false });
             }
         },
 
@@ -238,8 +229,8 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
             try {
                 await api.clearSession();
                 dispatch({ type: 'RESET_STATE' });
-            } catch (error: any) {
-                dispatch({ type: 'SET_ERROR', payload: error.message });
+            } catch (error: unknown) {
+                dispatch({ type: 'SET_ERROR', payload: String(error) });
             }
         },
     };
@@ -261,7 +252,7 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
             }
         };
         fetchInitialTasks();
-    }, []);
+    }, [refreshData]); // Include refreshData in dependencies
 
     return (
         <AppContext.Provider value={{ state, dispatch, actions }}>

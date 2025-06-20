@@ -2,15 +2,19 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Play, Download, BarChart3, Eye, EyeOff, ExternalLink } from 'lucide-react';
+import { Play, Download, BarChart3, Eye, EyeOff, ExternalLink, Search } from 'lucide-react';
 import { useAppContext } from '@/context/AppContext';
-import { Button } from '@/components/ui/Button';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/custom/Button';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/custom/Card';
+import { Badge } from '@/components/ui/custom/Badge';
 import { ANALYSIS_MODULES } from '@/types';
 import Link from 'next/link';
 
-export default function AnalysisSection() {
+interface AnalysisSectionProps {
+    onTabChange?: (tabId: string) => void;
+}
+
+export default function AnalysisSection({ onTabChange }: AnalysisSectionProps) {
     const { state, actions } = useAppContext();
     const [selectedModules, setSelectedModules] = useState<string[]>(
         ANALYSIS_MODULES.filter(m => m.enabled).map(m => m.key)
@@ -44,6 +48,12 @@ export default function AnalysisSection() {
         }
     };
 
+    const handleGoToSearch = () => {
+        if (onTabChange) {
+            onTabChange('search');
+        }
+    };
+
     if (!state.filteredMessages.length) {
         return (
             <div className="text-center py-12">
@@ -54,16 +64,29 @@ export default function AnalysisSection() {
         );
     }
 
+    // Check if there are any running analysis tasks
+    const hasRunningAnalysis = state.tasks.some(
+        task => task.status === 'running' &&
+            (task.name?.includes('analysis') || task.stage?.includes('analysis') || task.stage?.includes('Analyzing'))
+    );
+
     return (
         <div className="space-y-6">
             <div className="text-center">
                 <h2 className="text-2xl font-bold mb-2">Analysis Configuration</h2>
                 <p className="text-muted-foreground">
-                    Select analysis modules to run on your filtered messages
+                    Select analysis modules to run on your {state.filteredMessages.length} filtered messages
                 </p>
+                {state.analysisResult && (
+                    <div className="mt-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                        <p className="text-green-700 dark:text-green-300 text-sm font-medium">
+                            ✅ Analysis completed! You can now explore your data in the Search tab or view the full Dashboard.
+                        </p>
+                    </div>
+                )}
             </div>
 
-            {/* Module Selection Card ... (This part remains the same) */}
+            {/* Module Selection Card */}
             <Card>
                 <CardHeader>
                     <CardTitle className="flex items-center space-x-2">
@@ -144,11 +167,11 @@ export default function AnalysisSection() {
 
                         <Button
                             onClick={handleStartAnalysis}
-                            disabled={selectedModules.length === 0 || state.isLoading}
-                            loading={state.isLoading}
+                            disabled={selectedModules.length === 0 || state.isLoading || hasRunningAnalysis}
+                            loading={state.isLoading || hasRunningAnalysis}
                             icon={Play}
                         >
-                            Start Analysis
+                            {hasRunningAnalysis ? 'Analyzing...' : 'Start Analysis'}
                         </Button>
                     </div>
                 </CardContent>
