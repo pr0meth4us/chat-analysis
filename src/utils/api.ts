@@ -35,7 +35,7 @@ async function handleResponse<T>(response: Response): Promise<T> {
         return response.json();
     }
 
-    return response.text() as T;
+    return response.text() as unknown as T;
 }
 
 export const api = {
@@ -79,27 +79,27 @@ export const api = {
     // Data Downloads
     async getProcessedMessages(): Promise<any[]> {
         const response = await fetch(`${API_BASE}/data/processed`, {
-            credentials: 'include', // Send session cookie
+            credentials: 'include',
         });
         return handleResponse<any[]>(response);
     },
 
     async getFilteredMessages(): Promise<any[]> {
         const response = await fetch(`${API_BASE}/data/filtered`, {
-            credentials: 'include', // Send session cookie
+            credentials: 'include',
         });
         return handleResponse<any[]>(response);
     },
 
     async getAnalysisReport(): Promise<any> {
         const response = await fetch(`${API_BASE}/data/report`, {
-            credentials: 'include', // Send session cookie
+            credentials: 'include',
         });
         return handleResponse<any>(response);
     },
 
     // Filtering
-    async filterMessages(config: FilterConfig): Promise<{ message: string }> {
+    async filterMessages(config: FilterConfig): Promise<TaskStatus> {
         const response = await fetch(`${API_BASE}/filter`, {
             method: 'POST',
             headers: {
@@ -108,7 +108,7 @@ export const api = {
             body: JSON.stringify(config),
             credentials: 'include', // Send session cookie
         });
-        return handleResponse<{ message: string }>(response);
+        return handleResponse<TaskStatus>(response);
     },
 
     // Analysis
@@ -148,6 +148,7 @@ export const api = {
         });
         return handleResponse<SearchResult>(response);
     },
+
     async downloadProcessedFile(): Promise<void> {
         const response = await fetch(`${API_BASE}/data/processed`, {
             credentials: 'include',
@@ -155,11 +156,102 @@ export const api = {
         await handleFileDownload(response, 'processed_messages.json');
     },
 
-    // NEW: Download Filtered Messages
     async downloadFilteredFile(): Promise<void> {
         const response = await fetch(`${API_BASE}/data/filtered`, {
             credentials: 'include',
         });
         await handleFileDownload(response, 'filtered_messages.json');
+    },
+
+    // MODIFIED: downloadChatAsHtml now includes the message source
+    async downloadChatAsHtml(
+        messages: any[],
+        onProgress: (progress: number) => void
+    ): Promise<Blob> {
+        return new Promise((resolve, reject) => {
+            let renderedHtml = `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Chat Log</title>
+            <style>
+                body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f0f2f5; color: #050505; margin: 0; padding: 20px; display: flex; justify-content: center; }
+                .chat-container { width: 100%; max-width: 800px; background-color: #ffffff; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24); display: flex; flex-direction: column; }
+                .chat-header { padding: 16px; background-color: #007aff; color: white; text-align: center; font-size: 1.25rem; font-weight: 600; border-top-left-radius: 8px; border-top-right-radius: 8px; }
+                .chat-body { padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+                .message { display: flex; flex-direction: column; max-width: 75%; padding: 10px 15px; border-radius: 18px; line-height: 1.4; word-wrap: break-word; }
+                .message.me { background-color: #007aff; color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+                .message.other { background-color: #e5e5ea; color: #050505; align-self: flex-start; border-bottom-left-radius: 4px; }
+                .sender { font-weight: 600; margin-bottom: 4px; font-size: 0.8rem; opacity: 0.8; }
+                /* MODIFIED: Styles for the new metadata container */
+                .meta-info { display: flex; justify-content: space-between; align-items: center; font-size: 0.7rem; color: #8e8e93; margin-top: 5px; }
+                .message.me .meta-info { color: #f0f0f0; opacity: 0.9; }
+                .source { font-style: italic; }
+            </style>
+        </head>
+        <body>
+            <div class="chat-container">
+                <div class="chat-header">Chat Log</div>
+                <div class="chat-body">
+      `;
+
+            const totalMessages = messages.length;
+            if (totalMessages === 0) {
+                renderedHtml += '</div></div></body></html>';
+                resolve(new Blob([renderedHtml], { type: 'text/html' }));
+                return;
+            }
+
+            let processedCount = 0;
+            const processBatch = () => {
+                const batchSize = 50;
+                const batchEnd = Math.min(processedCount + batchSize, totalMessages);
+
+                for (let i = processedCount; i < batchEnd; i++) {
+                    const msg = messages[i];
+                    const senderClass = msg.sender === 'me' ? 'me' : 'other';
+                    const senderName = msg.sender === 'me' ? 'Me' : msg.sender || 'Other';
+
+                    // Sanitize message content to prevent HTML injection
+                    const sanitizedMessage = msg.message
+                        ? String(msg.message).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;")
+                        : '';
+
+                    const sourceText = msg.source || 'Unknown';
+
+                    // MODIFIED: Added source to the metadata section
+                    renderedHtml += `
+            <div class="message ${senderClass}">
+              <div class="sender">${senderName}</div>
+              <div>${sanitizedMessage}</div>
+              <div class="meta-info">
+                <span class="source">${sourceText}</span>
+                <span class="timestamp">${new Date(msg.timestamp).toLocaleString()}</span>
+              </div>
+            </div>
+          `;
+                }
+
+                processedCount = batchEnd;
+                const currentProgress = Math.round((processedCount / totalMessages) * 100);
+                onProgress(currentProgress);
+
+                if (processedCount < totalMessages) {
+                    setTimeout(processBatch, 20); // Simulate delay
+                } else {
+                    renderedHtml += `
+                </div>
+            </div>
+        </body>
+        </html>
+        `;
+                    resolve(new Blob([renderedHtml], { type: 'text/html' }));
+                }
+            };
+
+            processBatch();
+        });
     },
 };

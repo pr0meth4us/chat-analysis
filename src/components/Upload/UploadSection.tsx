@@ -1,101 +1,147 @@
 'use client';
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { motion } from 'framer-motion';
-import { Upload, FileText, AlertCircle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Upload, FileText, AlertCircle, Trash2, X, Send } from 'lucide-react';
 import { useAppContext } from '@/context/AppContext';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { ACCEPTED_FILE_TYPES, MAX_FILE_SIZE } from '@/utils/constants';
 
+/**
+ * UploadSection provides a user interface for selecting and processing files.
+ * It supports drag-and-drop, file selection, and managing a list of files before processing.
+ */
 export default function UploadSection() {
     const { actions, state } = useAppContext();
+    const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 
-    const onDrop = useCallback(async (acceptedFiles: File[]) => {
-        if (acceptedFiles.length > 0) {
-            const file = acceptedFiles[0];
-            await actions.uploadFile(file);
-        }
-    }, [actions]);
+    const onDrop = useCallback((acceptedFiles: File[]) => {
+        // Add new files to the list, preventing duplicates based on name and size.
+        setSelectedFiles(prevFiles => {
+            const newFiles = acceptedFiles.filter(
+                newFile => !prevFiles.some(prevFile => prevFile.name === newFile.name && prevFile.size === newFile.size)
+            );
+            return [...prevFiles, ...newFiles];
+        });
+    }, []);
 
     const { getRootProps, getInputProps, isDragActive, fileRejections } = useDropzone({
         onDrop,
         accept: ACCEPTED_FILE_TYPES,
         maxSize: MAX_FILE_SIZE,
-        multiple: false,
+        multiple: true, // Enable multiple file selection
     });
+
+    const handleRemoveFile = (fileToRemove: File) => {
+        setSelectedFiles(prevFiles => prevFiles.filter(file => file !== fileToRemove));
+    };
+
+    const handleClearAll = () => {
+        setSelectedFiles([]);
+    };
+
+    const handleProcessFiles = async () => {
+        if (selectedFiles.length === 0) return;
+
+        // Process all selected files. The context handles the async nature of the tasks.
+        await Promise.all(selectedFiles.map(file => actions.uploadFile(file).catch(error => {
+            console.error(`Upload failed for ${file.name}:`, error);
+            // Error is set in the context, no need to handle here.
+        })));
+
+        // Clear the file list after starting the processing.
+        setSelectedFiles([]);
+    };
 
     return (
         <div className="space-y-6">
             <div className="text-center">
                 <h2 className="text-2xl font-bold mb-2">Upload Your Data</h2>
                 <p className="text-muted-foreground">
-                    Upload HTML, JSON, or ZIP files containing your message data
+                    Upload HTML, JSON, or ZIP files containing your message data.
                 </p>
             </div>
 
+            {/* Dropzone for file selection */}
             <motion.div
                 {...getRootProps()}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
                 className={`relative border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all duration-200 ${
                     isDragActive
-                        ? 'border-primary bg-primary/5'
+                        ? 'border-primary bg-primary/5 shadow-inner'
                         : 'border-muted-foreground/25 hover:border-primary/50 hover:bg-accent/5'
                 }`}
             >
                 <input {...getInputProps()} />
-
                 <div className="flex flex-col items-center space-y-4">
-                    <div className={`p-4 rounded-full transition-colors ${
-                        isDragActive ? 'bg-primary/10' : 'bg-muted'
-                    }`}>
-                        <Upload className={`h-8 w-8 ${
-                            isDragActive ? 'text-primary' : 'text-muted-foreground'
-                        }`} />
+                    <div className="p-4 rounded-full bg-muted transition-colors">
+                        <Upload className="h-8 w-8 text-muted-foreground" />
                     </div>
-
                     <div>
                         <p className="text-lg font-medium">
-                            {isDragActive ? 'Drop your file here' : 'Drag & drop your file here'}
+                            {isDragActive ? 'Drop files here' : 'Drag & drop files to upload'}
                         </p>
                         <p className="text-sm text-muted-foreground mt-1">
-                            or click to browse files
+                            or click to browse
                         </p>
                     </div>
-
-                    <Button variant="outline" size="sm" disabled={state.isLoading}>
-                        {state.isLoading ? 'Processing...' : 'Choose File'}
-                    </Button>
                 </div>
             </motion.div>
 
-            {/* File Type Info */}
-            <Card className="p-4">
-                <div className="flex items-start space-x-3">
-                    <FileText className="h-5 w-5 text-primary mt-0.5" />
-                    <div>
-                        <h3 className="font-medium mb-2">Supported File Types</h3>
-                        <ul className="text-sm text-muted-foreground space-y-1">
-                            <li>• <strong>JSON</strong> - Structured message data</li>
-                            <li>• <strong>HTML</strong> - Exported chat files</li>
-                            <li>• <strong>ZIP</strong> - Compressed archives containing multiple files</li>
-                        </ul>
-                        <p className="text-xs text-muted-foreground mt-2">
-                            Maximum file size: 100MB
-                        </p>
-                    </div>
-                </div>
-            </Card>
+            {/* List of selected files */}
+            <AnimatePresence>
+                {selectedFiles.length > 0 && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, height: 0, transition: { duration: 0.3 } }}
+                    >
+                        <Card className="p-4">
+                            <div className="flex justify-between items-center mb-3">
+                                <h3 className="font-medium">Selected Files ({selectedFiles.length})</h3>
+                                <Button variant="ghost" size="sm" onClick={handleClearAll} icon={Trash2}>
+                                    Clear All
+                                </Button>
+                            </div>
+                            <ul className="space-y-2 max-h-48 overflow-y-auto">
+                                {selectedFiles.map((file, index) => (
+                                    <li key={`${file.name}-${index}`} className="flex items-center justify-between p-2 rounded-md bg-secondary animate-in fade-in">
+                                        <div className="flex items-center space-x-2 overflow-hidden">
+                                            <FileText className="h-4 w-4 flex-shrink-0" />
+                                            <span className="text-sm truncate">{file.name}</span>
+                                            <span className="text-xs text-muted-foreground">({(file.size / 1024 / 1024).toFixed(2)} MB)</span>
+                                        </div>
+                                        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleRemoveFile(file)}>
+                                            <X className="h-4 w-4" />
+                                        </Button>
+                                    </li>
+                                ))}
+                            </ul>
+                        </Card>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
-            {/* Upload Errors */}
+            {/* Action button to start processing */}
+            <div className="text-center pt-4">
+                <Button
+                    onClick={handleProcessFiles}
+                    disabled={selectedFiles.length === 0 || state.isLoading}
+                    icon={Send}
+                    size="lg"
+                >
+                    Process {selectedFiles.length > 0 ? `${selectedFiles.length} File(s)` : 'Files'}
+                </Button>
+            </div>
+
+            {/* Error Displays */}
             {fileRejections.length > 0 && (
-                <Card className="p-4 border-destructive">
+                 <Card className="p-4 border-destructive bg-destructive/10">
                     <div className="flex items-start space-x-3">
                         <AlertCircle className="h-5 w-5 text-destructive mt-0.5" />
                         <div>
-                            <h3 className="font-medium text-destructive mb-2">Upload Error</h3>
+                            <h3 className="font-medium text-destructive mb-2">Files Rejected</h3>
                             {fileRejections.map(({ file, errors }) => (
                                 <div key={file.name} className="text-sm">
                                     <p className="font-medium">{file.name}</p>
@@ -110,31 +156,16 @@ export default function UploadSection() {
                     </div>
                 </Card>
             )}
-
-            {/* App Error */}
             {state.error && (
-                <Card className="p-4 border-destructive">
+                 <Card className="p-4 border-destructive bg-destructive/10">
                     <div className="flex items-start space-x-3">
                         <AlertCircle className="h-5 w-5 text-destructive mt-0.5" />
                         <div>
-                            <h3 className="font-medium text-destructive mb-1">Error</h3>
+                            <h3 className="font-medium text-destructive mb-1">An Error Occurred</h3>
                             <p className="text-sm text-destructive/80">{state.error}</p>
                         </div>
                     </div>
                 </Card>
-            )}
-
-            {/* Clear Session */}
-            {(state.processedMessages.length > 0 || state.tasks.length > 0) && (
-                <div className="flex justify-center">
-                    <Button
-                        variant="outline"
-                        onClick={actions.clearSession}
-                        disabled={state.isLoading}
-                    >
-                        Clear Session
-                    </Button>
-                </div>
             )}
         </div>
     );

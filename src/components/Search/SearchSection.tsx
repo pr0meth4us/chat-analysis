@@ -4,9 +4,8 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Search, Hash } from 'lucide-react';
 import { useAppContext } from '@/context/AppContext';
-import { Button } from '@/components/ui/Button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
-import { Tabs } from '@/components/ui/Tabs';
+import { Tabs } from '@/components/ui/SearchTabs';
 import KeywordCount from './KeywordCount';
 import FuzzySearch from './FuzzySearch';
 
