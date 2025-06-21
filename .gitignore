@@ -146,3 +146,6 @@ venv*/
 *.onnx
 *.pkl
 
+.idea
+samples
+/samples/

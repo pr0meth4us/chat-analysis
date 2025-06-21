@@ -28,11 +28,7 @@ def get_session_tasks_endpoint():
 def clear_session_endpoint():
     """Clears all data for the current session, including associated tasks."""
     session_id = session_manager.get_session_id()
-
-    # --- ADDED: Clear tasks from the task manager ---
     task_manager.clear_session_tasks(session_id)
-
-    # This function clears file-based storage
     session_manager.clear_session_data(session_id)
 
     log(f"Cleared all data and tasks for session {session_id}")

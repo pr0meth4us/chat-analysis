@@ -42,7 +42,22 @@ class ChatAnalyzer:
         self.english_pattern = re.compile(r'\b[a-zA-Z]+\b')
         self.khmer_pattern = re.compile(r'[\u1780-\u17FF]+')
         self.sentence_pattern = re.compile(r'(?<!\w\.\w.)(?<![A-Z][a-z]\.)(?<=\.|\?|\!)\s')
-        self.reaction_pattern = re.compile(r'^(Liked|Loved|Laughed at|Emphasized|Questioned|Disliked) ".*"$')
+        self.reaction_patterns = [
+            # iMessage format: "Liked "message..."", "Laughed at "message...""
+            re.compile(r'^(Liked|Laughed at|Emphasized|Loved|Disliked|Questioned)\s+"', re.IGNORECASE),
+
+            # Instagram/Facebook format: "Reacted with [emoji/text] to..."
+            re.compile(r'reacted with (.+?) to (?:your|their) message', re.IGNORECASE),
+
+            # A more generic "reacted to" format
+            re.compile(r'reacted (.+?) to a message', re.IGNORECASE)
+        ]
+
+        # Other patterns
+        self.url_pattern = re.compile(r'https?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(),]|%[0-9a-fA-F][0-9a-fA-F])+|www\.')
+        self.word_pattern = re.compile(r'\b\w+\b')
+        self.sentence_pattern = re.compile(r'(?<!\w\.\w.)(?<![A-Z][a-z]\.)(?<=\.|\?|\!)\s')
+
 
         # Load lexicons from the dedicated module
         self.generic_words = sentiment_lexicons.generic_words
@@ -53,6 +68,82 @@ class ChatAnalyzer:
         self.romance_words = sentiment_lexicons.romance_words
         self.sexual_words = sentiment_lexicons.sexual_words
         self.argument_words = sentiment_lexicons.argument_words
+
+    def _find_reaction_type(self, message: str):
+        """
+        Iterates through known reaction regex patterns to find and extract a reaction type.
+
+        Args:
+            message: The text content of a message.
+
+        Returns:
+            The extracted reaction type (e.g., "Liked", "❤️") or None if no match is found.
+        """
+        if not message:
+            return None
+        for pattern in self.reaction_patterns:
+            match = pattern.search(message)
+            if match:
+                # Return the content of the first (and only) capturing group
+                return match.group(1).strip()
+        return None
+
+    def load_and_preprocess(self):
+        """
+        Load and preprocess data, identifying reactions from message text using regex patterns.
+        """
+        self._update_progress(10, "Loading data")
+
+        # --- Data Loading (same as before) ---
+        if self.input_type == 'file' and self.file_path:
+            with open(self.file_path, 'r', encoding='utf-8') as f:
+                content = f.read().strip()
+                self.data = json.loads(content) if content.startswith('[') else [json.loads(line) for line in
+                                                                                 content.split('\n') if line.strip()]
+        if not self.data: raise ValueError("No data to preprocess.")
+        self._update_progress(30, f"Preprocessing {len(self.data)} messages")
+        df = pd.DataFrame(self.data)
+
+        # --- Basic Preprocessing (same as before) ---
+        df['message'] = df['message'].astype(str).fillna('')
+        df['sender'] = df['sender'].astype('category')
+        df['datetime'] = pd.to_datetime(df['timestamp'], errors='coerce')
+        df.dropna(subset=['datetime'], inplace=True)
+        df.sort_values('datetime', inplace=True, ignore_index=True)
+        if df.empty: raise ValueError("No valid messages with timestamps found.")
+        self._update_progress(50, "Engineering features")
+
+        # --- NEW REACTION AND FEATURE LOGIC ---
+
+        # 1. Apply our helper function to every message to find the reaction type.
+        #    This will be None (NaN) if no reaction pattern is found.
+        df['reaction_type'] = df['message'].apply(self._find_reaction_type)
+
+        # 2. A message is a reaction if a reaction_type was successfully extracted.
+        df['is_reaction'] = df['reaction_type'].notna()
+
+        # 3. For text analysis (sentiment, topics), create a column that is blank for reactions.
+        df['text_content'] = df['message'].where(~df['is_reaction'], '')
+
+        # 4. Calculate other features.
+        df['message_length'] = df['message'].str.len()
+        df['word_count'] = df['message'].str.split().str.len()
+        df['has_emoji'] = df['message'].apply(lambda x: bool(emoji.emoji_list(x)))
+        df['has_question'] = df['text_content'].str.contains(r'\?', na=False) # Check only non-reactions
+        df['has_url'] = df['text_content'].str.contains(self.url_pattern, na=False) # Check only non-reactions
+
+        # --- Remainder of function is the same ---
+        dt = df['datetime'].dt
+        df['date'] = pd.to_datetime(dt.date)
+        df['hour'] = dt.hour
+        df['day_of_week'] = dt.day_name()
+        df['is_weekend'] = dt.weekday >= 5
+        df['time_gap_minutes'] = df['datetime'].diff().dt.total_seconds().fillna(0) / 60
+        new_conv_mask = df['time_gap_minutes'] > 60
+        df['conversation_id'] = new_conv_mask.cumsum().astype(int)
+
+        self.df = df
+        self._update_progress(70, "Preprocessing completed")
 
     def _update_progress(self, progress_percent: float, step_name: str):
         """Simplified progress update helper."""
@@ -88,58 +179,6 @@ class ChatAnalyzer:
             return None
         return obj
 
-    def load_and_preprocess(self):
-        """Load and preprocess data with simplified progress reporting."""
-        self._update_progress(10, "Loading data")
-
-        if self.input_type == 'file' and self.file_path:
-            with open(self.file_path, 'r', encoding='utf-8') as f:
-                content = f.read().strip()
-                self.data = json.loads(content) if content.startswith('[') else [json.loads(line) for line in
-                                                                                 content.split('\n') if line.strip()]
-
-        if not self.data:
-            raise ValueError("No data to preprocess. Source is empty.")
-
-        self._update_progress(30, f"Preprocessing {len(self.data)} messages")
-
-        df = pd.DataFrame(self.data)
-
-        df['source'] = df['source'].astype('category')
-        df['message'] = df['message'].astype(str).fillna('')
-        df['sender'] = df['sender'].astype('category')
-        df['datetime'] = pd.to_datetime(df['timestamp'], errors='coerce')
-        df.dropna(subset=['datetime'], inplace=True)
-        df.sort_values('datetime', inplace=True, ignore_index=True)
-
-        if df.empty:
-            raise ValueError("No valid messages with timestamps found in data.")
-
-        self._update_progress(50, "Engineering features")
-
-        dt = df['datetime'].dt
-        df['date'] = pd.to_datetime(dt.date)
-        df['hour'] = dt.hour
-        df['day_of_week'] = dt.day_name()
-        df['is_weekend'] = dt.weekday >= 5
-
-        df['message_length'] = df['message'].str.len()
-        df['word_count'] = df['message'].str.split().str.len()
-        df['has_emoji'] = df['message'].apply(lambda x: bool(emoji.emoji_list(x)))
-        df['has_question'] = df['message'].str.contains(r'\?', na=False)
-        df['has_url'] = df['message'].str.contains(self.url_pattern, na=False)
-
-        df['reaction_type'] = df['message'].apply(lambda msg: (self.reaction_pattern.match(msg) or {}).get(1))
-        df['is_reaction'] = df['reaction_type'].notna()
-        df.loc[df['is_reaction'], ['message_length', 'word_count']] = 0
-
-        df['time_gap_minutes'] = df['datetime'].diff().dt.total_seconds().fillna(0) / 60
-        new_conv_mask = df['time_gap_minutes'] > 60
-        df['conversation_id'] = new_conv_mask.cumsum().astype(int)
-
-        self.df = df
-        self._update_progress(70, "Preprocessing completed")
-
     def generate_comprehensive_report(self, modules_to_run: list = None):
         """
         Generates a report by running specified or all analysis modules.
@@ -170,7 +209,7 @@ class ChatAnalyzer:
             'sentiment_analysis': {'func': af.analyze_sentiment, 'deps': [],
                                    'args': {'word_pattern': self.word_pattern, 'positive_words': self.positive_words,
                                             'negative_words': self.negative_words}},
-            'topic_modeling': {'func': af.analyze_topics_with_nmf, 'deps': [],
+            'topic_modeling': {'func': af.analyze_topics, 'deps': [],
                                'args': {'generic_words': self.generic_words}},
             'user_behavior': {'func': af.analyze_user_behavior, 'deps': [], 'args': {}},
             'argument_analysis': {'func': af.analyze_argument_language, 'deps': [],
@@ -180,11 +219,15 @@ class ChatAnalyzer:
                                       'args': {'romance_words': self.romance_words}},
             'sexual_tone_analysis': {'func': af.analyze_sexual_tone, 'deps': [],
                                      'args': {'sexual_words': self.sexual_words}},
+            'happy_tone_analysis': {'func': af.analyze_happy_tone, 'deps': [],
+                                    'args': {'positive_words': self.positive_words}},
             'relationship_metrics': {
                 'func': af.calculate_relationship_metrics,
                 'deps': ['conversation_patterns', 'response_metrics'],
                 'args': {}
             },
+            'emotion_analysis': {'func': af.analyze_emotions_ml, 'deps': [], 'args': {}},
+
         }
 
         # Build execution queue with dependencies

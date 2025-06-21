@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useReducer, useEffect, useState, useRef, useCallback } from 'react';
-import { AppState, TaskStatus, Message } from '@/types';
+import { AppState, TaskStatus, Message, AnalysisResult } from '@/types';
 import { api } from '@/utils/api';
 
 interface AppContextType {
@@ -13,6 +13,10 @@ interface AppContextType {
         startAnalysis: (modules?: string[]) => Promise<void>;
         refreshData: () => Promise<void>;
         clearSession: () => Promise<void>;
+        // --- NEW ACTIONS FOR INSERTING DATA ---
+        insertProcessedMessages: (file: File) => Promise<void>;
+        insertFilteredMessages: (file: File) => Promise<void>;
+        insertAnalysisReport: (file: File) => Promise<void>;
     };
 }
 
@@ -127,7 +131,6 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
         }
     }, []);
 
-    // Effect to control polling based on task status
     useEffect(() => {
         const shouldBePolling = state.tasks.some(
             (task) => task.status === 'pending' || task.status === 'running'
@@ -137,49 +140,52 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
         }
     }, [state.tasks, isPolling]);
 
-    // FIXED POLLING LOGIC - Now includes refreshData in dependencies
     useEffect(() => {
         if (!isPolling) {
             return;
         }
-
         const pollTasks = async () => {
             try {
                 const response = await api.getSessionTasks();
                 const newTasksArray = Array.isArray(response.tasks)
                     ? response.tasks
                     : Object.values(response.tasks || {});
-
-                // Find if any task has just completed since the last check
                 const justCompletedTasks = newTasksArray.filter(currentTask => {
                     const prevTask = prevTasksRef.current.find(t => t.task_id === currentTask.task_id);
-                    // A task just completed if its previous state was running/pending and now it's completed.
                     return prevTask &&
                         (prevTask.status === 'running' || prevTask.status === 'pending') &&
                         currentTask.status === 'completed';
                 });
-
-                // Update the tasks in the state
                 dispatch({ type: 'SET_TASKS', payload: newTasksArray });
-
-                // If any task just finished, refresh all app data to get the latest results
                 if (justCompletedTasks.length > 0) {
                     console.log(`${justCompletedTasks.length} task(s) completed. Refreshing data.`);
                     await refreshData();
                 }
-
-                // Update the ref for the next poll
                 prevTasksRef.current = newTasksArray;
-
             } catch (error) {
                 console.error('Failed to poll tasks:', error);
                 dispatch({ type: 'SET_ERROR', payload: 'Task polling failed.' });
             }
         };
-
         const intervalId = setInterval(pollTasks, 2000);
         return () => clearInterval(intervalId);
-    }, [isPolling, refreshData]); // Now includes refreshData
+    }, [isPolling, refreshData]);
+
+    const handleFileUploadAndInsert = async (file: File, insertFunction: (data: any) => Promise<any>) => {
+        dispatch({ type: 'SET_LOADING', payload: true });
+        dispatch({ type: 'SET_ERROR', payload: null });
+        try {
+            const fileContent = await file.text();
+            const jsonData = JSON.parse(fileContent);
+            await insertFunction(jsonData);
+            await refreshData(); // Refresh all data to reflect the new state
+        } catch (error: any) {
+            console.error("Failed to insert data:", error);
+            dispatch({ type: 'SET_ERROR', payload: `Failed to upload and parse file: ${error.message}` });
+        } finally {
+            dispatch({ type: 'SET_LOADING', payload: false });
+        }
+    };
 
     const actions = {
         uploadFile: async (file: File) => {
@@ -233,12 +239,15 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
                 dispatch({ type: 'SET_ERROR', payload: String(error) });
             }
         },
+
+        // --- IMPLEMENTATION OF NEW ACTIONS ---
+        insertProcessedMessages: (file: File) => handleFileUploadAndInsert(file, api.insertProcessedMessages),
+        insertFilteredMessages: (file: File) => handleFileUploadAndInsert(file, api.insertFilteredMessages),
+        insertAnalysisReport: (file: File) => handleFileUploadAndInsert(file, api.insertAnalysisReport),
     };
 
-    // Initial data load on component mount
     useEffect(() => {
         refreshData();
-        // Also fetch initial tasks
         const fetchInitialTasks = async () => {
             try {
                 const response = await api.getSessionTasks();
@@ -246,13 +255,13 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
                     ? response.tasks
                     : Object.values(response.tasks || {});
                 dispatch({ type: 'SET_TASKS', payload: tasksArray });
-                prevTasksRef.current = tasksArray; // Initialize prevTasksRef
+                prevTasksRef.current = tasksArray;
             } catch (error) {
                 console.error('Failed to get initial tasks:', error);
             }
         };
         fetchInitialTasks();
-    }, [refreshData]); // Include refreshData in dependencies
+    }, [refreshData]);
 
     return (
         <AppContext.Provider value={{ state, dispatch, actions }}>

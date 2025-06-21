@@ -93,12 +93,42 @@ export const api = {
         return handleResponse<AnalysisResult>(response);
     },
 
+    // --- NEW INSERTION METHODS ---
+    async insertProcessedMessages(messages: Message[]): Promise<{ message: string; count: number }> {
+        const response = await fetch(`${API_BASE}/data/insert/processed`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(messages),
+            credentials: 'include',
+        });
+        return handleResponse<{ message: string; count: number }>(response);
+    },
+
+    async insertFilteredMessages(messages: Message[]): Promise<{ message: string; count: number }> {
+        const response = await fetch(`${API_BASE}/data/insert/filtered`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(messages),
+            credentials: 'include',
+        });
+        return handleResponse<{ message: string; count: number }>(response);
+    },
+
+    async insertAnalysisReport(report: AnalysisResult): Promise<{ message: string }> {
+        const response = await fetch(`${API_BASE}/data/insert/report`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(report),
+            credentials: 'include',
+        });
+        return handleResponse<{ message: string }>(response);
+    },
+    // --- END NEW INSERTION METHODS ---
+
     async filterMessages(config: FilterConfig): Promise<TaskStatus | Message[]> {
         const response = await fetch(`${API_BASE}/filter`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(config),
             credentials: 'include',
         });
@@ -115,9 +145,7 @@ export const api = {
     async startAnalysis(modulesToRun?: string[]): Promise<TaskStatus> {
         const response = await fetch(`${API_BASE}/analyze`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ modules_to_run: modulesToRun }),
             credentials: 'include',
         });
@@ -127,9 +155,7 @@ export const api = {
     async countKeyword(keyword: string): Promise<KeywordCountResult> {
         const response = await fetch(`${API_BASE}/search/count_keyword`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ keyword }),
             credentials: 'include',
         });
@@ -139,9 +165,7 @@ export const api = {
     async fuzzySearch(query: string, cutoff: number = 75): Promise<SearchResult> {
         const response = await fetch(`${API_BASE}/search/fuzzy`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ query, cutoff }),
             credentials: 'include',
         });

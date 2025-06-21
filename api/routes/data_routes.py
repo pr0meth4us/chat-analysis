@@ -1,10 +1,13 @@
+from flask import Blueprint, jsonify, request
 from api.session_manager import session_manager
 from api.helpers.response_helpers import make_json_response
 from utils import log
-from flask import Blueprint, jsonify
 
 data_bp = Blueprint('data', __name__)
 
+# ==============================================================================
+# GET (DOWNLOAD) ROUTES - (Existing Code)
+# ==============================================================================
 
 @data_bp.route('/data/processed', methods=['GET'])
 def download_processed_messages():
@@ -43,3 +46,78 @@ def download_analysis_report():
 
     log("Providing download for analysis report.")
     return make_json_response(report, filename="analysis_report.json")
+
+
+# ==============================================================================
+# POST (INSERT/UPLOAD) ROUTES - (New Code)
+# ==============================================================================
+
+@data_bp.route('/data/insert/processed', methods=['POST'])
+def insert_processed_messages():
+    """
+    Inserts a list of processed messages into the session.
+    Expects a JSON body containing a list of message objects.
+    """
+    session_id = session_manager.get_session_id()
+    messages = request.get_json()
+
+    if not messages or not isinstance(messages, list):
+        return jsonify({"error": "Request body must be a JSON list of message objects."}), 400
+
+    try:
+        session_manager.store_processed_messages(session_id, messages)
+        log(f"Inserted {len(messages)} processed messages into session {session_id}.")
+        return jsonify({
+            "message": "Successfully inserted processed messages.",
+            "count": len(messages)
+        }), 201
+    except Exception as e:
+        log(f"ERROR inserting processed messages: {e}")
+        return jsonify({"error": "An internal error occurred while storing messages."}), 500
+
+
+@data_bp.route('/data/insert/filtered', methods=['POST'])
+def insert_filtered_messages():
+    """
+    Inserts a list of filtered messages into the session.
+    Expects a JSON body containing a list of message objects.
+    """
+    session_id = session_manager.get_session_id()
+    messages = request.get_json()
+
+    if not messages or not isinstance(messages, list):
+        return jsonify({"error": "Request body must be a JSON list of message objects."}), 400
+
+    try:
+        session_manager.store_filtered_messages(session_id, messages)
+        log(f"Inserted {len(messages)} filtered messages into session {session_id}.")
+        return jsonify({
+            "message": "Successfully inserted filtered messages.",
+            "count": len(messages)
+        }), 201
+    except Exception as e:
+        log(f"ERROR inserting filtered messages: {e}")
+        return jsonify({"error": "An internal error occurred while storing messages."}), 500
+
+
+@data_bp.route('/data/insert/report', methods=['POST'])
+def insert_analysis_report():
+    """
+    Inserts a full analysis report into the session.
+    Expects a JSON body containing the report object.
+    """
+    session_id = session_manager.get_session_id()
+    report = request.get_json()
+
+    if not report or not isinstance(report, dict):
+        return jsonify({"error": "Request body must be a JSON object representing the report."}), 400
+
+    try:
+        session_manager.store_analysis_result(session_id, report)
+        log(f"Inserted analysis report into session {session_id}.")
+        return jsonify({
+            "message": "Successfully inserted analysis report."
+        }), 201
+    except Exception as e:
+        log(f"ERROR inserting analysis report: {e}")
+        return jsonify({"error": "An internal error occurred while storing the report."}), 500

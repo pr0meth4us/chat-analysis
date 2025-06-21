@@ -12,9 +12,9 @@ import { ACCEPTED_FILE_TYPES, MAX_FILE_SIZE } from '@/utils/constants';
 export default function UploadSection() {
     const { actions, state } = useAppContext();
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+    const [isProcessing, setIsProcessing] = useState(false);
 
     const onDrop = useCallback((acceptedFiles: File[]) => {
-        // Add new files to the list, preventing duplicates based on name and size.
         setSelectedFiles(prevFiles => {
             const newFiles = acceptedFiles.filter(
                 newFile => !prevFiles.some(prevFile => prevFile.name === newFile.name && prevFile.size === newFile.size)
@@ -41,11 +41,18 @@ export default function UploadSection() {
     const handleProcessFiles = async () => {
         if (selectedFiles.length === 0) return;
 
-        await Promise.all(selectedFiles.map(file => actions.uploadFile(file).catch(error => {
-            console.error(`Upload failed for ${file.name}:`, error);
-        })));
-
-        setSelectedFiles([]);
+        setIsProcessing(true);
+        try {
+            await Promise.all(selectedFiles.map(file => actions.uploadFile(file).catch(error => {
+                console.error(`Upload failed for ${file.name}:`, error);
+                // Optionally show an error message to the user here
+            })));
+            setSelectedFiles([]);
+        } catch (error) {
+            console.error("An error occurred during file processing:", error);
+        } finally {
+            setIsProcessing(false);
+        }
     };
 
     return (
@@ -120,17 +127,18 @@ export default function UploadSection() {
             <div className="text-center pt-4">
                 <Button
                     onClick={handleProcessFiles}
-                    disabled={selectedFiles.length === 0 || state.isLoading}
+                    disabled={selectedFiles.length === 0 || isProcessing}
+                    loading={isProcessing}
                     icon={Send}
                     size="lg"
                 >
-                    Process {selectedFiles.length > 0 ? `${selectedFiles.length} File(s)` : 'Files'}
+                    {isProcessing ? 'Processing...' : `Process ${selectedFiles.length > 0 ? `${selectedFiles.length} File(s)` : 'Files'}`}
                 </Button>
             </div>
 
             {/* Error Displays */}
             {fileRejections.length > 0 && (
-                 <Card className="p-4 border-destructive bg-destructive/10">
+                <Card className="p-4 border-destructive bg-destructive/10">
                     <div className="flex items-start space-x-3">
                         <AlertCircle className="h-5 w-5 text-destructive mt-0.5" />
                         <div>
@@ -150,7 +158,7 @@ export default function UploadSection() {
                 </Card>
             )}
             {state.error && (
-                 <Card className="p-4 border-destructive bg-destructive/10">
+                <Card className="p-4 border-destructive bg-destructive/10">
                     <div className="flex items-start space-x-3">
                         <AlertCircle className="h-5 w-5 text-destructive mt-0.5" />
                         <div>

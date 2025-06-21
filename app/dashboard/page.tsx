@@ -11,6 +11,8 @@ import Link from 'next/link';
 export default function DashboardPage() {
     const { state } = useAppContext();
 
+    const result = state.analysisResult;
+
     return (
         <div className="min-h-screen p-4 sm:p-6 md:p-8">
             <div className="max-w-7xl mx-auto">
@@ -32,8 +34,9 @@ export default function DashboardPage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
                 >
-                    {state.analysisResult ? (
-                        <ResultsDashboard result={state.analysisResult} />
+                    {/* This is the correct logic */}
+                    {result ? (
+                        <ResultsDashboard result={result} />
                     ) : (
                         <Card className="glass p-12 text-center">
                             <p className="text-muted-foreground mb-4">

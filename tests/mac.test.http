@@ -21,6 +21,7 @@ Content-Type: text/html
 < /Users/nicksng/Desktop/school/aupp/code/google-drive-html-downloader/flat_chats/messages2_e6ec677f.html
 ----WebAppBoundary
 ###
+
 POST {{host}}/process
 Content-Type: multipart/form-data; boundary=----WebAppBoundary
 
@@ -30,8 +31,6 @@ Content-Disposition: form-data; name="file"; filename="data.html"
 < /Users/nicksng/Desktop/school/aupp/code/google-drive-html-downloader/flat_chats/messages2_e6ec677f.html
 ------WebAppBoundary--
 
-### STEP 2: Check Task Status
-GET {{host}}/tasks/status/91679c99-ca1e-4c62-bc8d-5c5e7d9503d2
 
 ### STEP 1: Process File
 POST {{host}}/process
@@ -42,10 +41,6 @@ Content-Disposition: form-data; name="file"; filename="data.zip"
 
 < /Users/nicksng/Desktop/school/aupp/code/google-drive-html-downloader/all_chats.zip
 ------WebAppBoundary--
-
-### STEP 2: Check Task Status
-GET {{host}}/tasks/status/b882f602-8aed-4165-ab80-f3b0a513fc3d
-
 
 ### STEP 3: Filter Data
 POST {{host}}/filter
@@ -61,23 +56,16 @@ Content-Type: application/json
 POST {{host}}/analyze
 Content-Type: application/json
 
+### STEP 4: Analyze Data
+POST {{host}}/analyze
+Content-Type: application/json
 
-###
-GET {{host}}/tasks/session
+{
+  "modules_to_run": [
+    "analyze_conversation_patterns"
+  ]
+}
 
-
-### Clear Session
-POST {{host}}/session/clear
-
-
-### Download PROCESSED messages
-GET {{host}}/data/processed
-
-### Download FILTERED messages
-GET {{host}}/data/filtered
-
-### Download the ANALYSIS report
-GET {{host}}/data/report
 
 ###
 POST {{host}}/search/fuzzy

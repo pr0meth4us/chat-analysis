@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Play, Download, BarChart3, Eye, EyeOff, ExternalLink, Search } from 'lucide-react';
+import { Play, Download, BarChart3, Eye, EyeOff, ExternalLink } from 'lucide-react';
 import { useAppContext } from '@/context/AppContext';
 import { Button } from '@/components/ui/custom/Button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/custom/Card';
@@ -10,15 +10,12 @@ import { Badge } from '@/components/ui/custom/Badge';
 import { ANALYSIS_MODULES } from '@/types';
 import Link from 'next/link';
 
-interface AnalysisSectionProps {
-    onTabChange?: (tabId: string) => void;
-}
-
-export default function AnalysisSection({ onTabChange }: AnalysisSectionProps) {
+export default function AnalysisSection() {
     const { state, actions } = useAppContext();
     const [selectedModules, setSelectedModules] = useState<string[]>(
         ANALYSIS_MODULES.filter(m => m.enabled).map(m => m.key)
     );
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
 
     const toggleModule = (moduleKey: string) => {
         setSelectedModules(prev =>
@@ -29,7 +26,14 @@ export default function AnalysisSection({ onTabChange }: AnalysisSectionProps) {
     };
 
     const handleStartAnalysis = async () => {
-        await actions.startAnalysis(selectedModules);
+        setIsAnalyzing(true);
+        try {
+            await actions.startAnalysis(selectedModules);
+        } catch(error) {
+            console.error("Analysis failed to start:", error);
+        } finally {
+            setIsAnalyzing(false);
+        }
     };
 
     const downloadReport = () => {
@@ -48,12 +52,6 @@ export default function AnalysisSection({ onTabChange }: AnalysisSectionProps) {
         }
     };
 
-    const handleGoToSearch = () => {
-        if (onTabChange) {
-            onTabChange('search');
-        }
-    };
-
     if (!state.filteredMessages.length) {
         return (
             <div className="text-center py-12">
@@ -63,12 +61,6 @@ export default function AnalysisSection({ onTabChange }: AnalysisSectionProps) {
             </div>
         );
     }
-
-    // Check if there are any running analysis tasks
-    const hasRunningAnalysis = state.tasks.some(
-        task => task.status === 'running' &&
-            (task.name?.includes('analysis') || task.stage?.includes('analysis') || task.stage?.includes('Analyzing'))
-    );
 
     return (
         <div className="space-y-6">
@@ -167,17 +159,16 @@ export default function AnalysisSection({ onTabChange }: AnalysisSectionProps) {
 
                         <Button
                             onClick={handleStartAnalysis}
-                            disabled={selectedModules.length === 0 || state.isLoading || hasRunningAnalysis}
-                            loading={state.isLoading || hasRunningAnalysis}
+                            disabled={selectedModules.length === 0 || isAnalyzing}
+                            loading={isAnalyzing}
                             icon={Play}
                         >
-                            {hasRunningAnalysis ? 'Analyzing...' : 'Start Analysis'}
+                            {isAnalyzing ? 'Analyzing...' : 'Start Analysis'}
                         </Button>
                     </div>
                 </CardContent>
             </Card>
 
-            {/* THIS IS THE MODIFIED ANALYSIS RESULTS SECTION */}
             {state.analysisResult && (
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}

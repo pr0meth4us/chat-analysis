@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { User, Trash2, Plus, X } from 'lucide-react';
+import { User, Trash2, X, Filter } from 'lucide-react';
 import { useAppContext } from '@/context/AppContext';
 import { Button } from '@/components/ui/custom/Button';
 import { Card } from '@/components/ui/custom/Card';
@@ -13,6 +13,8 @@ export default function FilterSection() {
     const [meUsers, setMeUsers] = useState<string[]>([]);
     const [removeUsers, setRemoveUsers] = useState<string[]>([]);
     const [otherLabel, setOtherLabel] = useState('other');
+    const [isFiltering, setIsFiltering] = useState(false);
+
 
     const availableSenders = state.senders.filter(
         sender => !meUsers.includes(sender) && !removeUsers.includes(sender)
@@ -35,12 +37,19 @@ export default function FilterSection() {
     };
 
     const handleFilter = async () => {
-        await actions.filterMessages({
-            me: meUsers,
-            remove: removeUsers,
-            other_label: otherLabel,
-        });
-        resetFilter();
+        setIsFiltering(true);
+        try {
+            await actions.filterMessages({
+                me: meUsers,
+                remove: removeUsers,
+                other_label: otherLabel,
+            });
+            resetFilter();
+        } catch(error) {
+            console.error("Failed to apply filters:", error);
+        } finally {
+            setIsFiltering(false);
+        }
     };
 
     const resetFilter = () => {
@@ -210,14 +219,15 @@ export default function FilterSection() {
                 <Button
                     variant="outline"
                     onClick={resetFilter}
-                    disabled={state.isLoading}
+                    disabled={isFiltering}
                 >
                     Reset
                 </Button>
                 <Button
                     onClick={handleFilter}
-                    disabled={state.isLoading || (meUsers.length === 0 && removeUsers.length === 0)}
-                    loading={state.isLoading}
+                    disabled={isFiltering || (meUsers.length === 0 && removeUsers.length === 0)}
+                    loading={isFiltering}
+                    icon={Filter}
                 >
                     Apply Filter
                 </Button>

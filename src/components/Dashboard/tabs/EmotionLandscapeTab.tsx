@@ -1,0 +1,71 @@
+'use client';
+
+import React from 'react';
+import { ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Tooltip } from 'recharts';
+import { AnalysisResult } from '@/types/analysis';
+import { Card } from '../layout/Card';
+import { InfoPopup } from '../layout/InfoPopup';
+import {CustomTooltip} from "@/components/Dashboard/shared/CustomTooltip";
+
+
+interface EmotionLandscapeTabProps {
+    result: AnalysisResult;
+    processedData: any;
+}
+
+const EmotionRadar = ({ data, title }: { data: any[], title: string }) => (
+    <Card>
+        <h3 className="text-lg font-semibold mb-4 text-gray-200 text-center">{title}</h3>
+        <ResponsiveContainer width="100%" height={300}>
+            <RadarChart cx="50%" cy="50%" outerRadius="80%" data={data}>
+                <PolarGrid stroke="#4a5568" />
+                <PolarAngleAxis dataKey="emotion" stroke="#9ca3af" fontSize={12} tick={{fill: '#e5e7eb'}}/>
+                <PolarRadiusAxis angle={30} domain={[0, 1]} tick={false} axisLine={false} />
+                <Radar name="Score" dataKey="score" stroke="#8884d8" fill="#8884d8" fillOpacity={0.6} />
+                <Tooltip content={<CustomTooltip/>}/>
+            </RadarChart>
+        </ResponsiveContainer>
+    </Card>
+);
+
+const EmotionMessages = ({ emotion, messages }: { emotion: string, messages: any[] }) => (
+    <div>
+        <h4 className="font-bold text-xl capitalize text-center mb-4 text-blue-300">{emotion}</h4>
+        <div className="space-y-3">
+            {messages?.slice(0,3).map((msg, i) => (
+                <div key={i} className="bg-gray-800/60 p-3 rounded-lg text-sm">
+                    <p className="italic">"{msg.message}"</p>
+                    <p className="text-xs text-gray-400 mt-2 text-right">- {msg.sender} (Score: {msg.score.toFixed(3)})</p>
+                </div>
+            ))}
+        </div>
+    </div>
+)
+
+export const EmotionLandscapeTab: React.FC<EmotionLandscapeTabProps> = ({ result, processedData }) => {
+    const { user1Name, user2Name, emotionSummary, user1Emotion, user2Emotion } = processedData;
+
+    return (
+        <div className="space-y-6">
+            <Card>
+                <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-xl font-bold text-gray-100">Emotion Landscape</h2>
+                    <InfoPopup text={result.emotion_analysis?.note || "Emotion scores are generated using an ML model to classify text. Scores range from 0 to 1, indicating the likelihood of a given emotion."} />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <EmotionRadar data={emotionSummary} title="Overall Emotion Scores" />
+                    <EmotionRadar data={user1Emotion} title={`${user1Name}'s Emotion Profile`} />
+                    <EmotionRadar data={user2Emotion} title={`${user2Name}'s Emotion Profile`} />
+                </div>
+            </Card>
+            <Card>
+                <h3 className="text-lg font-semibold mb-4 text-gray-200">Top Messages by Emotion</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <EmotionMessages emotion="joy" messages={result.emotion_analysis?.top_messages_per_emotion.joy} />
+                    <EmotionMessages emotion="sadness" messages={result.emotion_analysis?.top_messages_per_emotion.sadness} />
+                    <EmotionMessages emotion="anger" messages={result.emotion_analysis?.top_messages_per_emotion.anger} />
+                </div>
+            </Card>
+        </div>
+    )
+};

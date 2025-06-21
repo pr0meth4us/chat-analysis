@@ -1,0 +1,34 @@
+@host = http://localhost:5001
+### Download PROCESSED messages
+GET {{host}}/data/processed
+
+### Download FILTERED messages
+GET {{host}}/data/filtered
+
+### Download the ANALYSIS report
+GET {{host}}/data/report
+
+### Test Insert Processed Messages
+POST {{host}}/data/insert/processed
+Content-Type: application/json
+
+< /Users/nicksng/Desktop/school/aupp/code/chat-analysis/api/si/filtered_messages.json
+
+### Verify Inserted Processed Messages
+GET {{host}}/data/processed
+
+### Test Insert Filtered Messages
+POST {{host}}/data/insert/filtered
+Content-Type: application/json
+
+< /Users/nicksng/Desktop/school/aupp/code/chat-analysis/samples/filtered.json
+
+### Verify Inserted Filtered Messages
+GET {{host}}/data/filtered
+
+
+### Test Insert Analysis Report
+POST {{host}}/data/insert/report
+Content-Type: application/json
+
+< {{report_file_insert}}
