@@ -1,8 +1,11 @@
 'use client';
 
 import React, { useState, useMemo, FC } from 'react';
+import Link from 'next/link'; // Import Link for navigation
+import { ArrowLeft } from 'lucide-react'; // Import a suitable icon
 import { AnalysisResult } from '@/types/analysis';
 import { Card } from './layout/Card';
+import { Button } from '../ui/custom/Button'; // Import your custom Button
 
 // Import Tab Components
 import { OverviewTab } from './tabs/OverviewTab';
@@ -20,6 +23,7 @@ interface ResultsDashboardProps {
 export const ResultsDashboard: FC<ResultsDashboardProps> = ({ result }) => {
     const [activeTab, setActiveTab] = useState('overview');
 
+    // useMemo hook remains unchanged...
     const processedData = useMemo(() => {
         if (!result) return null;
 
@@ -164,7 +168,19 @@ export const ResultsDashboard: FC<ResultsDashboardProps> = ({ result }) => {
     return (
         <div className="bg-gray-900 text-white p-2 sm:p-6 rounded-2xl shadow-2xl border border-gray-700/50 font-sans">
             <div className="flex flex-wrap items-center justify-between mb-6 gap-4">
-                <h2 className="text-xl sm:text-2xl font-bold text-gray-100">Analysis Dashboard</h2>
+                {/* --- MODIFIED HEADER SECTION --- */}
+                <div className="flex items-center gap-4">
+                    <Link href="/" passHref>
+                        <Button variant="outline" size="sm" icon={ArrowLeft}>
+                            Back to App
+                        </Button>
+                    </Link>
+                    <h2 className="text-xl sm:text-2xl font-bold text-gray-100">
+                        Analysis Dashboard
+                    </h2>
+                </div>
+                {/* --- END MODIFIED HEADER SECTION --- */}
+
                 <div className="flex flex-wrap gap-1 sm:gap-2 p-1 bg-gray-800 rounded-lg">
                     <TabButton id="overview" label="Overview" />
                     <TabButton id="behavior-content" label="Behavior & Content" />

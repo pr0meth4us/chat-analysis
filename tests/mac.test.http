@@ -40,7 +40,7 @@ Content-Type: multipart/form-data; boundary=----WebAppBoundary
 ------WebAppBoundary
 Content-Disposition: form-data; name="file"; filename="data.zip"
 
-< C:\Users\phear\Downloads\Telegram Desktop\all_chats.zip
+< /Users/nicksng/Desktop/school/aupp/code/google-drive-html-downloader/all_chats.zip
 ------WebAppBoundary--
 
 ### STEP 3: Filter Data
