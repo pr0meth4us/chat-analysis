@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Search, MessageCircle, Calendar, User } from 'lucide-react';
 import { Button } from '@/components/ui/custom/Button';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/custom/Card';
+import { Card } from '@/components/ui/custom/Card';
 import { Badge } from '@/components/ui/custom/Badge';
 import { useApi } from '@/hooks/useApi';
 import { api } from '@/utils/api';

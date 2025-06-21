@@ -47,7 +47,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ statusText }) => {
                     <Button variant="outline" size="sm" icon={History} onClick={() => setIsRestoreModalOpen(true)}>
                         Restore
                     </Button>
-                    <Button variant="destructive" size="sm" icon={Trash2} onClick={handleClearSession}>
+                    <Button className="bg-red-400" size="sm" icon={Trash2} onClick={handleClearSession}>
                         Clear Session
                     </Button>
                 </div>

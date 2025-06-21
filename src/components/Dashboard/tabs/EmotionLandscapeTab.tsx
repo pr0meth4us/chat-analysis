@@ -65,11 +65,11 @@ export const EmotionLandscapeTab: React.FC<EmotionLandscapeTabProps> = ({ result
             <Card>
                 <h3 className="text-lg font-semibold mb-4 text-gray-200">Top Messages by Emotion</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <EmotionMessages emotion="joy" messages={result.emotion_analysis?.top_messages_per_emotion.joy} />
-                    <EmotionMessages emotion="sadness" messages={result.emotion_analysis?.top_messages_per_emotion.sadness} />
-                    <EmotionMessages emotion="anger" messages={result.emotion_analysis?.top_messages_per_emotion.anger} />
+                    <EmotionMessages emotion="joy" messages={result.emotion_analysis?.top_messages_per_emotion.joy || []} />
+                    <EmotionMessages emotion="sadness" messages={result.emotion_analysis?.top_messages_per_emotion.sadness || []} />
+                    <EmotionMessages emotion="anger" messages={result.emotion_analysis?.top_messages_per_emotion.anger || []} />
                 </div>
             </Card>
         </div>
-    )
+    );
 };

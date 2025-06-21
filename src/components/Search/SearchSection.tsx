@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
 import { Search, Hash } from 'lucide-react';
 import { useAppContext } from '@/context/AppContext';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/custom/Card';

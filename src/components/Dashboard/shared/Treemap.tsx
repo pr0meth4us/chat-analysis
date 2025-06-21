@@ -2,7 +2,6 @@
 
 import React, { useState, useMemo, MouseEvent } from 'react';
 
-// Color scheme for the treemap rectangles
 const COLORS = ['#4A90E2', '#50E3C2', '#F5A623', '#D0021B', '#BD10E0', '#7ED321'];
 
 type DataItem = {
@@ -17,7 +16,6 @@ type Node = DataItem & {
   height: number;
 };
 
-// Squarify layout algorithm
 const squarify = (data: DataItem[], width: number, height: number) => {
   const nodes: Node[] = [];
   const sorted = [...data].sort((a, b) => b.value - a.value);

@@ -65,5 +65,5 @@ export const HeadToHeadTab: React.FC<HeadToHeadTabProps> = ({ result, processedD
                 </ResponsiveContainer>
             </Card>
         </div>
-    )
-}
+    );
+};

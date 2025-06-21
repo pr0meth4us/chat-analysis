@@ -14,6 +14,12 @@ interface BehaviorContentTabProps {
     processedData: any;
 }
 
+const sentimentColorMap = {
+    Positive: '#22c55e',
+    Negative: '#ef4444',
+    Neutral: '#6b7280',
+};
+
 export const BehaviorContentTab: React.FC<BehaviorContentTabProps> = ({ result, processedData }) => {
     const { user1Name, user2Name } = processedData;
 
@@ -39,10 +45,10 @@ export const BehaviorContentTab: React.FC<BehaviorContentTabProps> = ({ result, 
             <Card className={`border-t-4 ${userColor} flex flex-col space-y-5 p-5`}>
                 <h3 className="text-xl font-bold text-center text-white">{userName}</h3>
                 <div className="space-y-3">
-                    <StatLine icon={<Icons.Messages/>} label="Total Messages" value={userBehavior.message_counts?.total_messages?.toLocaleString()}/>
-                    <StatLine icon={<Icons.Words/>} label="Avg. Words / Msg" value={userBehavior.message_stats.avg_message_length_words.toFixed(1)}/>
-                    <StatLine icon={<Icons.Questions/>} label="Questions Asked" value={qAnalysis.total_questions?.toLocaleString()}/>
-                    <StatLine icon={<Icons.Emoji/>} label="Emojis Sent" value={emojiAnalysis.total_emojis_sent?.toLocaleString()}/>
+                    <StatLine icon={<Icons.Messages/>} label="Total Messages" value={userBehavior.message_counts?.total_messages?.toLocaleString() ?? 'N/A'}/>
+                    <StatLine icon={<Icons.Words/>} label="Avg. Words / Msg" value={userBehavior.message_stats?.avg_message_length_words?.toFixed(1) ?? 'N/A'}/>
+                    <StatLine icon={<Icons.Questions/>} label="Questions Asked" value={qAnalysis.total_questions?.toLocaleString() ?? 'N/A'}/>
+                    <StatLine icon={<Icons.Emoji/>} label="Emojis Sent" value={emojiAnalysis.total_emojis_sent?.toLocaleString() ?? 'N/A'}/>
                 </div>
                 <div className="pt-2">
                     <h4 className="font-semibold text-gray-300 text-sm mb-2">Top 5 Words:</h4>
@@ -66,13 +72,11 @@ export const BehaviorContentTab: React.FC<BehaviorContentTabProps> = ({ result, 
 
     return (
         <div className="space-y-6">
-            {/* User Cards remain the same */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <UserCard userName={user1Name} userColor="border-blue-500" />
                 <UserCard userName={user2Name} userColor="border-purple-500" />
             </div>
 
-            {/* --- REDESIGNED BALANCED GRID WITH INFOPOPUPS --- */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <Card>
                     <div className="flex justify-between items-center mb-4">
@@ -99,7 +103,9 @@ export const BehaviorContentTab: React.FC<BehaviorContentTabProps> = ({ result, 
                     <ResponsiveContainer width="100%" height={300}>
                         <PieChart>
                             <Pie data={processedData.sentimentDistribution} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={60} outerRadius={85} paddingAngle={5} label>
-                                {processedData.sentimentDistribution.map((entry: any, index: number) => <Cell key={`cell-${index}`} fill={{ Positive: '#22c55e', Negative: '#ef4444', Neutral: '#6b7280' }[entry.name]} />)}
+                                {processedData.sentimentDistribution.map((entry: { name: string }, index: number) => (
+                                    <Cell key={`cell-${index}`} fill={sentimentColorMap[entry.name as keyof typeof sentimentColorMap]} />
+                                ))}
                             </Pie>
                             <Tooltip content={<CustomTooltip />} />
                             <Legend wrapperStyle={{fontSize: '14px'}}/>
@@ -108,11 +114,11 @@ export const BehaviorContentTab: React.FC<BehaviorContentTabProps> = ({ result, 
                 </Card>
 
                 <Card>
-                    <InfoPopup text="The most common two-word phrases found in the chat." className="absolute top-4 right-4" />
+                    <InfoPopup text="The most common two-word phrases found in the chat." className="absolute top-4 right-4 z-10" />
                     <NgramTable title="Top Bigrams" data={result.word_analysis?.top_20_bigrams} />
                 </Card>
                 <Card>
-                    <InfoPopup text="The most common three-word phrases found in the chat." className="absolute top-4 right-4" />
+                    <InfoPopup text="The most common three-word phrases found in the chat." className="absolute top-4 right-4 z-10" />
                     <NgramTable title="Top Trigrams" data={result.word_analysis?.top_20_trigrams} />
                 </Card>
             </div>

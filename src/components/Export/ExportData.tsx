@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useTransition } from 'react';
-import { Download, FileText, FileJson } from 'lucide-react';
+import { Download } from 'lucide-react';
 import { useAppContext } from '@/context/AppContext';
 import { Button } from '@/components/ui/custom/Button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/custom/Card';
@@ -9,7 +9,6 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/custom/RadioGroup';
 import { Label } from '@/components/ui/radix/Label';
 import { Progress } from '@/components/ui/custom/Progress';
 import { api } from '@/utils/api';
-import { Message } from '@/types';
 
 type DownloadFormat = 'json' | 'html';
 

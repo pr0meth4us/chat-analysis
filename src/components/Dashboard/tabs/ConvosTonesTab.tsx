@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { AnalysisResult, Conversation, Streak } from '@/types/analysis'; // Make sure to export 'Streak' type from your types file
+import { AnalysisResult, Conversation, Question } from '@/types/analysis';
 import { Card } from '../layout/Card';
 import { InfoPopup } from '../layout/InfoPopup';
 import { formatDateTime } from '@/utils/formatDate';
@@ -33,8 +33,8 @@ export const ConvosTonesTab: React.FC<ConvosTonesTabProps> = ({ result, user1Nam
                     ))}
                 </div>
             </div>
-        )
-    }
+        );
+    };
     const ConversationTable = ({ title, data, info }: { title: string, data?: Conversation[], info: string }) => {
         if (!data || data.length === 0) return <Card><h3 className="text-lg font-semibold text-gray-200">{title}</h3><p className="text-gray-400 mt-2">No data available.</p></Card>;
         return (
@@ -69,8 +69,8 @@ export const ConvosTonesTab: React.FC<ConvosTonesTabProps> = ({ result, user1Nam
                     </table>
                 </div>
             </Card>
-        )
-    }
+        );
+    };
 
     return (
         <div className="space-y-6">

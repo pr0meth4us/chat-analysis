@@ -1,12 +1,8 @@
 'use client';
 
 import React from 'react';
-// Recharts imports for other charts
 import { ResponsiveContainer, BarChart, CartesianGrid, XAxis, YAxis, Tooltip as RechartsTooltip, Legend, Bar } from 'recharts';
-
-// --- Import our new custom-built component ---
 import { Treemap } from '@/components/Dashboard/shared/Treemap';
-
 import { AnalysisResult } from '@/types/analysis';
 import { formatDate } from '@/utils/formatDate';
 import { ContributionsCalendar } from "@/components/Dashboard/shared/ContributionsCalendar";
@@ -61,7 +57,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ result, processedData 
             />
 
             <div className="col-span-full">
-                <ContributionsCalendar data={processedData.contributionData} initialYear={initialYear} />
+                <ContributionsCalendar data={processedData.contributionData || []} initialYear={initialYear} />
             </div>
 
             <div className="col-span-full grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -100,15 +96,14 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ result, processedData 
             </div>
 
             <div className="col-span-full grid grid-cols-1 lg:grid-cols-2 gap-4">
-                {/* --- PLATFORM CARD USING OUR CUSTOM TREEMAP --- */}
                 <Card>
                     <div className="flex justify-between items-center mb-4">
                         <h3 className="text-lg font-semibold text-gray-200">Platform Distribution</h3>
                         <InfoPopup text="Shows the breakdown of messages across different chat platforms. Hover for details." />
                     </div>
-                    {/* The ResponsiveContainer provides the width/height to the CustomTreemap */}
                     <ResponsiveContainer width="100%" height={250}>
-                        <Treemap data={processedData.platformData} />
+                        {/* @ts-ignore */}
+                        <Treemap data={processedData.platformData || []} />
                     </ResponsiveContainer>
                 </Card>
 
@@ -118,7 +113,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ result, processedData 
                         <InfoPopup text="Shows the most common topics of conversation identified in the chat." />
                     </div>
                     <div className="space-y-3 pr-4 overflow-y-auto" style={{maxHeight: '250px'}}>
-                        {processedData.topTopics.map((topic, index) => (
+                        {(processedData.topTopics || []).map((topic: { words: string; percentage: number }, index: number) => (
                             <div key={index}>
                                 <div className="flex justify-between items-center text-sm text-gray-300 mb-1">
                                     <span className="truncate" title={topic.words}>{topic.words}</span>

@@ -31,8 +31,8 @@ export const RelationshipDNATab: React.FC<RelationshipDNATabProps> = ({ result, 
                     <p className="text-sm text-gray-300 italic">"{msg.message}"</p>
                     <p className={`text-xs text-right mt-2 font-semibold`} style={{color: color}}>- {msg.sender}</p>
                 </div>
-            )
-        }
+            );
+        };
 
         return (
             <Card className="flex-1 min-w-[300px] flex flex-col">
@@ -58,8 +58,8 @@ export const RelationshipDNATab: React.FC<RelationshipDNATabProps> = ({ result, 
                     </div>
                 </div>
             </Card>
-        )
-    }
+        );
+    };
 
     return (
         <div className="space-y-6">

@@ -6,9 +6,8 @@ import { Clock, CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import { useAppContext } from '@/context/AppContext';
 import { Card } from '@/components/ui/custom/Card';
 import { Progress } from '@/components/ui/custom/Progress';
-import { Badge, badgeVariants } from '@/components/ui/custom/Badge';
+import { Badge } from '@/components/ui/custom/Badge';
 import { TaskStatus } from '@/types';
-import {VariantProps} from "class-variance-authority";
 
 
 const getTaskIcon = (status: string) => {
@@ -26,7 +25,7 @@ const getTaskIcon = (status: string) => {
     }
 };
 
-const getStatusVariant = (status: string): VariantProps<typeof badgeVariants>['variant'] => {
+const getStatusVariant = (status: string) => {
     switch (status) {
         case 'pending': return 'warning';
         case 'running': return 'default';
@@ -39,30 +38,20 @@ const getStatusVariant = (status: string): VariantProps<typeof badgeVariants>['v
 const getTaskDisplayName = (task: TaskStatus): string => {
     if (task.name) return task.name.charAt(0).toUpperCase() + task.name.slice(1);
     if (task.stage) return task.stage;
-    // Safely access task_id only if it exists to prevent errors
     if (task.task_id) return `Task: ${task.task_id.slice(0, 8)}...`;
     return 'Initializing Task...';
 };
 
-/**
- * Calculate progress percentage from the task data
- * @param task The task object
- * @returns Progress percentage (0-100)
- */
+
 const getTaskProgress = (task: TaskStatus): number => {
-    // If task has explicit progress field, use that
     if (typeof task.progress === 'number') {
-        // If progress is between 0-1, convert to percentage
         if (task.progress <= 1) {
             return task.progress * 100;
         }
-        // If already a percentage, use as-is
         return Math.min(task.progress, 100);
     }
 
-    // Try to parse progress from the message field
     if (task.message) {
-        // Look for patterns like "32 / 32 files parsed" or "5/10 complete"
         const progressMatch = task.message.match(/(\d+)\s*\/\s*(\d+)/);
         if (progressMatch) {
             const current = parseInt(progressMatch[1]);
@@ -73,12 +62,11 @@ const getTaskProgress = (task: TaskStatus): number => {
         }
     }
 
-    // Default progress based on status
     switch (task.status) {
         case 'pending':
             return 0;
         case 'running':
-            return 25; // Show some progress for running tasks without specific progress
+            return 25;
         case 'completed':
             return 100;
         case 'failed':
@@ -88,13 +76,9 @@ const getTaskProgress = (task: TaskStatus): number => {
     }
 };
 
-/**
- * TaskProgress component displays a list of all current session tasks with their status.
- */
 export default function TaskProgress() {
     const { state } = useAppContext();
 
-    // Filter out any null or undefined tasks to prevent errors
     const validTasks = state.tasks.filter(task => task && task.task_id);
 
     if (validTasks.length === 0) {
@@ -122,7 +106,7 @@ export default function TaskProgress() {
 
                                 return (
                                     <motion.div
-                                        key={task.task_id} // task_id is now guaranteed to exist
+                                        key={task.task_id}
                                         layout
                                         initial={{ opacity: 0, scale: 0.95 }}
                                         animate={{ opacity: 1, scale: 1 }}
