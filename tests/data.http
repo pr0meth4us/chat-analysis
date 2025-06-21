@@ -21,7 +21,7 @@ GET {{host}}/data/processed
 POST {{host}}/data/insert/filtered
 Content-Type: application/json
 
-< /Users/nicksng/Desktop/school/aupp/code/chat-analysis/samples/filtered.json
+< C:\Users\phear\PycharmProjects\chat-analysis\.idea\httpRequests\2025-06-21T153445.200.json
 
 ### Verify Inserted Filtered Messages
 GET {{host}}/data/filtered

@@ -1,8 +1,8 @@
 'use client';
 
 import React from 'react';
-import { ResponsiveContainer, RadialBarChart, PolarGrid, RadialBar, Cell, Legend, Tooltip, RadarChart, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
-import { AnalysisResult, ToneAnalysis, Message } from '@/types/analysis';
+import { ResponsiveContainer, RadialBarChart, PolarGrid, RadialBar, Cell, Legend, Tooltip, BarChart, CartesianGrid, XAxis, YAxis, Bar } from 'recharts';
+import { AnalysisResult, ToneAnalysis } from '@/types/analysis';
 import { Card } from '../layout/Card';
 import { InfoPopup } from '../layout/InfoPopup';
 import { CustomTooltip } from "@/components/Dashboard/shared/CustomTooltip";
@@ -15,6 +15,9 @@ interface RelationshipDNATabProps {
 
 export const RelationshipDNATab: React.FC<RelationshipDNATabProps> = ({ result, processedData }) => {
     const { user1Name, user2Name, responseMetrics, relationshipScores } = processedData;
+
+    // Filter out Std Dev for better chart readability
+    const filteredResponseMetrics = responseMetrics.filter(metric => metric.subject !== 'Std Dev (m)');
 
     const ToneCard = ({ title, icon, data, color }: { title: string, icon: string, data?: ToneAnalysis, color: string }) => {
         if(!data || data.total_matching_messages === 0) return null;
@@ -49,7 +52,7 @@ export const RelationshipDNATab: React.FC<RelationshipDNATabProps> = ({ result, 
                         </div>
                     </div>
                     <div className="mt-4 space-y-2">
-                        <h4 className="font-semibold text-gray-300 text-sm">Example Messages:</h4>
+                        <h4 className="font-semibold text-gray-300 text-sm">Excerpt:</h4>
                         <Excerpt msg={data.top_messages?.[0]} />
                         <Excerpt msg={data.top_messages?.[1]} />
                     </div>
@@ -80,18 +83,19 @@ export const RelationshipDNATab: React.FC<RelationshipDNATabProps> = ({ result, 
                 <Card>
                     <div className="flex justify-between items-center mb-4">
                         <h3 className="text-lg font-semibold text-gray-200">Response Dynamics</h3>
-                        <InfoPopup text="Compares key response time metrics between users, measured in minutes." />
+                        <InfoPopup text="Compares key response time metrics between users, measured in minutes. Lower is faster." />
                     </div>
+                    {/* --- REPLACED RADAR CHART WITH A BAR CHART --- */}
                     <ResponsiveContainer width="100%" height={300}>
-                        <RadarChart cx="50%" cy="50%" outerRadius="80%" data={responseMetrics}>
-                            <PolarGrid stroke="#4a5568" />
-                            <PolarAngleAxis dataKey="subject" stroke="#9ca3af" fontSize={14} tick={{fill: '#e5e7eb'}}/>
-                            <PolarRadiusAxis angle={30} domain={[0, 'auto']} stroke="none" axisLine={false} tick={false} />
-                            <Tooltip content={<CustomTooltip />} />
-                            <Radar name={user1Name} dataKey={user1Name} stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.6} />
-                            <Radar name={user2Name} dataKey={user2Name} stroke="#8b5cf6" fill="#8b5cf6" fillOpacity={0.6} />
+                        <BarChart data={filteredResponseMetrics}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#4a5568"/>
+                            <XAxis dataKey="subject" stroke="#9ca3af" fontSize={12} tick={{fill: '#e5e7eb'}}/>
+                            <YAxis stroke="#9ca3af" fontSize={12} tick={{fill: '#e5e7eb'}}/>
+                            <Tooltip content={<CustomTooltip />} cursor={{fill: 'rgba(74, 85, 104, 0.3)'}}/>
                             <Legend wrapperStyle={{fontSize: '14px'}}/>
-                        </RadarChart>
+                            <Bar dataKey={user1Name} fill="#3b82f6" name={user1Name} radius={[4, 4, 0, 0]} />
+                            <Bar dataKey={user2Name} fill="#8b5cf6" name={user2Name} radius={[4, 4, 0, 0]} />
+                        </BarChart>
                     </ResponsiveContainer>
                 </Card>
             </div>
@@ -101,12 +105,16 @@ export const RelationshipDNATab: React.FC<RelationshipDNATabProps> = ({ result, 
                     <h2 className="text-xl font-bold text-gray-100">Keyword-Based Tone Analysis</h2>
                     <InfoPopup text="This analysis identifies messages containing specific keywords related to each tone. It provides a high-level overview but may not capture all nuanced expressions." />
                 </div>
-                <div className="flex flex-wrap gap-6 justify-center">
-                    <ToneCard title="Happy" icon="😊" data={result.happy_tone_analysis} color="#facc15" />
-                    <ToneCard title="Romantic" icon="💖" data={result.romance_tone_analysis} color="#f472b6" />
-                    <ToneCard title="Argument" icon="⚖️" data={result.argument_analysis} color="#fb923c" />
-                    <ToneCard title="Sad" icon="💧" data={result.sad_tone_analysis} color="#60a5fa" />
-                    <ToneCard title="Sexual Tone" icon="🌶️" data={result.sexual_tone_analysis} color="#ef4444" />
+                {/* --- RESTRUCTURED TONE CARD LAYOUT --- */}
+                <div className="space-y-6">
+                    <div className="flex flex-col md:flex-row gap-6">
+                        <ToneCard title="Happy" icon="😊" data={result.happy_tone_analysis} color="#facc15" />
+                        <ToneCard title="Romantic" icon="💖" data={result.romance_tone_analysis} color="#f472b6" />
+                    </div>
+                    <div className="flex flex-col md:flex-row gap-6">
+                         <ToneCard title="Argument" icon="⚖️" data={result.argument_analysis} color="#fb923c" />
+                         <ToneCard title="Sad" icon="💧" data={result.sad_tone_analysis} color="#60a5fa" />
+                    </div>
                 </div>
             </Card>
 

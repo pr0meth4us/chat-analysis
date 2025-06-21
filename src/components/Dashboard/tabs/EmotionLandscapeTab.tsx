@@ -6,6 +6,7 @@ import { AnalysisResult } from '@/types/analysis';
 import { Card } from '../layout/Card';
 import { InfoPopup } from '../layout/InfoPopup';
 import {CustomTooltip} from "@/components/Dashboard/shared/CustomTooltip";
+import {formatDate} from "@/utils/formatDate";
 
 
 interface EmotionLandscapeTabProps {
@@ -28,19 +29,22 @@ const EmotionRadar = ({ data, title }: { data: any[], title: string }) => (
     </Card>
 );
 
-const EmotionMessages = ({ emotion, messages }: { emotion: string, messages: any[] }) => (
+const EmotionMessages =  ({ emotion, messages }: { emotion: string, messages: { message: string, sender: string, score: number, datetime: string }[] }) => (
     <div>
         <h4 className="font-bold text-xl capitalize text-center mb-4 text-blue-300">{emotion}</h4>
-        <div className="space-y-3">
-            {messages?.slice(0,3).map((msg, i) => (
+        <div className="space-y-3 pr-2" style={{ maxHeight: '300px', overflowY: 'auto' }}>
+            {messages?.map((msg, i) => (
                 <div key={i} className="bg-gray-800/60 p-3 rounded-lg text-sm">
                     <p className="italic">"{msg.message}"</p>
-                    <p className="text-xs text-gray-400 mt-2 text-right">- {msg.sender} (Score: {msg.score.toFixed(3)})</p>
+                    <p className="text-xs text-gray-400 mt-2 text-right">
+                        - {msg.sender} on {formatDate(msg.datetime)} (Score: {msg.score.toFixed(3)})
+                    </p>
                 </div>
             ))}
         </div>
     </div>
-)
+);
+
 
 export const EmotionLandscapeTab: React.FC<EmotionLandscapeTabProps> = ({ result, processedData }) => {
     const { user1Name, user2Name, emotionSummary, user1Emotion, user2Emotion } = processedData;

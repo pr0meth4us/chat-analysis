@@ -42,18 +42,6 @@ class ChatAnalyzer:
         self.english_pattern = re.compile(r'\b[a-zA-Z]+\b')
         self.khmer_pattern = re.compile(r'[\u1780-\u17FF]+')
         self.sentence_pattern = re.compile(r'(?<!\w\.\w.)(?<![A-Z][a-z]\.)(?<=\.|\?|\!)\s')
-        self.reaction_patterns = [
-            # iMessage format: "Liked "message..."", "Laughed at "message...""
-            re.compile(r'^(Liked|Laughed at|Emphasized|Loved|Disliked|Questioned)\s+"', re.IGNORECASE),
-
-            # Instagram/Facebook format: "Reacted with [emoji/text] to..."
-            re.compile(r'reacted with (.+?) to (?:your|their) message', re.IGNORECASE),
-
-            # A more generic "reacted to" format
-            re.compile(r'reacted (.+?) to a message', re.IGNORECASE)
-        ]
-
-        # Other patterns
         self.url_pattern = re.compile(r'https?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(),]|%[0-9a-fA-F][0-9a-fA-F])+|www\.')
         self.word_pattern = re.compile(r'\b\w+\b')
         self.sentence_pattern = re.compile(r'(?<!\w\.\w.)(?<![A-Z][a-z]\.)(?<=\.|\?|\!)\s')
@@ -71,30 +59,101 @@ class ChatAnalyzer:
 
     def _find_reaction_type(self, message: str):
         """
-        Iterates through known reaction regex patterns to find and extract a reaction type.
-
-        Args:
-            message: The text content of a message.
-
-        Returns:
-            The extracted reaction type (e.g., "Liked", "❤️") or None if no match is found.
+        Enhanced helper to find reaction type with better pattern matching.
+        Returns the reaction type if it's a reaction message, None if it's a normal message.
         """
-        if not message:
+        if not isinstance(message, str) or len(message.strip()) == 0:
             return None
-        for pattern in self.reaction_patterns:
+
+        # Don't limit by length - some reaction messages can be longer
+        message = message.strip()
+
+        # More comprehensive reaction patterns
+        reaction_patterns = [
+            # Standard reaction patterns (iOS/Android)
+            re.compile(r'^(Liked|Laughed at|Emphasized|Loved|Disliked|Questioned)\s+"(.*)"$', re.IGNORECASE),
+            re.compile(r'^(Liked|Laughed at|Emphasized|Loved|Disliked|Questioned)\s+(.*)$', re.IGNORECASE),
+
+            # WhatsApp style reactions
+            re.compile(r'^You reacted (.*) to this message$', re.IGNORECASE),
+            re.compile(r'^(.+) reacted (.*) to this message$', re.IGNORECASE),
+            re.compile(r'^Reacted with (.+) to (.*)$', re.IGNORECASE),
+
+            # Telegram style reactions
+            re.compile(r'^(.+) reacted to your message with (.+)$', re.IGNORECASE),
+            re.compile(r'^You reacted to (.+)\'s message with (.+)$', re.IGNORECASE),
+
+            # Facebook/Messenger style
+            re.compile(r'^(.+) (loved|liked|disliked|laughed at|was amazed by|got angry at) your message$',
+                       re.IGNORECASE),
+            re.compile(r'^You (loved|liked|disliked|laughed at|were amazed by|got angry at) (.+)\'s message$',
+                       re.IGNORECASE),
+
+            # Generic reaction patterns
+            re.compile(
+                r'^(You |[a-zA-Z\s]+?)(loved|liked|disliked|laughed at|emphasized|questioned) (an image|a message|a photo|a video)$',
+                re.IGNORECASE),
+            re.compile(r'^Reacted\s+(.+?)\s+to a message$', re.IGNORECASE),
+
+            # Emoji-based reactions
+            re.compile(r'^(.+) added (😀|😂|😢|😡|👍|👎|❤️|😍|😮|😠|🔥|💯|👏|🎉) to (.+)$', re.IGNORECASE),
+            re.compile(r'^You added (😀|😂|😢|😡|👍|👎|❤️|😍|😮|😠|🔥|💯|👏|🎉) to (.+)$', re.IGNORECASE),
+
+            # More generic patterns
+            re.compile(r'reacted|reaction', re.IGNORECASE),
+        ]
+
+        for pattern in reaction_patterns:
             match = pattern.search(message)
             if match:
-                # Return the content of the first (and only) capturing group
-                return match.group(1).strip()
+                groups = match.groups()
+
+                # Extract meaningful reaction type from groups
+                for group in groups:
+                    if group and group.strip():
+                        clean_group = group.strip().lower()
+
+                        # Skip common non-reaction words
+                        skip_words = {'you', 'your', 'to', 'this', 'message', 'an', 'a', 'the', 'with'}
+                        if clean_group not in skip_words and len(clean_group) > 1:
+                            # Map common reaction types
+                            reaction_mapping = {
+                                'loved': 'love',
+                                'liked': 'like',
+                                'disliked': 'dislike',
+                                'laughed at': 'laugh',
+                                'emphasized': 'emphasize',
+                                'questioned': 'question',
+                                'was amazed by': 'wow',
+                                'got angry at': 'angry',
+                                '😀': 'happy',
+                                '😂': 'laugh',
+                                '😢': 'sad',
+                                '😡': 'angry',
+                                '👍': 'like',
+                                '👎': 'dislike',
+                                '❤️': 'love',
+                                '😍': 'love',
+                                '😮': 'wow',
+                                '😠': 'angry',
+                                '🔥': 'fire',
+                                '💯': 'hundred',
+                                '👏': 'clap',
+                                '🎉': 'celebrate'
+                            }
+
+                            return reaction_mapping.get(clean_group, clean_group)
+
+                # If we matched a pattern but couldn't extract a specific reaction,
+                # return generic 'reaction'
+                return 'reaction'
+
         return None
 
     def load_and_preprocess(self):
-        """
-        Load and preprocess data, identifying reactions from message text using regex patterns.
-        """
+
         self._update_progress(10, "Loading data")
 
-        # --- Data Loading (same as before) ---
         if self.input_type == 'file' and self.file_path:
             with open(self.file_path, 'r', encoding='utf-8') as f:
                 content = f.read().strip()
@@ -112,27 +171,14 @@ class ChatAnalyzer:
         df.sort_values('datetime', inplace=True, ignore_index=True)
         if df.empty: raise ValueError("No valid messages with timestamps found.")
         self._update_progress(50, "Engineering features")
-
-        # --- NEW REACTION AND FEATURE LOGIC ---
-
-        # 1. Apply our helper function to every message to find the reaction type.
-        #    This will be None (NaN) if no reaction pattern is found.
         df['reaction_type'] = df['message'].apply(self._find_reaction_type)
-
-        # 2. A message is a reaction if a reaction_type was successfully extracted.
         df['is_reaction'] = df['reaction_type'].notna()
-
-        # 3. For text analysis (sentiment, topics), create a column that is blank for reactions.
         df['text_content'] = df['message'].where(~df['is_reaction'], '')
-
-        # 4. Calculate other features.
         df['message_length'] = df['message'].str.len()
         df['word_count'] = df['message'].str.split().str.len()
         df['has_emoji'] = df['message'].apply(lambda x: bool(emoji.emoji_list(x)))
         df['has_question'] = df['text_content'].str.contains(r'\?', na=False) # Check only non-reactions
         df['has_url'] = df['text_content'].str.contains(self.url_pattern, na=False) # Check only non-reactions
-
-        # --- Remainder of function is the same ---
         dt = df['datetime'].dt
         df['date'] = pd.to_datetime(dt.date)
         df['hour'] = dt.hour
@@ -193,7 +239,6 @@ class ChatAnalyzer:
             'temporal_patterns': {'func': af.temporal_patterns, 'deps': [], 'args': {}},
             'unbroken_streaks': {'func': af.analyze_unbroken_streaks, 'deps': [], 'args': {}},
             'ghost_periods': {'func': af.detect_ghost_periods, 'deps': [], 'args': {}},
-            'reaction_analysis': {'func': af.analyze_reactions, 'deps': [], 'args': {}},
             'icebreaker_analysis': {'func': af.icebreaker_analysis, 'deps': [], 'args': {}},
             'response_metrics': {'func': af.calculate_response_metrics, 'deps': [], 'args': {}},
             'conversation_patterns': {'func': af.analyze_conversation_patterns, 'deps': [], 'args': {}},

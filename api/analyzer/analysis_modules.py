@@ -1,12 +1,3 @@
-"""
-Core Analysis Modules for the Chat Analyzer.
-
-This file contains a comprehensive suite of functions to analyze chat data,
-combining detailed statistical analysis with contextual and behavioral insights.
-Each function is designed to be modular and is orchestrated by the main
-ChatAnalyzer class.
-"""
-
 import re
 from collections import Counter, defaultdict
 from datetime import datetime, timedelta
@@ -16,13 +7,13 @@ import numpy as np
 import pandas as pd
 from sklearn.decomposition import NMF
 from sklearn.feature_extraction.text import TfidfVectorizer
+from utils import log
+emotion_classifier = pipeline(
+    "text-classification",
+    model="j-hartmann/emotion-english-distilroberta-base",
+    return_all_scores=True
+)
 
-# Note: The ChatAnalyzer class prepares the DataFrame, including the
-# 'is_reaction' and 'text_content' columns, before passing it to these functions.
-
-# ==============================================================================
-# 1. OVERVIEW & BASIC STATS
-# ==============================================================================
 
 def dataset_overview(df: pd.DataFrame) -> dict:
     """
@@ -33,6 +24,13 @@ def dataset_overview(df: pd.DataFrame) -> dict:
 
     start_date = df['datetime'].min().date()
     end_date = df['datetime'].max().date()
+    analysis_df = df[~df['is_reaction']].copy()
+    if not analysis_df.empty:
+        daily_counts = analysis_df.resample('D', on='datetime').size()
+        non_zero_days = daily_counts[daily_counts > 0]
+        daily_avg_messages = non_zero_days.mean() if len(non_zero_days) > 0 else 0
+    else:
+        daily_avg_messages = 0
 
     return {
         'total_messages': int(df[~df['is_reaction']].shape[0]),
@@ -47,7 +45,8 @@ def dataset_overview(df: pd.DataFrame) -> dict:
             'names': list(df['sender'].unique())
         },
         'chat_platforms_distribution': df['source'].value_counts().to_dict(),
-        'analysis_timestamp': datetime.now().isoformat()
+        'analysis_timestamp': datetime.now().isoformat(),
+        'daily_average_messages': round(daily_avg_messages, 2),
     }
 
 def first_last_messages(df: pd.DataFrame) -> dict:
@@ -118,77 +117,90 @@ def temporal_patterns(df: pd.DataFrame) -> dict:
             analysis_df['is_weekend'].sum() / total_activities * 100)
     }
 
+
 def analyze_unbroken_streaks(df: pd.DataFrame) -> dict:
     """
-    Finds the longest consecutive streak of days with at least one message.
+    Finds the top 3 longest consecutive streaks of days with at least one message
+    and includes contextual messages and the gap duration for each streak.
     """
-    if df.empty: return {'longest_consecutive_days': 0}
+    analysis_df = df[~df['is_reaction']].copy()
+    if analysis_df.empty:
+        return {'top_streaks': [], 'total_active_days': 0}
 
-    # Use dates from non-reaction messages for meaningful streaks
-    unique_dates = sorted(df[~df['is_reaction']]['date'].unique())
-    if not unique_dates: return {'longest_consecutive_days': 0}
+    unique_dates = sorted(analysis_df['date'].unique())
+    if not unique_dates:
+        return {'top_streaks': [], 'total_active_days': 0}
 
-    longest_streak, current_streak = 0, 0
-    streak_start, streak_end, current_start = None, None, None
-
-    # Convert Timestamps to date objects for comparison
+    # Convert Timestamps to date objects
     unique_dates = [pd.to_datetime(d).date() for d in unique_dates]
 
-    for i in range(len(unique_dates)):
-        if i == 0:
-            current_streak = 1
-            current_start = unique_dates[i]
-        elif unique_dates[i] == unique_dates[i - 1] + timedelta(days=1):
-            current_streak += 1
-        else:
-            if current_streak > longest_streak:
-                longest_streak = current_streak
-                streak_start = current_start
-                streak_end = unique_dates[i - 1]
-            current_streak = 1
-            current_start = unique_dates[i]
+    all_streaks = []
+    if not unique_dates:
+        return {'top_streaks': [], 'total_active_days': len(unique_dates)}
 
-    if current_streak > longest_streak:
-        longest_streak = current_streak
-        streak_start = current_start
-        streak_end = unique_dates[-1]
+    current_streak = [unique_dates[0]]
+    for i in range(1, len(unique_dates)):
+        if unique_dates[i] == unique_dates[i - 1] + timedelta(days=1):
+            current_streak.append(unique_dates[i])
+        else:
+            all_streaks.append(current_streak)
+            current_streak = [unique_dates[i]]
+    all_streaks.append(current_streak)
+
+    # Sort streaks by length, descending
+    all_streaks.sort(key=len, reverse=True)
+
+    top_streaks_data = []
+    for streak in all_streaks[:3]:
+        if not streak: continue
+        start_date = streak[0]
+        end_date = streak[-1]
+
+        # Get first message of the streak
+        first_msg_in_streak = analysis_df[analysis_df['date'].dt.date == start_date].iloc[0]
+
+        # Get last message of the streak
+        last_msg_in_streak = analysis_df[analysis_df['date'].dt.date == end_date].iloc[-1]
+
+        # Get the first message after the streak broke and calculate the gap
+        first_msg_after = None
+        current_streak_end_date_index = unique_dates.index(end_date)
+        if current_streak_end_date_index + 1 < len(unique_dates):
+            resumption_date = unique_dates[current_streak_end_date_index + 1]
+            days_gap = (resumption_date - end_date).days
+
+            first_msg_after_row = analysis_df[analysis_df['date'].dt.date == resumption_date].iloc[0]
+            first_msg_after = {
+                'sender': str(first_msg_after_row['sender']),
+                'message': first_msg_after_row['message'][:200],
+                'datetime': first_msg_after_row['datetime'].isoformat(),
+                'days_gap': days_gap  # <-- ADDED THIS FIELD
+            }
+
+        top_streaks_data.append({
+            'length_days': len(streak),
+            'start_date': start_date.isoformat(),
+            'end_date': end_date.isoformat(),
+            'first_message': {
+                'sender': str(first_msg_in_streak['sender']),
+                'message': first_msg_in_streak['message'][:200],
+                'datetime': first_msg_in_streak['datetime'].isoformat()
+            },
+            'last_message': {
+                'sender': str(last_msg_in_streak['sender']),
+                'message': last_msg_in_streak['message'][:200],
+                'datetime': last_msg_in_streak['datetime'].isoformat()
+            },
+            'first_message_after_break': first_msg_after
+        })
 
     return {
-        'longest_consecutive_days': int(longest_streak),
-        'streak_start_date': streak_start.isoformat() if streak_start else None,
-        'streak_end_date': streak_end.isoformat() if streak_end else None,
-        'total_active_days': int(len(unique_dates))
+        'top_streaks': top_streaks_data,
+        'total_active_days': len(unique_dates)
     }
-
 # ==============================================================================
 # 3. INTERACTION & ENGAGEMENT ANALYSIS
 # ==============================================================================
-
-def analyze_reactions(df: pd.DataFrame) -> dict:
-    """
-    Analyzes message reactions identified from message text.
-    Focuses on givers and reaction types, as recipients cannot be reliably determined.
-    """
-    if 'is_reaction' not in df.columns or not df['is_reaction'].any():
-        return {"message": "No reactions found in the dataset based on common text patterns."}
-
-    reactions_df = df[df['is_reaction']].copy()
-
-    if reactions_df.empty:
-        return {"message": "No valid reactions could be processed."}
-
-    # We can reliably get the person who GAVE the reaction (the sender)
-    giver_counts = reactions_df['sender'].value_counts()
-
-    # We can also get the type of reaction (e.g., "Liked", "❤️", "😂")
-    reaction_type_counts = reactions_df.dropna(subset=['reaction_type'])['reaction_type'].value_counts()
-
-    return {
-        'total_reactions': int(len(reactions_df)),
-        'reaction_types_summary': {str(k): int(v) for k, v in reaction_type_counts.head(20).items()},
-        'top_reaction_givers': [{"user": str(u), "count": int(c)} for u, c in giver_counts.head(10).items()],
-        'note': "Recipient analysis is not available for reactions detected from message text."
-    }
 
 def icebreaker_analysis(df: pd.DataFrame) -> dict:
     """Identifies who starts conversations and what the first message is."""
@@ -742,8 +754,13 @@ def calculate_relationship_metrics(df: pd.DataFrame, conversation_patterns_data:
 
     # 2. Consistency Score
     daily_counts = df.resample('D', on='datetime').size()
-    consistency_score = (1 - (daily_counts.std() / daily_counts.mean())) * 100 if daily_counts.mean() > 0 else 0
-    consistency_score = max(0, min(consistency_score, 100))
+    if daily_counts.mean() > 0 and len(daily_counts) > 1:
+        cv = daily_counts.std() / daily_counts.mean()  # Coefficient of variation
+        consistency_score = max(0, 100 * np.exp(-cv))  # Exponential decay
+    else:
+        consistency_score = 100 if len(daily_counts) <= 1 else 0
+
+    consistency_score = min(consistency_score, 100)
 
     # 3. Responsiveness Score
     all_medians = [m['median_response_minutes'] for u in response_metrics_data.values() for m in u.values()]
@@ -808,12 +825,6 @@ def analyze_emotions_ml(df: pd.DataFrame, sample_size: int = 1000) -> dict:
         note += f" (Analysis was run on a random sample of {sample_size} messages to ensure speed)."
 
     docs = analysis_df['text_content'].tolist()
-
-    try:
-        # --- Using the previous, more accurate model ---
-        emotion_classifier = pipeline("text-classification", model=model_name, return_all_scores=True)
-    except Exception as e:
-        return {"error": f"Failed to load the emotion model. It might be downloading. Error: {e}"}
 
     try:
         results = emotion_classifier(docs, batch_size=8, truncation=True)

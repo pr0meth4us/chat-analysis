@@ -1,15 +1,16 @@
+
 @host = http://localhost:5001
 
-@file_to_process = "/Users/nicksng/Desktop/school/aupp/code/google-drive-html-downloader/all_chats.zip"
+#@file_to_process = "/Users/nicksng/Desktop/school/aupp/code/google-drive-html-downloader/all_chats.zip"
+#
+#@me_list = ["Me","Neron","Neternal Soeung","Ni","konkhmerlaorlek1","neron - ណឺរ៉ូន","neron - ូន","xeno.bozo"]
+#@remove_list = ["Jockie Music (1)"]
+#@other_label = SMT
+#
+#@modules_to_run = dataset_overview, conversation_patterns, relationship_metrics
 
-@me_list = ["Me","Neron","Neternal Soeung","Ni","konkhmerlaorlek1","neron - ណឺរ៉ូន","neron - ូន","xeno.bozo"]
-@remove_list = ["Jockie Music (1)"]
-@other_label = SMT
-
-@modules_to_run = dataset_overview, conversation_patterns, relationship_metrics
-
-@session_id =
-@task_id =
+#@session_id =
+#@task_id =
 ### Upload one or more chat files (smart processing - sync for small files, async for large)
 POST {{host}}/process
 Content-Type: multipart/form-data; boundary=----WebAppBoundary
@@ -39,7 +40,7 @@ Content-Type: multipart/form-data; boundary=----WebAppBoundary
 ------WebAppBoundary
 Content-Disposition: form-data; name="file"; filename="data.zip"
 
-< /Users/nicksng/Desktop/school/aupp/code/google-drive-html-downloader/all_chats.zip
+< C:\Users\phear\Downloads\Telegram Desktop\all_chats.zip
 ------WebAppBoundary--
 
 ### STEP 3: Filter Data
@@ -47,9 +48,9 @@ POST {{host}}/filter
 Content-Type: application/json
 
 {
-  "me": {{me_list}},
-  "remove": {{remove_list}},
-  "other_label": "{{other_label}}"
+  "me": ["Me","Neron","Neternal Soeung","Ni","konkhmerlaorlek1","neron - ណឺរ៉ូន","neron - ូន","xeno.bozo"],
+  "remove": ["Jockie Music (1)"],
+  "other_label": "other"
 }
 
 ### STEP 4: Analyze Data
@@ -62,10 +63,9 @@ Content-Type: application/json
 
 {
   "modules_to_run": [
-    "analyze_conversation_patterns"
+    "dataset_overview"
   ]
 }
-
 
 ###
 POST {{host}}/search/fuzzy

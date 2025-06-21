@@ -5,8 +5,9 @@ import { ResponsiveContainer, LineChart, CartesianGrid, XAxis, YAxis, Tooltip, L
 import { AnalysisResult } from '@/types/analysis';
 import { Card } from '../layout/Card';
 import { Icons } from "@/components/Dashboard/shared/Icons";
-import {NgramTable} from "@/components/Dashboard/shared/NgramTable";
-import {CustomTooltip} from "@/components/Dashboard/shared/CustomTooltip";
+import { NgramTable } from "@/components/Dashboard/shared/NgramTable";
+import { CustomTooltip } from "@/components/Dashboard/shared/CustomTooltip";
+import { InfoPopup } from '../layout/InfoPopup';
 
 interface BehaviorContentTabProps {
     result: AnalysisResult;
@@ -65,13 +66,19 @@ export const BehaviorContentTab: React.FC<BehaviorContentTabProps> = ({ result, 
 
     return (
         <div className="space-y-6">
+            {/* User Cards remain the same */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <UserCard userName={user1Name} userColor="border-blue-500" />
                 <UserCard userName={user2Name} userColor="border-purple-500" />
             </div>
-            <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-                <Card className="lg:col-span-3">
-                    <h3 className="text-lg font-semibold mb-4 text-gray-200">Message Volume Trends</h3>
+
+            {/* --- REDESIGNED BALANCED GRID WITH INFOPOPUPS --- */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Card>
+                    <div className="flex justify-between items-center mb-4">
+                        <h3 className="text-lg font-semibold text-gray-200">Message Volume Trends</h3>
+                        <InfoPopup text="Shows the total number of messages sent per month over the dataset's duration." />
+                    </div>
                     <ResponsiveContainer width="100%" height={300}>
                         <LineChart data={processedData.monthlyData}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#4a5568" />
@@ -83,26 +90,12 @@ export const BehaviorContentTab: React.FC<BehaviorContentTabProps> = ({ result, 
                         </LineChart>
                     </ResponsiveContainer>
                 </Card>
-                <div className="lg:col-span-2 grid grid-cols-1 gap-6">
-                    <NgramTable title="Top Bigrams (2-word phrases)" data={result.word_analysis?.top_20_bigrams} />
-                    <NgramTable title="Top Trigrams (3-word phrases)" data={result.word_analysis?.top_20_trigrams} />
-                </div>
-            </div>
-            <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-                <Card className="lg:col-span-3">
-                    <h3 className="text-lg font-semibold mb-4 text-gray-200">Sentiment Timeline</h3>
-                    <ResponsiveContainer width="100%" height={300}>
-                        <LineChart data={processedData.sentimentTimelineData}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#4a5568" />
-                            <XAxis dataKey="date" stroke="#9ca3af" fontSize={12} />
-                            <YAxis domain={[-1, 1]} stroke="#9ca3af" fontSize={12}/>
-                            <Tooltip content={<CustomTooltip />} />
-                            <Line type="monotone" dataKey="sentiment" stroke="#82ca9d" name="Sentiment Score" dot={false} />
-                        </LineChart>
-                    </ResponsiveContainer>
-                </Card>
-                <Card className="lg:col-span-2">
-                    <h3 className="text-lg font-semibold mb-4 text-gray-200">Sentiment Distribution</h3>
+
+                <Card>
+                    <div className="flex justify-between items-center mb-4">
+                        <h3 className="text-lg font-semibold text-gray-200">Sentiment Distribution</h3>
+                        <InfoPopup text="The overall breakdown of messages into Positive, Negative, and Neutral categories." />
+                    </div>
                     <ResponsiveContainer width="100%" height={300}>
                         <PieChart>
                             <Pie data={processedData.sentimentDistribution} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={60} outerRadius={85} paddingAngle={5} label>
@@ -112,6 +105,15 @@ export const BehaviorContentTab: React.FC<BehaviorContentTabProps> = ({ result, 
                             <Legend wrapperStyle={{fontSize: '14px'}}/>
                         </PieChart>
                     </ResponsiveContainer>
+                </Card>
+
+                <Card>
+                    <InfoPopup text="The most common two-word phrases found in the chat." className="absolute top-4 right-4" />
+                    <NgramTable title="Top Bigrams" data={result.word_analysis?.top_20_bigrams} />
+                </Card>
+                <Card>
+                    <InfoPopup text="The most common three-word phrases found in the chat." className="absolute top-4 right-4" />
+                    <NgramTable title="Top Trigrams" data={result.word_analysis?.top_20_trigrams} />
                 </Card>
             </div>
         </div>
