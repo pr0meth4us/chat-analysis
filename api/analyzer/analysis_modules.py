@@ -7,7 +7,6 @@ import numpy as np
 import pandas as pd
 from sklearn.decomposition import NMF
 from sklearn.feature_extraction.text import TfidfVectorizer
-from utils import log
 emotion_classifier = pipeline(
     "text-classification",
     model="j-hartmann/emotion-english-distilroberta-base",
@@ -53,7 +52,6 @@ def first_last_messages(df: pd.DataFrame) -> dict:
     """Gets the very first and very last message of the chat history."""
     if df.empty: return {}
 
-    # Filter for non-reactions to find the first and last actual messages
     analysis_df = df[~df['is_reaction']].copy()
     if analysis_df.empty: return {}
 

@@ -6,7 +6,7 @@ from utils import log
 data_bp = Blueprint('data', __name__)
 
 # ==============================================================================
-# GET (DOWNLOAD) ROUTES - (Existing Code)
+# GET (DOWNLOAD) ROUTES
 # ==============================================================================
 
 @data_bp.route('/data/processed', methods=['GET'])
@@ -49,15 +49,12 @@ def download_analysis_report():
 
 
 # ==============================================================================
-# POST (INSERT/UPLOAD) ROUTES - (New Code)
+# POST (INSERT/UPLOAD) ROUTES
 # ==============================================================================
 
 @data_bp.route('/data/insert/processed', methods=['POST'])
 def insert_processed_messages():
-    """
-    Inserts a list of processed messages into the session.
-    Expects a JSON body containing a list of message objects.
-    """
+    """Inserts a list of processed messages into the session."""
     session_id = session_manager.get_session_id()
     messages = request.get_json()
 
@@ -67,10 +64,7 @@ def insert_processed_messages():
     try:
         session_manager.store_processed_messages(session_id, messages)
         log(f"Inserted {len(messages)} processed messages into session {session_id}.")
-        return jsonify({
-            "message": "Successfully inserted processed messages.",
-            "count": len(messages)
-        }), 201
+        return jsonify({"message": "Successfully inserted processed messages.", "count": len(messages)}), 201
     except Exception as e:
         log(f"ERROR inserting processed messages: {e}")
         return jsonify({"error": "An internal error occurred while storing messages."}), 500
@@ -78,10 +72,7 @@ def insert_processed_messages():
 
 @data_bp.route('/data/insert/filtered', methods=['POST'])
 def insert_filtered_messages():
-    """
-    Inserts a list of filtered messages into the session.
-    Expects a JSON body containing a list of message objects.
-    """
+    """Inserts a list of filtered messages into the session."""
     session_id = session_manager.get_session_id()
     messages = request.get_json()
 
@@ -91,10 +82,7 @@ def insert_filtered_messages():
     try:
         session_manager.store_filtered_messages(session_id, messages)
         log(f"Inserted {len(messages)} filtered messages into session {session_id}.")
-        return jsonify({
-            "message": "Successfully inserted filtered messages.",
-            "count": len(messages)
-        }), 201
+        return jsonify({"message": "Successfully inserted filtered messages.", "count": len(messages)}), 201
     except Exception as e:
         log(f"ERROR inserting filtered messages: {e}")
         return jsonify({"error": "An internal error occurred while storing messages."}), 500
@@ -102,10 +90,7 @@ def insert_filtered_messages():
 
 @data_bp.route('/data/insert/report', methods=['POST'])
 def insert_analysis_report():
-    """
-    Inserts a full analysis report into the session.
-    Expects a JSON body containing the report object.
-    """
+    """Inserts a full analysis report into the session."""
     session_id = session_manager.get_session_id()
     report = request.get_json()
 
@@ -115,9 +100,53 @@ def insert_analysis_report():
     try:
         session_manager.store_analysis_result(session_id, report)
         log(f"Inserted analysis report into session {session_id}.")
-        return jsonify({
-            "message": "Successfully inserted analysis report."
-        }), 201
+        return jsonify({"message": "Successfully inserted analysis report."}), 201
     except Exception as e:
         log(f"ERROR inserting analysis report: {e}")
         return jsonify({"error": "An internal error occurred while storing the report."}), 500
+
+# ==============================================================================
+# POST (CLEAR) ROUTES
+# ==============================================================================
+
+@data_bp.route('/data/clear/processed', methods=['POST'])
+def clear_processed_messages():
+    """Clears processed messages, which will also clear subsequent filtered and analysis data."""
+    session_id = session_manager.get_session_id()
+    try:
+        # Clearing processed implies subsequent data is invalid
+        session_manager.clear_processed_messages(session_id)
+        session_manager.clear_filtered_messages(session_id)
+        session_manager.clear_analysis_result(session_id)
+        log(f"Cleared all processed, filtered, and analysis data for session {session_id}.")
+        return jsonify({"message": "Successfully cleared processed data and subsequent steps."}), 200
+    except Exception as e:
+        log(f"ERROR clearing processed data: {e}")
+        return jsonify({"error": "An internal error occurred."}), 500
+
+@data_bp.route('/data/clear/filtered', methods=['POST'])
+def clear_filtered_messages():
+    """Clears filtered messages and the analysis report which depends on them."""
+    session_id = session_manager.get_session_id()
+    try:
+        # Clearing filtered implies analysis is invalid
+        session_manager.clear_filtered_messages(session_id)
+        session_manager.clear_analysis_result(session_id)
+        log(f"Cleared filtered and analysis data for session {session_id}.")
+        return jsonify({"message": "Successfully cleared filtered data and analysis report."}), 200
+    except Exception as e:
+        log(f"ERROR clearing filtered data: {e}")
+        return jsonify({"error": "An internal error occurred."}), 500
+
+
+@data_bp.route('/data/clear/report', methods=['POST'])
+def clear_analysis_report():
+    """Clears only the analysis report."""
+    session_id = session_manager.get_session_id()
+    try:
+        session_manager.clear_analysis_result(session_id)
+        log(f"Cleared analysis report for session {session_id}.")
+        return jsonify({"message": "Successfully cleared analysis report."}), 200
+    except Exception as e:
+        log(f"ERROR clearing analysis report: {e}")
+        return jsonify({"error": "An internal error occurred."}), 500

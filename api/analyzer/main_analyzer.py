@@ -1,20 +1,10 @@
-"""
-Main ChatAnalyzer Orchestrator - Simplified Progress Reporting.
-
-This class manages the entire analysis pipeline, from loading and preprocessing
-data to running a series of analysis modules and generating a final, comprehensive
-JSON report. Progress reporting has been simplified and made more reliable.
-"""
 import json
 import re
 import warnings
 from datetime import datetime, date
-
 import numpy as np
 import pandas as pd
 import emoji
-
-# Import the refactored analysis modules and lexicons
 from . import analysis_modules as af
 from . import sentiment_lexicons
 
@@ -23,11 +13,6 @@ warnings.filterwarnings('ignore', category=RuntimeWarning)
 
 
 class ChatAnalyzer:
-    """
-    Orchestrates a comprehensive chat analysis by loading data, preprocessing it,
-    and running a series of modular analysis functions.
-    """
-
     def __init__(self, file_path_or_messages, input_type='file', progress_callback=None):
         self.input_type = input_type
         self.file_path = file_path_or_messages if input_type == 'file' else None
@@ -45,9 +30,6 @@ class ChatAnalyzer:
         self.url_pattern = re.compile(r'https?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(),]|%[0-9a-fA-F][0-9a-fA-F])+|www\.')
         self.word_pattern = re.compile(r'\b\w+\b')
         self.sentence_pattern = re.compile(r'(?<!\w\.\w.)(?<![A-Z][a-z]\.)(?<=\.|\?|\!)\s')
-
-
-        # Load lexicons from the dedicated module
         self.generic_words = sentiment_lexicons.generic_words
         self.khmer_stopwords = sentiment_lexicons.khmer_stopwords
         self.positive_words = sentiment_lexicons.positive_words
@@ -58,48 +40,29 @@ class ChatAnalyzer:
         self.argument_words = sentiment_lexicons.argument_words
 
     def _find_reaction_type(self, message: str):
-        """
-        Enhanced helper to find reaction type with better pattern matching.
-        Returns the reaction type if it's a reaction message, None if it's a normal message.
-        """
         if not isinstance(message, str) or len(message.strip()) == 0:
             return None
 
-        # Don't limit by length - some reaction messages can be longer
         message = message.strip()
 
-        # More comprehensive reaction patterns
         reaction_patterns = [
-            # Standard reaction patterns (iOS/Android)
             re.compile(r'^(Liked|Laughed at|Emphasized|Loved|Disliked|Questioned)\s+"(.*)"$', re.IGNORECASE),
             re.compile(r'^(Liked|Laughed at|Emphasized|Loved|Disliked|Questioned)\s+(.*)$', re.IGNORECASE),
-
-            # WhatsApp style reactions
             re.compile(r'^You reacted (.*) to this message$', re.IGNORECASE),
             re.compile(r'^(.+) reacted (.*) to this message$', re.IGNORECASE),
             re.compile(r'^Reacted with (.+) to (.*)$', re.IGNORECASE),
-
-            # Telegram style reactions
             re.compile(r'^(.+) reacted to your message with (.+)$', re.IGNORECASE),
             re.compile(r'^You reacted to (.+)\'s message with (.+)$', re.IGNORECASE),
-
-            # Facebook/Messenger style
             re.compile(r'^(.+) (loved|liked|disliked|laughed at|was amazed by|got angry at) your message$',
                        re.IGNORECASE),
             re.compile(r'^You (loved|liked|disliked|laughed at|were amazed by|got angry at) (.+)\'s message$',
                        re.IGNORECASE),
-
-            # Generic reaction patterns
             re.compile(
                 r'^(You |[a-zA-Z\s]+?)(loved|liked|disliked|laughed at|emphasized|questioned) (an image|a message|a photo|a video)$',
                 re.IGNORECASE),
             re.compile(r'^Reacted\s+(.+?)\s+to a message$', re.IGNORECASE),
-
-            # Emoji-based reactions
             re.compile(r'^(.+) added (😀|😂|😢|😡|👍|👎|❤️|😍|😮|😠|🔥|💯|👏|🎉) to (.+)$', re.IGNORECASE),
             re.compile(r'^You added (😀|😂|😢|😡|👍|👎|❤️|😍|😮|😠|🔥|💯|👏|🎉) to (.+)$', re.IGNORECASE),
-
-            # More generic patterns
             re.compile(r'reacted|reaction', re.IGNORECASE),
         ]
 
@@ -108,15 +71,12 @@ class ChatAnalyzer:
             if match:
                 groups = match.groups()
 
-                # Extract meaningful reaction type from groups
                 for group in groups:
                     if group and group.strip():
                         clean_group = group.strip().lower()
 
-                        # Skip common non-reaction words
                         skip_words = {'you', 'your', 'to', 'this', 'message', 'an', 'a', 'the', 'with'}
                         if clean_group not in skip_words and len(clean_group) > 1:
-                            # Map common reaction types
                             reaction_mapping = {
                                 'loved': 'love',
                                 'liked': 'like',
@@ -144,8 +104,6 @@ class ChatAnalyzer:
 
                             return reaction_mapping.get(clean_group, clean_group)
 
-                # If we matched a pattern but couldn't extract a specific reaction,
-                # return generic 'reaction'
                 return 'reaction'
 
         return None
@@ -226,10 +184,6 @@ class ChatAnalyzer:
         return obj
 
     def generate_comprehensive_report(self, modules_to_run: list = None):
-        """
-        Generates a report by running specified or all analysis modules.
-        Simplified progress reporting.
-        """
         if self.df.empty:
             return {"error": "DataFrame is empty, cannot generate report."}
 

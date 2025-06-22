@@ -57,7 +57,6 @@ export const ANALYSIS_MODULES: AnalysisModule[] = [
     { key: 'temporal_patterns', name: 'Temporal Patterns', description: 'Time-based messaging patterns', enabled: true },
     { key: 'unbroken_streaks', name: 'Unbroken Streaks', description: 'Consecutive messaging periods', enabled: false },
     { key: 'ghost_periods', name: 'Ghost Periods', description: 'Periods of inactivity', enabled: false },
-    { key: 'reaction_analysis', name: 'Reaction Analysis', description: 'Message reactions and responses', enabled: false },
     { key: 'icebreaker_analysis', name: 'Icebreaker Analysis', description: 'Conversation starters', enabled: false },
     { key: 'response_metrics', name: 'Response Metrics', description: 'Response time patterns', enabled: true },
     { key: 'conversation_patterns', name: 'Conversation Patterns', description: 'Communication flow analysis', enabled: true },
@@ -73,7 +72,9 @@ export const ANALYSIS_MODULES: AnalysisModule[] = [
     { key: 'sad_tone_analysis', name: 'Sad Tone Analysis', description: 'Negative emotion detection', enabled: false },
     { key: 'romance_tone_analysis', name: 'Romance Tone Analysis', description: 'Romantic sentiment analysis', enabled: false },
     { key: 'sexual_tone_analysis', name: 'Sexual Tone Analysis', description: 'Adult content detection', enabled: false },
+    { key: 'happy_tone_analysis', name: 'Happy Tone Analysis', description: 'Positive emotion detection', enabled: false },
     { key: 'relationship_metrics', name: 'Relationship Metrics', description: 'Relationship health indicators', enabled: false },
+    { key: 'emotion_analysis', name: 'Emotion Analysis', description: 'ML-based emotion detection', enabled: false },
 ];
 
 export interface FilterConfig {

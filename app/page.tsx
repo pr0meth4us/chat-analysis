@@ -23,8 +23,6 @@ export default function HomePage() {
   const router = useRouter();
   const prevTasksRef = useRef<TaskStatus[]>([]);
   const [autoSwitchEnabled, setAutoSwitchEnabled] = useState(true);
-
-  // This auto-switching logic remains the same
   useEffect(() => {
     if (!autoSwitchEnabled) return;
 
@@ -45,7 +43,6 @@ export default function HomePage() {
       }
     }
 
-    // Switch if data already exists on load
     if (activeTab === 'upload' && state.processedMessages.length > 0 && !state.tasks.some(t => t.status === 'running' || t.status === 'pending')) {
       setActiveTab('filter');
     } else if (activeTab === 'filter' && state.filteredMessages.length > 0 && !state.tasks.some(t => t.status === 'running' || t.status === 'pending')) {
@@ -67,8 +64,8 @@ export default function HomePage() {
       router.push('/dashboard');
     } else {
       setActiveTab(tabId);
-      setAutoSwitchEnabled(false); // Disable auto-switching on manual click
-      setTimeout(() => setAutoSwitchEnabled(true), 5000); // Re-enable after a delay
+      setAutoSwitchEnabled(false);
+      setTimeout(() => setAutoSwitchEnabled(true), 5000);
     }
   };
 

@@ -4,7 +4,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/custom/Card';
 import { CodeBlock } from '@/components/ui/custom/CodeBlock';
-import { FileUp, Filter, BarChart, Search, BrainCircuit, HeartHandshake, Eye, Info } from 'lucide-react';
+import { FileUp, BarChart, BrainCircuit, HeartHandshake, Eye, Info } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/custom/Button';
 
@@ -123,7 +123,7 @@ export default function GuidePage() {
                             <ul className="list-disc pl-5 mt-2 space-y-1">
                                 <li><strong>Contribution Calendar:</strong> This GitHub-style heatmap shows your daily messaging frequency. Darker squares mean more messages on that day. It's great for spotting patterns over a year.</li>
                                 <li><strong>Streaks:</strong> Identifies the longest periods of <em>consecutive</em> daily messaging. See what topics started, ended, and resumed these streaks.</li>
-                                <li><strong>Ghosting:</strong> Finds significant gaps in conversation (e.g., >12 hours of silence) and shows who eventually broke the silence and with what message.</li>
+                                <li><strong>Ghosting:</strong> Finds significant gaps in conversation (e.g., {'>'}12 hours of silence) and shows who eventually broke the silence and with what message.</li>
                             </ul>
                         </div>
                         <div>

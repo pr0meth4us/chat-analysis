@@ -6,8 +6,9 @@ import { cn } from '@/utils';
 
 interface Tab {
   id: string;
-  label: string;
+  label:string;
   icon?: React.ElementType;
+  disabled?: boolean;
 }
 
 interface TabsProps {

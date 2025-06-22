@@ -93,7 +93,6 @@ export const api = {
         return handleResponse<AnalysisResult>(response);
     },
 
-    // --- NEW INSERTION METHODS ---
     async insertProcessedMessages(messages: Message[]): Promise<{ message: string; count: number }> {
         const response = await fetch(`${API_BASE}/data/insert/processed`, {
             method: 'POST',
@@ -123,7 +122,30 @@ export const api = {
         });
         return handleResponse<{ message: string }>(response);
     },
-    // --- END NEW INSERTION METHODS ---
+
+    async clearProcessedData(): Promise<{ message: string }> {
+        const response = await fetch(`${API_BASE}/data/clear/processed`, {
+            method: 'POST',
+            credentials: 'include',
+        });
+        return handleResponse<{ message: string }>(response);
+    },
+
+    async clearFilteredData(): Promise<{ message: string }> {
+        const response = await fetch(`${API_BASE}/data/clear/filtered`, {
+            method: 'POST',
+            credentials: 'include',
+        });
+        return handleResponse<{ message: string }>(response);
+    },
+
+    async clearAnalysisReport(): Promise<{ message: string }> {
+        const response = await fetch(`${API_BASE}/data/clear/report`, {
+            method: 'POST',
+            credentials: 'include',
+        });
+        return handleResponse<{ message: string }>(response);
+    },
 
     async filterMessages(config: FilterConfig): Promise<TaskStatus | Message[]> {
         const response = await fetch(`${API_BASE}/filter`, {
@@ -184,6 +206,14 @@ export const api = {
             credentials: 'include',
         });
         await handleFileDownload(response, 'filtered_messages.json');
+    },
+
+    async cancelTask(taskId: string): Promise<{ message: string }> {
+        const response = await fetch(`${API_BASE}/tasks/cancel/${taskId}`, {
+            method: 'POST',
+            credentials: 'include',
+        });
+        return handleResponse<{ message: string }>(response);
     },
 
     async downloadChatAsHtml(

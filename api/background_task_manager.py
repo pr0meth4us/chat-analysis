@@ -8,6 +8,7 @@ from typing import Dict, Any, Optional, Callable, List
 from utils import log
 import inspect
 
+
 class TaskStatus(Enum):
     """Enumeration for the status of a background task."""
     PENDING = "pending"
@@ -15,12 +16,15 @@ class TaskStatus(Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     TIMEOUT = "timeout"
+    CANCELLED = "cancelled"  # NEW: Added cancelled status
+
 
 @dataclass
 class TaskResult:
     """Data class to hold the state and result of a background task."""
     task_id: str
     status: TaskStatus
+    name: Optional[str] = None  # Capture the function name for better display
     result: Any = None
     error: Optional[str] = None
     created_at: datetime = field(default_factory=datetime.now)
@@ -33,6 +37,7 @@ class TaskResult:
         """Serializes the dataclass to a dictionary for JSON responses."""
         return {
             'task_id': self.task_id,
+            'name': self.name,
             'status': self.status.value,
             'result': self.result,
             'error': self.error,
@@ -42,6 +47,7 @@ class TaskResult:
             'progress': round(self.progress, 1),
             'stage': self.stage,
         }
+
 
 class BackgroundTaskManager:
     """Manages a queue and worker pool for running tasks in the background."""
@@ -68,24 +74,49 @@ class BackgroundTaskManager:
     def submit_task(self, session_id: str, func: Callable, *args, **kwargs) -> str:
         """Submits a function to be executed in the background."""
         task_id = str(uuid.uuid4())
+        task_name = func.__name__.replace('_', ' ').title()  # Get a display-friendly name
         with self.tasks_lock:
-            self.tasks[task_id] = TaskResult(task_id=task_id, status=TaskStatus.PENDING)
+            self.tasks[task_id] = TaskResult(task_id=task_id, status=TaskStatus.PENDING, name=task_name)
             self.session_tasks.setdefault(session_id, set()).add(task_id)
 
         with self.queue_lock:
             self.task_queue.append((task_id, func, args, kwargs))
 
-        log(f"Task {task_id} submitted for session {session_id}")
+        log(f"Task {task_id} ({task_name}) submitted for session {session_id}")
         return task_id
 
+    # --- NEW METHOD ---
+    def cancel_task(self, task_id: str) -> bool:
+        """
+        Requests cancellation of a task.
+        Returns True if the task was found and marked for cancellation, False otherwise.
+        """
+        with self.tasks_lock:
+            task = self.tasks.get(task_id)
+            if not task:
+                log(f"Cancel request for non-existent task {task_id}")
+                return False
+
+            # Can only cancel tasks that are pending or running
+            if task.status in [TaskStatus.PENDING, TaskStatus.RUNNING]:
+                task.status = TaskStatus.CANCELLED
+                task.completed_at = datetime.now()
+                task.stage = "Cancelled by user"
+                task.error = "Task was cancelled by the user."
+                log(f"Task {task_id} marked as CANCELLED.")
+                return True
+
+            log(f"Could not cancel task {task_id}, status is {task.status.value}")
+            return False
+
     def get_task_status(self, task_id: str) -> Optional[Dict]:
-        """Retrieves the status and result of a specific task."""
+        # ... (no changes needed)
         with self.tasks_lock:
             task = self.tasks.get(task_id)
             return task.to_dict() if task else None
 
     def get_session_tasks(self, session_id: str) -> Dict[str, Dict]:
-        """Retrieves all tasks associated with a given session."""
+        # ... (no changes needed)
         with self.tasks_lock:
             session_task_ids = self.session_tasks.get(session_id, set())
             return {
@@ -94,7 +125,7 @@ class BackgroundTaskManager:
             }
 
     def clear_session_tasks(self, session_id: str):
-        """Removes all tasks associated with a given session."""
+        # ... (no changes needed)
         with self.tasks_lock:
             if session_id in self.session_tasks:
                 task_ids_to_remove = self.session_tasks.pop(session_id, set())
@@ -103,13 +134,13 @@ class BackgroundTaskManager:
                 log(f"Cleared {len(task_ids_to_remove)} tasks for session {session_id}")
 
     def _update_task_progress(self, task_id: str, progress: float = None, stage: str = None):
-        """Internal method to update task progress safely."""
+        # ... (no changes needed)
         try:
             with self.tasks_lock:
                 if task_id in self.tasks:
                     task = self.tasks[task_id]
                     if progress is not None:
-                        task.progress = max(0, min(100, progress))  # Clamp between 0-100
+                        task.progress = max(0, min(100, progress))
                     if stage is not None:
                         task.stage = str(stage)
         except Exception as e:
@@ -131,19 +162,25 @@ class BackgroundTaskManager:
 
             with self.tasks_lock:
                 task = self.tasks.get(task_id)
+                # MODIFIED: Check if the task was cancelled while in the queue
                 if not task or task.status != TaskStatus.PENDING:
+                    log(f"Skipping task {task_id} as its status is not PENDING (is {task.status.value if task else 'None'}).")
                     continue
                 task.status = TaskStatus.RUNNING
                 task.started_at = datetime.now()
                 task.stage = "Starting"
                 task.progress = 0.0
 
-            log(f"Worker starting task {task_id}")
+            log(f"Worker starting task {task_id} ({task.name})")
 
             try:
-                # Create a simplified progress callback
+                # Create a progress callback that also checks for cancellation
                 def progress_callback(progress=None, stage=None, **kwargs):
-                    # Handle different parameter names for compatibility
+                    with self.tasks_lock:
+                        if self.tasks.get(task_id).status == TaskStatus.CANCELLED:
+                            # If task is cancelled, stop further processing
+                            raise InterruptedError("Task was cancelled by user.")
+
                     if 'progress_percent' in kwargs:
                         progress = kwargs['progress_percent']
                     if 'step_name' in kwargs:
@@ -151,21 +188,29 @@ class BackgroundTaskManager:
 
                     self._update_task_progress(task_id, progress, stage)
 
-                # Check if the target function can accept a progress callback
                 if 'progress_callback' in inspect.signature(func).parameters:
                     kwargs['progress_callback'] = progress_callback
 
                 result = self._execute_with_timeout(func, self.task_timeout.total_seconds(), *args, **kwargs)
 
                 with self.tasks_lock:
-                    if task_id in self.tasks:
-                        task = self.tasks[task_id]
+                    task = self.tasks.get(task_id)
+                    # MODIFIED: Check if task was cancelled during execution
+                    if task and task.status == TaskStatus.CANCELLED:
+                        log(f"Task {task_id} was cancelled during execution, ignoring result.")
+                    elif task:
                         task.status = TaskStatus.COMPLETED
                         task.result = result
                         task.completed_at = datetime.now()
                         task.progress = 100.0
                         task.stage = "Completed"
                         log(f"Task {task_id} completed successfully.")
+
+            except InterruptedError as e:
+                # This is raised by our custom progress_callback
+                log(f"Task {task_id} execution stopped due to cancellation.")
+                # The status is already set to CANCELLED, so no further action is needed.
+                pass
 
             except TimeoutError:
                 with self.tasks_lock:
@@ -183,13 +228,14 @@ class BackgroundTaskManager:
                 with self.tasks_lock:
                     if task_id in self.tasks:
                         task = self.tasks[task_id]
-                        task.status = TaskStatus.FAILED
-                        task.error = error_message
-                        task.completed_at = datetime.now()
-                        task.stage = "Failed"
+                        if task.status != TaskStatus.CANCELLED:  # Don't overwrite a cancelled status
+                            task.status = TaskStatus.FAILED
+                            task.error = error_message
+                            task.completed_at = datetime.now()
+                            task.stage = "Failed"
 
     def _execute_with_timeout(self, func, timeout, *args, **kwargs):
-        """Executes a function in a separate thread and imposes a timeout."""
+        # ... (no changes needed)
         result_container = [None]
         exception_container = [None]
 
@@ -202,19 +248,16 @@ class BackgroundTaskManager:
         thread = threading.Thread(target=target_func, daemon=True)
         thread.start()
         thread.join(timeout)
-
         if thread.is_alive():
             raise TimeoutError("Function execution timed out.")
-
         if exception_container[0]:
             raise exception_container[0]
-
         return result_container[0]
 
     def _cleanup_old_tasks(self):
-        """Periodically removes old, finished tasks to prevent memory growth."""
+        # ... (no changes needed)
         while self.running:
-            time.sleep(3600)  # Run cleanup every hour
+            time.sleep(3600)
             cutoff = datetime.now() - timedelta(hours=24)
             with self.tasks_lock:
                 tasks_to_remove = [
@@ -230,6 +273,7 @@ class BackgroundTaskManager:
                             if not self.session_tasks[sid]:
                                 self.session_tasks.pop(sid)
                     log(f"Cleaned up {len(tasks_to_remove)} old tasks.")
+
 
 # Global instance
 task_manager = BackgroundTaskManager()

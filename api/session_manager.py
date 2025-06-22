@@ -22,7 +22,8 @@ class SessionManager:
         # Clean up old sessions on startup
         self._cleanup_old_sessions()
 
-    def get_session_id(self):
+    @staticmethod
+    def get_session_id():
         """Get or create session ID"""
         if 'session_id' not in session:
             session['session_id'] = str(uuid.uuid4())
@@ -56,7 +57,6 @@ class SessionManager:
         if session_id in self.processed_messages_store:
             return self.processed_messages_store[session_id]
 
-        # Try loading from file
         file_path = self._get_file_path(session_id, 'processed')
         if os.path.exists(file_path):
             try:
@@ -68,6 +68,8 @@ class SessionManager:
                     return messages
             except Exception as e:
                 print(f"Error loading processed messages from file: {e}")
+                return None
+        return None
 
     def store_analysis_status(self, session_id, status):
         """Store analysis status for a session"""
@@ -211,6 +213,40 @@ class SessionManager:
                 print(f"Error loading processing status from file: {e}")
 
         return None
+
+    def clear_processed_messages(self, session_id):
+        """Clears only the processed messages for a session from memory and disk."""
+        with self.lock:
+            self.processed_messages_store.pop(session_id, None)
+            file_path = self._get_file_path(session_id, 'processed')
+            try:
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+            except Exception as e:
+                print(f"Error removing file {file_path}: {e}")
+
+    def clear_filtered_messages(self, session_id):
+        """Clears only the filtered messages for a session from memory and disk."""
+        with self.lock:
+            self.filtered_messages_store.pop(session_id, None)
+            file_path = self._get_file_path(session_id, 'filtered')
+            try:
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+            except Exception as e:
+                print(f"Error removing file {file_path}: {e}")
+
+
+    def clear_analysis_result(self, session_id):
+        """Clears only the analysis result for a session from memory and disk."""
+        with self.lock:
+            self.analysis_result_store.pop(session_id, None)
+            file_path = self._get_file_path(session_id, 'analysis_result')
+            try:
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+            except Exception as e:
+                print(f"Error removing file {file_path}: {e}")
 
     def clear_session_data(self, session_id):
         """Clear all data for a session"""
