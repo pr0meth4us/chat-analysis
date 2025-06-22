@@ -18,9 +18,14 @@ export default function AnalysisSection() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isNavigating, setIsNavigating] = useState(false);
 
+    // --- CORRECTED LOGIC ---
     const isAnalysisTaskActive = useMemo(() => {
         return state.tasks.some(
-            (task) => task.name === 'analysis' && (task.status === 'pending' || task.status === 'running')
+            (task) =>
+                // Check if the task name includes "analysis", ignoring case.
+                // This correctly matches "Run Analysis Worker", "Analysis", etc.
+                task.name?.toLowerCase().includes('analysis') &&
+                (task.status === 'pending' || task.status === 'running')
         );
     }, [state.tasks]);
 
@@ -116,7 +121,7 @@ export default function AnalysisSection() {
                             })}
                         </div>
                         <div className="flex justify-between items-center mt-6">
-                             <div className="space-x-2">
+                            <div className="space-x-2">
                                 <Button variant="outline" size="sm" onClick={() => setSelectedModules(ANALYSIS_MODULES.map(m => m.key))}>Select All</Button>
                                 <Button variant="outline" size="sm" onClick={() => setSelectedModules([])}>Clear All</Button>
                                 <Button variant="outline" size="sm" onClick={() => setSelectedModules(ANALYSIS_MODULES.filter(m => m.enabled).map(m => m.key))}>Recommended</Button>
@@ -143,7 +148,7 @@ export default function AnalysisSection() {
                                     A report with {Object.keys(state.analysisResult).length} modules has been created.
                                 </p>
                                 <div className="flex justify-center items-center gap-4">
-                                     <Button icon={Download} variant="outline" onClick={downloadReport}>Download Report</Button>
+                                    <Button icon={Download} variant="outline" onClick={downloadReport}>Download Report</Button>
                                     <Link href="/dashboard" passHref>
                                         <Button icon={ExternalLink} loading={isNavigating} onClick={() => setIsNavigating(true)}>
                                             {isNavigating ? 'Loading...' : 'View Full Dashboard'}
@@ -151,9 +156,9 @@ export default function AnalysisSection() {
                                     </Link>
                                 </div>
                                 <div className="mt-6 border-t pt-4">
-                                      <Button variant="link" size="sm" className="text-muted-foreground" icon={RefreshCw} onClick={actions.clearAnalysis} loading={state.isLoading}>
-                                          Clear Report & Re-run Analysis
-                                      </Button>
+                                    <Button variant="link" size="sm" className="text-muted-foreground" icon={RefreshCw} onClick={actions.clearAnalysis} loading={state.isLoading}>
+                                        Clear Report & Re-run Analysis
+                                    </Button>
                                 </div>
                             </div>
                         </CardContent>

@@ -38,12 +38,7 @@ def clear_session_endpoint():
 # --- NEW ENDPOINT ---
 @tasks_bp.route('/cancel/<task_id>', methods=['POST'])
 def cancel_task_endpoint(task_id):
-    """Cancels a running or pending task."""
     log(f"Received request to cancel task {task_id}")
-
-    # You would need to implement the cancel_task method in your task_manager
-    # This method should find the task and update its status to 'cancelled'
-    # or another terminal state.
     success = task_manager.cancel_task(task_id)
 
     if not success:

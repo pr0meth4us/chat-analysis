@@ -10,21 +10,19 @@ import inspect
 
 
 class TaskStatus(Enum):
-    """Enumeration for the status of a background task."""
     PENDING = "pending"
     RUNNING = "running"
     COMPLETED = "completed"
     FAILED = "failed"
     TIMEOUT = "timeout"
-    CANCELLED = "cancelled"  # NEW: Added cancelled status
+    CANCELLED = "cancelled"
 
 
 @dataclass
 class TaskResult:
-    """Data class to hold the state and result of a background task."""
     task_id: str
     status: TaskStatus
-    name: Optional[str] = None  # Capture the function name for better display
+    name: Optional[str] = None
     result: Any = None
     error: Optional[str] = None
     created_at: datetime = field(default_factory=datetime.now)
@@ -34,7 +32,6 @@ class TaskResult:
     stage: str = "Queued"
 
     def to_dict(self) -> Dict[str, Any]:
-        """Serializes the dataclass to a dictionary for JSON responses."""
         return {
             'task_id': self.task_id,
             'name': self.name,
@@ -50,7 +47,6 @@ class TaskResult:
 
 
 class BackgroundTaskManager:
-    """Manages a queue and worker pool for running tasks in the background."""
 
     def __init__(self, max_workers: int = 4, task_timeout: int = 300):
         self.max_workers = max_workers
@@ -72,9 +68,8 @@ class BackgroundTaskManager:
         cleanup_thread.start()
 
     def submit_task(self, session_id: str, func: Callable, *args, **kwargs) -> str:
-        """Submits a function to be executed in the background."""
         task_id = str(uuid.uuid4())
-        task_name = func.__name__.replace('_', ' ').title()  # Get a display-friendly name
+        task_name = func.__name__.replace('_', ' ').title()
         with self.tasks_lock:
             self.tasks[task_id] = TaskResult(task_id=task_id, status=TaskStatus.PENDING, name=task_name)
             self.session_tasks.setdefault(session_id, set()).add(task_id)
@@ -85,24 +80,17 @@ class BackgroundTaskManager:
         log(f"Task {task_id} ({task_name}) submitted for session {session_id}")
         return task_id
 
-    # --- NEW METHOD ---
     def cancel_task(self, task_id: str) -> bool:
-        """
-        Requests cancellation of a task.
-        Returns True if the task was found and marked for cancellation, False otherwise.
-        """
         with self.tasks_lock:
             task = self.tasks.get(task_id)
             if not task:
                 log(f"Cancel request for non-existent task {task_id}")
                 return False
 
-            # Can only cancel tasks that are pending or running
             if task.status in [TaskStatus.PENDING, TaskStatus.RUNNING]:
                 task.status = TaskStatus.CANCELLED
                 task.completed_at = datetime.now()
                 task.stage = "Cancelled by user"
-                task.error = "Task was cancelled by the user."
                 log(f"Task {task_id} marked as CANCELLED.")
                 return True
 
@@ -110,13 +98,11 @@ class BackgroundTaskManager:
             return False
 
     def get_task_status(self, task_id: str) -> Optional[Dict]:
-        # ... (no changes needed)
         with self.tasks_lock:
             task = self.tasks.get(task_id)
             return task.to_dict() if task else None
 
     def get_session_tasks(self, session_id: str) -> Dict[str, Dict]:
-        # ... (no changes needed)
         with self.tasks_lock:
             session_task_ids = self.session_tasks.get(session_id, set())
             return {
@@ -125,7 +111,6 @@ class BackgroundTaskManager:
             }
 
     def clear_session_tasks(self, session_id: str):
-        # ... (no changes needed)
         with self.tasks_lock:
             if session_id in self.session_tasks:
                 task_ids_to_remove = self.session_tasks.pop(session_id, set())
@@ -134,7 +119,6 @@ class BackgroundTaskManager:
                 log(f"Cleared {len(task_ids_to_remove)} tasks for session {session_id}")
 
     def _update_task_progress(self, task_id: str, progress: float = None, stage: str = None):
-        # ... (no changes needed)
         try:
             with self.tasks_lock:
                 if task_id in self.tasks:
@@ -147,7 +131,6 @@ class BackgroundTaskManager:
             log(f"Error updating progress for task {task_id}: {e}")
 
     def _worker(self):
-        """The main loop for worker threads, processing tasks from the queue."""
         while self.running:
             task_item = None
             with self.queue_lock:
@@ -162,7 +145,6 @@ class BackgroundTaskManager:
 
             with self.tasks_lock:
                 task = self.tasks.get(task_id)
-                # MODIFIED: Check if the task was cancelled while in the queue
                 if not task or task.status != TaskStatus.PENDING:
                     log(f"Skipping task {task_id} as its status is not PENDING (is {task.status.value if task else 'None'}).")
                     continue
@@ -174,11 +156,9 @@ class BackgroundTaskManager:
             log(f"Worker starting task {task_id} ({task.name})")
 
             try:
-                # Create a progress callback that also checks for cancellation
                 def progress_callback(progress=None, stage=None, **kwargs):
                     with self.tasks_lock:
                         if self.tasks.get(task_id).status == TaskStatus.CANCELLED:
-                            # If task is cancelled, stop further processing
                             raise InterruptedError("Task was cancelled by user.")
 
                     if 'progress_percent' in kwargs:
@@ -195,7 +175,6 @@ class BackgroundTaskManager:
 
                 with self.tasks_lock:
                     task = self.tasks.get(task_id)
-                    # MODIFIED: Check if task was cancelled during execution
                     if task and task.status == TaskStatus.CANCELLED:
                         log(f"Task {task_id} was cancelled during execution, ignoring result.")
                     elif task:
@@ -207,9 +186,7 @@ class BackgroundTaskManager:
                         log(f"Task {task_id} completed successfully.")
 
             except InterruptedError as e:
-                # This is raised by our custom progress_callback
                 log(f"Task {task_id} execution stopped due to cancellation.")
-                # The status is already set to CANCELLED, so no further action is needed.
                 pass
 
             except TimeoutError:
@@ -228,14 +205,13 @@ class BackgroundTaskManager:
                 with self.tasks_lock:
                     if task_id in self.tasks:
                         task = self.tasks[task_id]
-                        if task.status != TaskStatus.CANCELLED:  # Don't overwrite a cancelled status
+                        if task.status != TaskStatus.CANCELLED:
                             task.status = TaskStatus.FAILED
                             task.error = error_message
                             task.completed_at = datetime.now()
                             task.stage = "Failed"
 
     def _execute_with_timeout(self, func, timeout, *args, **kwargs):
-        # ... (no changes needed)
         result_container = [None]
         exception_container = [None]
 
@@ -255,7 +231,6 @@ class BackgroundTaskManager:
         return result_container[0]
 
     def _cleanup_old_tasks(self):
-        # ... (no changes needed)
         while self.running:
             time.sleep(3600)
             cutoff = datetime.now() - timedelta(hours=24)
@@ -275,5 +250,4 @@ class BackgroundTaskManager:
                     log(f"Cleaned up {len(tasks_to_remove)} old tasks.")
 
 
-# Global instance
 task_manager = BackgroundTaskManager()

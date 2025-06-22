@@ -5,10 +5,9 @@ import re
 from collections import Counter
 from thefuzz import fuzz
 
-search_bp =  Blueprint('countword', __name__)
+search_bp = Blueprint('countword', __name__)
 @search_bp.route('/count_keyword', methods=['POST'])
 def count_keyword_endpoint():
-    """Counts a specific keyword in the filtered messages from the session."""
     payload = request.get_json()
     if not payload or 'keyword' not in payload:
         return jsonify({"error": "Keyword is required."}), 400
@@ -16,15 +15,12 @@ def count_keyword_endpoint():
     keyword = payload['keyword']
     session_id = session_manager.get_session_id()
 
-    # Use filtered messages for keyword search, as it's the most relevant dataset
     messages = session_manager.get_filtered_messages(session_id)
     if not messages:
         return jsonify({"error": "No filtered messages found. Please filter messages before searching."}), 400
 
     log(f"Counting keyword '{keyword}' for session {session_id} in {len(messages)} messages.")
 
-    # --- Keyword Counting Logic ---
-    # Use a case-insensitive regex pattern to find the keyword as a whole word
     pattern = re.compile(r'\b' + re.escape(keyword) + r'\b', re.IGNORECASE)
 
     sender_counts = Counter()
@@ -55,8 +51,7 @@ def fuzzy_search_endpoint():
         return jsonify({"error": "A 'query' phrase is required."}), 400
 
     query = payload['query']
-    cutoff = int(payload.get('cutoff', 75)) # Default to 75% similarity
-
+    cutoff = int(payload.get('cutoff', 75))
     session_id = session_manager.get_session_id()
 
     messages = session_manager.get_filtered_messages(session_id)

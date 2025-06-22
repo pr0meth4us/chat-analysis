@@ -18,7 +18,9 @@ export default function UploadSection() {
 
     const isUploadTaskActive = useMemo(() => {
         return state.tasks.some(
-            (task) => task.name === 'process_file' && (task.status === 'pending' || task.status === 'running')
+            (task) =>
+                task.name?.toLowerCase().includes('process file') &&
+                (task.status === 'pending' || task.status === 'running')
         );
     }, [state.tasks]);
 
@@ -63,6 +65,7 @@ export default function UploadSection() {
     };
     
     const isLoading = isUploadTaskActive;
+    console.log(isUploadTaskActive, state.tasks);
 
     if (hasProcessedFiles) {
         return (

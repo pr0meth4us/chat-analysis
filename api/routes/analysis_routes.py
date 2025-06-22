@@ -9,7 +9,6 @@ analysis_bp = Blueprint('analysis', __name__)
 
 @analysis_bp.route('/analyze', methods=['POST'])
 def analyze_data_endpoint():
-    """Starts an analysis task on the filtered messages from the session."""
     payload = request.get_json(silent=True) or {}
     modules_to_run = payload.get('modules_to_run')
 

@@ -5,13 +5,8 @@ from utils import log
 
 data_bp = Blueprint('data', __name__)
 
-# ==============================================================================
-# GET (DOWNLOAD) ROUTES
-# ==============================================================================
-
 @data_bp.route('/data/processed', methods=['GET'])
 def download_processed_messages():
-    """Downloads the full set of messages after initial processing."""
     session_id = session_manager.get_session_id()
     messages = session_manager.get_processed_messages(session_id)
 
@@ -24,7 +19,6 @@ def download_processed_messages():
 
 @data_bp.route('/data/filtered', methods=['GET'])
 def download_filtered_messages():
-    """Downloads the messages after they have been filtered."""
     session_id = session_manager.get_session_id()
     messages = session_manager.get_filtered_messages(session_id)
 
@@ -37,7 +31,6 @@ def download_filtered_messages():
 
 @data_bp.route('/data/report', methods=['GET'])
 def download_analysis_report():
-    """Downloads the latest analysis report."""
     session_id = session_manager.get_session_id()
     report = session_manager.get_analysis_result(session_id)
 
@@ -48,13 +41,8 @@ def download_analysis_report():
     return make_json_response(report, filename="analysis_report.json")
 
 
-# ==============================================================================
-# POST (INSERT/UPLOAD) ROUTES
-# ==============================================================================
-
 @data_bp.route('/data/insert/processed', methods=['POST'])
 def insert_processed_messages():
-    """Inserts a list of processed messages into the session."""
     session_id = session_manager.get_session_id()
     messages = request.get_json()
 
@@ -72,7 +60,6 @@ def insert_processed_messages():
 
 @data_bp.route('/data/insert/filtered', methods=['POST'])
 def insert_filtered_messages():
-    """Inserts a list of filtered messages into the session."""
     session_id = session_manager.get_session_id()
     messages = request.get_json()
 
@@ -90,7 +77,6 @@ def insert_filtered_messages():
 
 @data_bp.route('/data/insert/report', methods=['POST'])
 def insert_analysis_report():
-    """Inserts a full analysis report into the session."""
     session_id = session_manager.get_session_id()
     report = request.get_json()
 
@@ -105,16 +91,10 @@ def insert_analysis_report():
         log(f"ERROR inserting analysis report: {e}")
         return jsonify({"error": "An internal error occurred while storing the report."}), 500
 
-# ==============================================================================
-# POST (CLEAR) ROUTES
-# ==============================================================================
-
 @data_bp.route('/data/clear/processed', methods=['POST'])
 def clear_processed_messages():
-    """Clears processed messages, which will also clear subsequent filtered and analysis data."""
     session_id = session_manager.get_session_id()
     try:
-        # Clearing processed implies subsequent data is invalid
         session_manager.clear_processed_messages(session_id)
         session_manager.clear_filtered_messages(session_id)
         session_manager.clear_analysis_result(session_id)
@@ -126,10 +106,8 @@ def clear_processed_messages():
 
 @data_bp.route('/data/clear/filtered', methods=['POST'])
 def clear_filtered_messages():
-    """Clears filtered messages and the analysis report which depends on them."""
     session_id = session_manager.get_session_id()
     try:
-        # Clearing filtered implies analysis is invalid
         session_manager.clear_filtered_messages(session_id)
         session_manager.clear_analysis_result(session_id)
         log(f"Cleared filtered and analysis data for session {session_id}.")
@@ -141,7 +119,6 @@ def clear_filtered_messages():
 
 @data_bp.route('/data/clear/report', methods=['POST'])
 def clear_analysis_report():
-    """Clears only the analysis report."""
     session_id = session_manager.get_session_id()
     try:
         session_manager.clear_analysis_result(session_id)
