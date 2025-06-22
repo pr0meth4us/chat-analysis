@@ -1,15 +1,15 @@
 'use client';
 
 import React, { createContext, useContext, useReducer, useEffect, useState, useRef, useCallback } from 'react';
-import { AppState, TaskStatus, Message } from '@/types';
+import {AppState, TaskStatus, Message, FilterConfig} from '@/types';
 import { api } from '@/utils/api';
 
 interface AppContextType {
     state: AppState;
     dispatch: React.Dispatch<AppAction>;
     actions: {
-        uploadFile: (file: File) => Promise<void>;
-        filterMessages: (config: { me: string[]; remove: string[]; other_label: string }) => Promise<void>;
+        uploadFiles: (files: File[]) => Promise<void>;
+        filterMessages: (config: FilterConfig) => Promise<void>; // <-- Update the type here
         startAnalysis: (modules?: string[]) => Promise<void>;
         refreshData: () => Promise<void>;
         clearSession: () => Promise<void>;
@@ -133,7 +133,6 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
                 ? response.tasks
                 : Object.values(response.tasks || {});
             dispatch({ type: 'SET_TASKS', payload: tasksArray });
-            prevTasksRef.current = tasksArray;
         } catch (error) {
             console.error('Failed to get tasks:', error);
         }
@@ -156,17 +155,32 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
                 const newTasksArray = Array.isArray(response.tasks)
                     ? response.tasks
                     : Object.values(response.tasks || {});
+
+                // --- MODIFICATION START ---
+                // This logic is now robust and handles the "fast task" race condition.
                 const justCompletedTasks = newTasksArray.filter(currentTask => {
                     const prevTask = prevTasksRef.current.find(t => t.task_id === currentTask.task_id);
-                    return prevTask &&
+
+                    // Case 1: The task was being tracked and has now completed.
+                    const statusTransition = prevTask &&
                         (prevTask.status === 'running' || prevTask.status === 'pending') &&
                         currentTask.status === 'completed';
+
+                    // Case 2: The task is new to us and already completed (handles the race condition).
+                    const newAndCompleted = !prevTask && currentTask.status === 'completed';
+
+                    return statusTransition || newAndCompleted;
                 });
+                // --- MODIFICATION END ---
+
                 dispatch({ type: 'SET_TASKS', payload: newTasksArray });
+
                 if (justCompletedTasks.length > 0) {
                     await refreshData();
                 }
+
                 prevTasksRef.current = newTasksArray;
+
             } catch (error) {
                 dispatch({ type: 'SET_ERROR', payload: 'Task polling failed.' });
             }
@@ -183,7 +197,7 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
         } catch (error: any) {
             dispatch({ type: 'SET_ERROR', payload: `Could not clear ${stageName} data.` });
         } finally {
-             dispatch({ type: 'SET_LOADING', payload: false });
+            dispatch({ type: 'SET_LOADING', payload: false });
         }
     };
 
@@ -202,10 +216,14 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     };
 
     const actions = {
-        uploadFile: async (file: File) => {
+        uploadFiles: async (files: File[]) => {
+            if (!files || files.length === 0) {
+                return;
+            }
             dispatch({ type: 'SET_LOADING', payload: true });
             try {
-                const task = await api.uploadFile(file);
+                const task = await api.uploadFiles(files);
+                await refreshTasks();
                 dispatch({ type: 'UPDATE_TASK', payload: task });
             } catch (error: unknown) {
                 dispatch({ type: 'SET_ERROR', payload: String(error) });
@@ -216,6 +234,7 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
             dispatch({ type: 'SET_LOADING', payload: true });
             try {
                 const result = await api.filterMessages(config);
+                await refreshTasks();
                 if ('task_id' in result) {
                     dispatch({ type: 'UPDATE_TASK', payload: result });
                 } else {
@@ -230,6 +249,7 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
             dispatch({ type: 'SET_LOADING', payload: true });
             try {
                 const task = await api.startAnalysis(modules);
+                await refreshTasks();
                 dispatch({ type: 'UPDATE_TASK', payload: task });
             } catch (error: unknown) {
                 dispatch({ type: 'SET_ERROR', payload: String(error) });
@@ -251,11 +271,9 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
         insertProcessedMessages: (file: File) => handleFileUploadAndInsert(file, api.insertProcessedMessages),
         insertFilteredMessages: (file: File) => handleFileUploadAndInsert(file, api.insertFilteredMessages),
         insertAnalysisReport: (file: File) => handleFileUploadAndInsert(file, api.insertAnalysisReport),
-                // --- NEW ACTION IMPLEMENTATION ---
         cancelTask: async (taskId: string) => {
             try {
                 await api.cancelTask(taskId);
-                // Immediately refresh tasks to show the 'cancelled' status
                 await refreshTasks();
             } catch (error: any) {
                 console.error(`Failed to cancel task ${taskId}:`, error);
@@ -264,11 +282,10 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
         },
     };
 
-
     useEffect(() => {
         refreshData();
         refreshTasks();
-    }, [refreshData, refreshTasks]);
+    }, []);
 
     return (
         <AppContext.Provider value={{ state, dispatch, actions }}>

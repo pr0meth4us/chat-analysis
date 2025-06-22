@@ -49,28 +49,30 @@ export default function UploadSection() {
         setSelectedFiles([]);
     };
 
+    // --- MODIFICATION START ---
+    // This function now calls the new `uploadFiles` action with the entire array
+    // of selected files, resulting in a single, efficient API request.
     const handleProcessFiles = async () => {
         if (selectedFiles.length === 0) return;
         setIsSubmitting(true);
         try {
-            await Promise.all(selectedFiles.map(file => actions.uploadFile(file).catch(error => {
-                console.error(`Upload failed for ${file.name}:`, error);
-            })));
+            await actions.uploadFiles(selectedFiles);
             setSelectedFiles([]);
         } catch (error) {
             console.error("An error occurred during file processing:", error);
+            // Error is handled globally in AppContext, but you could add specific UI feedback here.
         } finally {
             setIsSubmitting(false);
         }
     };
-    
-    const isLoading = isUploadTaskActive;
-    console.log(isUploadTaskActive, state.tasks);
+    // --- MODIFICATION END ---
+
+    const isLoading = isUploadTaskActive || isSubmitting;
 
     if (hasProcessedFiles) {
         return (
             <div className="space-y-6 text-center">
-                 <Card className="p-8 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
+                <Card className="p-8 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
                     <div className="flex flex-col items-center space-y-4">
                         <CheckCircle className="h-12 w-12 text-green-500" />
                         <div>
@@ -81,8 +83,8 @@ export default function UploadSection() {
                                 {state.processedMessages.length.toLocaleString()} messages have been processed.
                             </p>
                         </div>
-                        <Button 
-                            variant="destructive" 
+                        <Button
+                            variant="destructive"
                             className="mt-4"
                             icon={RefreshCw}
                             onClick={actions.clearProcessed}
@@ -91,9 +93,9 @@ export default function UploadSection() {
                             Clear Data & Restart
                         </Button>
                     </div>
-                 </Card>
+                </Card>
             </div>
-        )
+        );
     }
 
     return (
@@ -101,7 +103,7 @@ export default function UploadSection() {
             <div className="text-center">
                 <h2 className="text-2xl font-bold mb-2">Upload Your Data</h2>
                 <p className="text-muted-foreground">
-                    Upload HTML, JSON, or ZIP files containing your message data.
+                    Upload one or more HTML, JSON, or ZIP files.
                 </p>
             </div>
 
@@ -171,24 +173,24 @@ export default function UploadSection() {
             </div>
 
             {fileRejections.length > 0 && (
-                 <Card className="p-4 border-destructive bg-destructive/10">
-                     <div className="flex items-start space-x-3">
-                         <AlertCircle className="h-5 w-5 text-destructive mt-0.5" />
-                         <div>
-                             <h3 className="font-medium text-destructive mb-2">Files Rejected</h3>
-                             {fileRejections.map(({ file, errors }) => (
-                                 <div key={file.name} className="text-sm">
-                                     <p className="font-medium">{file.name}</p>
-                                     <ul className="text-destructive/80 mt-1">
-                                         {errors.map(error => (
-                                             <li key={error.code}>• {error.message}</li>
-                                         ))}
-                                     </ul>
-                                 </div>
-                             ))}
-                         </div>
-                     </div>
-                 </Card>
+                <Card className="p-4 border-destructive bg-destructive/10">
+                    <div className="flex items-start space-x-3">
+                        <AlertCircle className="h-5 w-5 text-destructive mt-0.5" />
+                        <div>
+                            <h3 className="font-medium text-destructive mb-2">Files Rejected</h3>
+                            {fileRejections.map(({ file, errors }) => (
+                                <div key={file.name} className="text-sm">
+                                    <p className="font-medium">{file.name}</p>
+                                    <ul className="text-destructive/80 mt-1">
+                                        {errors.map(error => (
+                                            <li key={error.code}>• {error.message}</li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </Card>
             )}
             {state.error && (
                 <Card className="p-4 border-destructive bg-destructive/10">

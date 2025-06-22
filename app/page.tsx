@@ -7,14 +7,22 @@ import { useAppContext } from '@/context/AppContext';
 import { Tabs } from '@/components/ui/custom/BreadCrumbTabs';
 import { Card } from '@/components/ui/custom/Card';
 import { AppHeader } from '@/components/layout/AppHeader';
-import ExportData from '@/components/Export/ExportData';
 import UploadSection from '@/components/Upload/UploadSection';
 import FilterSection from '@/components/Filter/FilterSection';
 import AnalysisSection from '@/components/Analysis/AnalysisSection';
 import SearchSection from '@/components/Search/SearchSection';
 import TaskProgress from '@/components/Tasks/TaskProgress';
 import { useRouter } from 'next/navigation';
-import { Footer } from '@/components/layout/Footer';
+import DataExport from "@/components/Export/DataExport";
+
+function usePrevious<T>(value: T): T | undefined {
+  const ref = useRef<T>();
+  useEffect(() => {
+    ref.current = value;
+  }, [value]);
+  return ref.current;
+}
+
 
 export default function HomePage() {
   const { state } = useAppContext();
@@ -22,32 +30,23 @@ export default function HomePage() {
   const router = useRouter();
   const [isNavigating, setIsNavigating] = useState(false);
 
-  // Use refs to track the previous state of the data counts.
-  const prevProcessedCount = useRef(state.processedMessages.length);
-  const prevFilteredCount = useRef(state.filteredMessages.length);
+  const prevProcessedCount = usePrevious(state.processedMessages.length);
+  const prevFilteredCount = usePrevious(state.filteredMessages.length);
 
-  // --- AUTO-SWITCH LOGIC (DEBUG MODE) ---
   useEffect(() => {
     const newProcessedCount = state.processedMessages.length;
     const newFilteredCount = state.filteredMessages.length;
-    const shouldSwitchToFilter = prevProcessedCount.current === 0 && newProcessedCount > 0 && activeTab === 'upload';
-    if (shouldSwitchToFilter) {
+
+    const justProcessed = (prevProcessedCount ?? 0) === 0 && newProcessedCount > 0;
+    if (justProcessed && activeTab === 'upload') {
       setActiveTab('filter');
     }
-    const shouldSwitchToAnalyze = prevFilteredCount.current === 0 && newFilteredCount > 0 && activeTab === 'filter';
 
-    if (shouldSwitchToAnalyze) {
+    const justFiltered = (prevFilteredCount ?? 0) === 0 && newFilteredCount > 0;
+    if (justFiltered && activeTab === 'filter') {
       setActiveTab('analyze');
     }
-
-    if (prevProcessedCount.current !== newProcessedCount) {
-      prevProcessedCount.current = newProcessedCount;
-    }
-    if (prevFilteredCount.current !== newFilteredCount) {
-      prevFilteredCount.current = newFilteredCount;
-    }
-
-  }, [state.processedMessages.length, state.filteredMessages.length, activeTab]);
+  }, [state.processedMessages.length, state.filteredMessages.length, activeTab, prevProcessedCount, prevFilteredCount]);
 
   const tabs = [
     { id: 'upload', label: '1. Upload', icon: MessageCircle, disabled: false },
@@ -102,33 +101,12 @@ export default function HomePage() {
                 transition={{ delay: 0.3 }}
                 className="mt-6"
             >
-              <ExportData />
+              {/* --- MODIFICATION: Component name corrected --- */}
+              <DataExport />
             </motion.div>
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
-                className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6"
-            >
-              <Card className="glass p-4">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-primary">{state.processedMessages.length.toLocaleString()}</div>
-                  <div className="text-sm text-muted-foreground">Processed Messages</div>
-                </div>
-              </Card>
-              <Card className="glass p-4">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-primary">{state.filteredMessages.length.toLocaleString()}</div>
-                  <div className="text-sm text-muted-foreground">Filtered Messages</div>
-                </div>
-              </Card>
-              <Card className="glass p-4">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-primary">{state.senders.length}</div>
-                  <div className="text-sm text-muted-foreground">Unique Senders</div>
-                </div>
-              </Card>
-            </motion.div>
+
+            {/* --- MODIFICATION: The entire block of 3 cards has been removed as requested --- */}
+
           </div>
         </main>
       </div>

@@ -39,9 +39,17 @@ async function handleResponse<T>(response: Response): Promise<T> {
 }
 
 export const api = {
-    async uploadFile(file: File): Promise<TaskStatus> {
+    async uploadFiles(files: File[]): Promise<TaskStatus> {
         const formData = new FormData();
-        formData.append('file', file);
+
+        if (!files || files.length === 0) {
+            throw new Error("No files selected to upload.");
+        }
+
+        files.forEach(file => {
+            formData.append('file', file);
+        });
+
         const response = await fetch(`${API_BASE}/process`, {
             method: 'POST',
             body: formData,
@@ -147,11 +155,11 @@ export const api = {
         return handleResponse<{ message: string }>(response);
     },
 
-    async filterMessages(config: FilterConfig): Promise<TaskStatus | Message[]> {
+    async filterMessages(config: FilterConfig): Promise<TaskStatus | Message[]> { // <-- Use the new FilterConfig type
         const response = await fetch(`${API_BASE}/filter`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(config),
+            body: JSON.stringify(config), // Send the new flexible config object
             credentials: 'include',
         });
 

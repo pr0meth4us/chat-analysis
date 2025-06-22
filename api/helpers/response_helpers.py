@@ -4,7 +4,6 @@ import json
 from flask import request, send_file, Response
 
 def should_download() -> bool:
-    """Return True if the client asked for a downloadable JSON file."""
     q = request.args.get('download', '').lower()
     f = request.form.get('download', '').lower()
     if q == 'true' or f == 'true':
@@ -19,10 +18,6 @@ def should_download() -> bool:
     return False
 
 def collapse_arrays_in_str(s: str, keys: list) -> str:
-    """
-    Collapse only the arrays under the given JSON keys into a single line.
-    Expects `s` to be a pretty-printed JSON string.
-    """
     for key in keys:
         pattern = rf'("{re.escape(key)}"\s*:\s*)\[\s*(.*?)\s*\]'
         s = re.sub(
@@ -39,11 +34,6 @@ def make_json_response(
         collapse_paths: list = None,
         status_code: int = 200
 ):
-    """
-    Always pretty-print JSON (multi-line).  If ?download=true, return as a downloadable file.
-    Collapse only the arrays under collapse_paths into single lines.
-    """
-    # default fields to collapse if none provided
     default_paths = [
         'analysis_report.word_analysis.top_50_meaningful_words_overall',
         'analysis_report.word_analysis.top_20_bigrams_overall',
@@ -52,14 +42,11 @@ def make_json_response(
     paths = collapse_paths if collapse_paths is not None else default_paths
     keys_to_collapse = [p.split('.')[-1] for p in paths]
 
-    # Step 1: pretty-print
     pretty = json.dumps(data, indent=2, ensure_ascii=False)
 
-    # Step 2: collapse selected arrays
     if keys_to_collapse:
         pretty = collapse_arrays_in_str(pretty, keys_to_collapse)
 
-    # Step 3: if download requested, wrap in file response
     if should_download():
         buf = io.BytesIO(pretty.encode('utf-8'))
         resp = send_file(
@@ -69,7 +56,19 @@ def make_json_response(
             download_name=filename
         )
         resp.status_code = status_code
-        return resp
+    else:
+        # --- MODIFICATION START ---
+        # Create a standard Flask Response object instead of returning the raw string
+        resp = Response(pretty, mimetype='application/json', status=status_code)
+        # --- MODIFICATION END ---
 
-    # otherwise, inline response
-    return Response(pretty, mimetype='application/json', status=status_code)
+
+    # --- MODIFICATION START ---
+    # Add headers to the response object to prevent browser caching.
+    # This forces the frontend to always get fresh data when it calls the API.
+    resp.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    resp.headers['Pragma'] = 'no-cache'
+    resp.headers['Expires'] = '0'
+    # --- MODIFICATION END ---
+
+    return resp

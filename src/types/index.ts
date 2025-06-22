@@ -103,3 +103,8 @@ export interface AnalysisModule {
     description: string;
     enabled: boolean;
 }
+export interface FilterConfig {
+    group_mappings: Record<string, string[]>; // e.g., { "Adam": ["sender1"], "Eve": ["sender2"] }
+    unassigned_label: string;
+    remove: string[];
+}

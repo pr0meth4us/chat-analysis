@@ -6,13 +6,11 @@ from api.analyzer.main_analyzer import ChatAnalyzer
 from utils import log
 
 
-def process_file_worker(session_id: str, temp_file_path: str, progress_callback: callable = None):
-    """Process uploaded files with simplified progress reporting."""
+def process_file_worker(session_id: str, temp_file_paths: list[str], progress_callback: callable = None):
     file_objs = []
-    archive = None
+    archives_to_close = []
 
     def update_progress(progress, stage):
-        """Helper to safely update progress."""
         if progress_callback:
             try:
                 progress_callback(progress=progress, stage=stage)
@@ -20,39 +18,40 @@ def process_file_worker(session_id: str, temp_file_path: str, progress_callback:
                 log(f"Progress callback error: {e}")
 
     try:
-        log(f"Worker starting for file: {temp_file_path}")
+        log(f"Worker starting for {len(temp_file_paths)} path(s).")
         update_progress(5, "Initializing file processing")
 
-        if is_zipfile(temp_file_path):
-            archive = ZipFile(temp_file_path, 'r')
-            namelist = [m for m in archive.namelist() if not m.endswith('/') and not m.startswith('__MACOSX/')]
-            log(f"Detected ZIP file with {len(namelist)} members.")
-            update_progress(15, "Extracting files from archive")
+        for temp_file_path in temp_file_paths:
+            log(f"Processing path: {temp_file_path}")
+            if is_zipfile(temp_file_path):
+                archive = ZipFile(temp_file_path, 'r')
+                archives_to_close.append(archive)
+                namelist = [m for m in archive.namelist() if not m.endswith('/') and not m.startswith('__MACOSX/')]
+                log(f"Detected ZIP file with {len(namelist)} members.")
+                update_progress(15, f"Extracting from {os.path.basename(temp_file_path)}")
 
-            for member_name in namelist:
-                f = archive.open(member_name)
-                setattr(f, 'filename', member_name)
+                for member_name in namelist:
+                    f = archive.open(member_name)
+                    setattr(f, 'filename', member_name)
+                    file_objs.append(f)
+            else:
+                log("Detected single file.")
+                f = open(temp_file_path, 'rb')
+                setattr(f, 'filename', os.path.basename(temp_file_path))
                 file_objs.append(f)
-        else:
-            log("Detected single file.")
-            f = open(temp_file_path, 'rb')
-            setattr(f, 'filename', os.path.basename(temp_file_path))
-            file_objs.append(f)
 
         if not file_objs:
-            raise ValueError("No processable files were found.")
+            raise ValueError("No processable files were found in the upload(s).")
 
-        update_progress(5, "Processing files")
+        update_progress(25, "Parsing and consolidating files") # Adjusted progress
 
-        # Create a progress mapper for the file processing
         def file_progress_callback(progress_percent=None, stage=None, message=None, **kwargs):
-            # Handle the different parameter names from process_uploaded_files
             if progress_percent is not None:
-                # Direct mapping: parser's progress matches worker's progress
+                mapped_progress = 25 + (progress_percent * 0.70)
                 display_stage = stage or "Processing files"
                 if message:
                     display_stage = f"{display_stage} - {message}"
-                update_progress(progress_percent, display_stage)
+                update_progress(mapped_progress, display_stage)
 
         processed_messages = process_uploaded_files(
             file_objs,
@@ -65,7 +64,7 @@ def process_file_worker(session_id: str, temp_file_path: str, progress_callback:
         update_progress(100, "File processing completed")
 
         return {
-            "message": f"Successfully processed {len(processed_messages)} messages.",
+            "message": f"Successfully processed {len(processed_messages)} messages from {len(file_objs)} source file(s).",
             "unique_senders": sorted({m.get('sender') for m in processed_messages if m.get('sender')})
         }
 
@@ -78,11 +77,16 @@ def process_file_worker(session_id: str, temp_file_path: str, progress_callback:
                 f.close()
             except:
                 pass
-        if archive:
+        for archive in archives_to_close:
             archive.close()
-        if os.path.exists(temp_file_path):
-            os.remove(temp_file_path)
-            log(f"Cleaned up temporary file: {temp_file_path}")
+
+        for temp_file_path in temp_file_paths:
+            if os.path.exists(temp_file_path):
+                try:
+                    os.remove(temp_file_path)
+                    log(f"Cleaned up temporary file: {temp_file_path}")
+                except Exception as e:
+                    log(f"Error cleaning up temp file {temp_file_path}: {e}")
 
 
 def run_analysis_worker(messages: list, session_id: str, modules_to_run: list = None,

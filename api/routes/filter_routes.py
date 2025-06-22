@@ -13,13 +13,18 @@ def filter_messages_endpoint():
     session_id = session_manager.get_session_id()
 
     original_messages = session_manager.get_processed_messages(session_id)
-
     if not original_messages:
         return jsonify({"error": "No processed messages found in the session to filter."}), 400
 
-    me_list = set(data.get('me', []))
+    # --- MODIFICATION START ---
+    # New, more generic data structure from the frontend
+    group_mappings = data.get('group_mappings', {})  # e.g., {"Adam": ["John Doe"], "Eve": ["Jane D."]}
+    unassigned_label = data.get('unassigned_label', 'Other')
     remove_list = set(data.get('remove', []))
-    other_label = data.get('other_label', 'other')
+
+    # Create a reverse map for quick lookups: { "John Doe": "Adam" }
+    sender_to_group_map = {sender: group_name for group_name, senders in group_mappings.items() for sender in senders}
+    # --- MODIFICATION END ---
 
     filtered_messages = []
     for original_msg in original_messages:
@@ -30,8 +35,16 @@ def filter_messages_endpoint():
 
         msg = original_msg.copy()
 
-        if me_list:
-            msg['sender'] = 'me' if sender in me_list else other_label
+        # --- MODIFICATION START ---
+        # Re-label the sender based on the group they were assigned to
+        if sender in sender_to_group_map:
+            msg['sender'] = sender_to_group_map[sender]
+        else:
+            # If a sender is not in any group, label them as 'unassigned_label'
+            # (unless no groups were defined at all)
+            if group_mappings:
+                msg['sender'] = unassigned_label
+        # --- MODIFICATION END ---
 
         filtered_messages.append(msg)
 

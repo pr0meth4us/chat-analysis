@@ -25,7 +25,7 @@ def extract_telegram(soup):
         timestamp = ts.get('title') if ts else None
         name = div.select_one('div.from_name')
         sender = name.get_text(strip=True) if name else last_sender
-        last_sender = sender or last_sender  # Persist sender if not explicitly found in current message
+        last_sender = sender or last_sender
         txt = div.select_one('div.text')
         text = txt.get_text(strip=True) if txt else None
         if text and sender:
@@ -43,27 +43,22 @@ def extract_facebook(soup):
         sender_div = msg_div.select_one('div._2ph_._a6-h._a6-i')
         sender = sender_div.get_text(strip=True) if sender_div else None
         if not sender:
-            # Fallback for sender in case primary selector fails
             sender_div_fallback = msg_div.select_one('div[data-tooltip-content]')
             if sender_div_fallback:
                 sender = sender_div_fallback.get_text(strip=True)
 
-        if not sender: continue  # Must have a sender
-
+        if not sender: continue
         content_div = msg_div.select_one('div._2ph_._a6-p')
         text = None
         if content_div:
-            # Look for direct text within content_div or a nested p/span
             direct_text = content_div.find(string=True, recursive=False)
             if direct_text and direct_text.strip():
                 text = direct_text.strip()
             else:
                 nested_tags = content_div.find_all(['p', 'span', 'div'], recursive=False)
                 for tag in nested_tags:
-                    if tag.find('ul') or tag.find('a'):  # Skip lists or links
-                        continue
                     content = tag.get_text(strip=True)
-                    if content and not content.startswith(('❤', '👍', '🥺', '😢', '😭', '🥹', '🤡')):
+                    if content:
                         text = content
                         break
 
@@ -80,7 +75,6 @@ def extract_facebook(soup):
 
 def extract_instagram(soup):
     msgs = []
-    # Instagram HTML exports often follow a similar structure to Facebook
     message_containers = soup.find_all('div', class_=['pam _3-95 _2ph- _a6-g uiBoxWhite noborder', '_4tsk'])
     if not message_containers:
         message_containers = soup.find_all('div', class_=re.compile(r'.*message.*|.*msg.*'))
@@ -104,12 +98,8 @@ def extract_instagram(soup):
             else:
                 nested_tags = content_div.find_all(['p', 'span', 'div'], recursive=False)
                 for tag in nested_tags:
-                    if tag.find('ul') or tag.find('a'):
-                        continue
                     content = tag.get_text(strip=True)
-                    if (content and len(content) > 0 and
-                            not content.startswith(('❤', '👍', '🥺', '😢', '😭', '🥹', '🤡')) and
-                            not re.match(r'^[😀-🙏]+$', content)):  # Skip purely emoji messages
+                    if content:
                         text = content
                         break
 
@@ -134,7 +124,7 @@ def extract_imessage(soup):
         sender = None
         timestamp = None
         text = None
-        source = 'iMessage'  # Default source for iMessage
+        source = 'iMessage'
 
         if rec:
             meta = rec.select_one('p')
@@ -146,9 +136,8 @@ def extract_imessage(soup):
             text = bubble.get_text(strip=True) if bubble else None
         elif sent:
             meta = sent.select_one('p')
-            # For 'sent' messages, sender is typically 'Me' or the user's name
             sender_span = meta.select_one('span.sender')
-            sender = sender_span.text.strip() if sender_span and sender_span.text.strip() != 'You' else 'Me'  # Normalize "You" to "Me"
+            sender = sender_span.text.strip() if sender_span and sender_span.text.strip() != 'You' else 'Me'
             timestamp = meta.select_one('span.timestamp').text.strip() if meta and meta.select_one(
                 'span.timestamp') else None
             bubble = sent.select_one('span.bubble')
@@ -156,7 +145,7 @@ def extract_imessage(soup):
         else:
             continue
 
-        if text:  # Only add if message content exists
+        if text:
             msgs.append({'source': source, 'timestamp': timestamp, 'sender': sender, 'message': text})
     return msgs
 
@@ -171,13 +160,13 @@ def extract_discord_html(soup):
                 sender = date_div.find('span').text.strip()
                 timestamp = date_div.get_text(strip=True).replace(sender, '').strip()
             else:
-                sender, timestamp = 'Unknown', None  # Fallback if specific spans are not found
+                sender, timestamp = 'Unknown', None
         else:
-            sender, timestamp = 'Unknown', None  # Fallback if profile div is missing
+            sender, timestamp = 'Unknown', None
 
         text_div = div.find('div', class_='chat-msg-text')
         text = text_div.get_text(strip=True) if text_div else None
 
         if text:
-            msgs.append({'source': 'Discord (HTML)', 'timestamp': timestamp, 'sender': sender, 'message': text})
+            msgs.append({'source': 'Discord', 'timestamp': timestamp, 'sender': sender, 'message': text})
     return msgs
