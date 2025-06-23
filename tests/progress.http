@@ -1,7 +1,7 @@
 @host = http://localhost:5001
 
 ### STEP 2: Check Task Status
-GET {{host}}/tasks/status/4fdfa789-c33a-454c-abd4-45f82c0ff591
+GET {{host}}/tasks/status/981f7ed8-61da-4b82-bfe1-2e1efd67dd5a
 
 ###
 GET {{host}}/tasks/session

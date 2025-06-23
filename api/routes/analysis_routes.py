@@ -23,8 +23,9 @@ def analyze_data_endpoint():
 
     log(f"Starting analysis for session {session_id} with {len(messages)} messages.")
 
+    # Fixed: Remove the redundant messages parameter and session_id duplication
     task_id = task_manager.submit_task(
-        session_id, run_analysis_worker, messages, session_id, modules_to_run=modules_to_run
+        session_id, run_analysis_worker, session_id, modules_to_run=modules_to_run
     )
 
     log(f"Submitted analysis task {task_id} for session {session_id}")

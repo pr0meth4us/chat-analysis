@@ -872,3 +872,56 @@ def analyze_emotions_ml(df: pd.DataFrame, sample_size: int = 1000) -> dict:
         "top_messages_per_emotion": top_messages_per_emotion,
         "note": note
     }
+
+def analyze_reactions(df: pd.DataFrame) -> dict:
+    """
+    Analyzes reaction patterns based on the corrected parsing logic.
+    Focuses on who GAVE reactions and what types were used.
+    """
+    # Filter for all rows that were identified as any kind of reaction
+    reaction_df = df[df['is_reaction']].copy()
+    if reaction_df.empty:
+        return {'total_reactions': 0, 'note': 'No reactions found.'}
+
+    # --- CALCULATIONS ---
+    total_reactions = len(reaction_df)
+
+    # Count reactions by type (e.g., '👍', '😂', 'love')
+    reactions_by_type = reaction_df['reaction_type'].value_counts()
+
+    # Count how many reactions each person GAVE.
+    # The 'sender' of a reaction row is the person who reacted.
+    reactions_given_by_user = reaction_df['sender'].value_counts()
+
+    # --- FORMATTING OUTPUT ---
+    return {
+        'total_reactions': int(total_reactions),
+        'reaction_counts_by_type': [{"type": str(k), "count": int(v)} for k, v in reactions_by_type.items()],
+        'reactions_given_by_user': [{"user": str(k), "count": int(v)} for k, v in reactions_given_by_user.items()],
+        'note': "This analysis counts who GAVE reactions. Determining who received them would require further contextual analysis of the chat history."
+    }
+
+def analyze_attachments(df: pd.DataFrame) -> dict:
+    """
+    Analyzes messages that were flagged as sending an attachment.
+    """
+    if 'is_attachment' not in df.columns:
+        return {'error': 'is_attachment column not found.'}
+
+    attachment_df = df[df['is_attachment']].copy()
+
+    if attachment_df.empty:
+        return {'total_attachments': 0}
+
+    # Analyze the text that was sent ALONG WITH attachments
+    accompanying_text = ' '.join(attachment_df['text_content'].dropna())
+    word_counts = Counter(re.findall(r'\b\w+\b', accompanying_text.lower()))
+
+    top_words_with_attachments = [{"word": w, "count": c} for w, c in word_counts.most_common(20)]
+
+    return {
+        'total_attachments': int(attachment_df.shape[0]),
+        'attachments_per_user': attachment_df['sender'].value_counts().to_dict(),
+        'top_words_with_attachments': top_words_with_attachments,
+        'note': 'This analyzes the count of attachment messages and the text sent with them.'
+    }

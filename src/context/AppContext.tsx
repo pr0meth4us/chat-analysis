@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useReducer, useEffect, useState, useRef, useCallback } from 'react';
-import {AppState, TaskStatus, Message, FilterConfig} from '@/types';
+import { AppState, TaskStatus, Message, FilterConfig } from '@/types';
 import { api } from '@/utils/api';
 
 interface AppContextType {
@@ -9,7 +9,7 @@ interface AppContextType {
     dispatch: React.Dispatch<AppAction>;
     actions: {
         uploadFiles: (files: File[]) => Promise<void>;
-        filterMessages: (config: FilterConfig) => Promise<void>; // <-- Update the type here
+        filterMessages: (config: FilterConfig) => Promise<void>;
         startAnalysis: (modules?: string[]) => Promise<void>;
         refreshData: () => Promise<void>;
         clearSession: () => Promise<void>;
@@ -104,8 +104,11 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
                 })(),
                 (async () => {
                     try {
-                        const filtered = await api.getFilteredMessages();
-                        dispatch({ type: 'SET_FILTERED_MESSAGES', payload: filtered });
+                        const filteredData = await api.getFilteredMessages();
+                        // CORRECTED: Extract the 'messages' array from the response object.
+                        // Default to an empty array if the structure is not what's expected.
+                        const messages = (filteredData && filteredData.messages) ? filteredData.messages : [];
+                        dispatch({ type: 'SET_FILTERED_MESSAGES', payload: messages });
                     } catch (error) {
                         dispatch({ type: 'SET_FILTERED_MESSAGES', payload: [] });
                     }
@@ -156,22 +159,14 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
                     ? response.tasks
                     : Object.values(response.tasks || {});
 
-                // --- MODIFICATION START ---
-                // This logic is now robust and handles the "fast task" race condition.
                 const justCompletedTasks = newTasksArray.filter(currentTask => {
                     const prevTask = prevTasksRef.current.find(t => t.task_id === currentTask.task_id);
-
-                    // Case 1: The task was being tracked and has now completed.
                     const statusTransition = prevTask &&
                         (prevTask.status === 'running' || prevTask.status === 'pending') &&
                         currentTask.status === 'completed';
-
-                    // Case 2: The task is new to us and already completed (handles the race condition).
                     const newAndCompleted = !prevTask && currentTask.status === 'completed';
-
                     return statusTransition || newAndCompleted;
                 });
-                // --- MODIFICATION END ---
 
                 dispatch({ type: 'SET_TASKS', payload: newTasksArray });
 
@@ -230,11 +225,15 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
                 dispatch({ type: 'SET_LOADING', payload: false });
             }
         },
-        filterMessages: async (config: { me: string[]; remove: string[]; other_label: string }) => {
+        // CORRECTED: Uses a robust FilterConfig type that matches the backend API.
+        filterMessages: async (config: FilterConfig) => {
             dispatch({ type: 'SET_LOADING', payload: true });
             try {
+                // api.filterMessages should be updated to send this config object directly.
                 const result = await api.filterMessages(config);
-                await refreshTasks();
+
+                // The filter endpoint is synchronous, so we check for a task_id
+                // just in case, but expect to fall into the else block.
                 if ('task_id' in result) {
                     dispatch({ type: 'UPDATE_TASK', payload: result });
                 } else {
@@ -242,6 +241,7 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
                 }
             } catch (error: unknown) {
                 dispatch({ type: 'SET_ERROR', payload: String(error) });
+            } finally {
                 dispatch({ type: 'SET_LOADING', payload: false });
             }
         },

@@ -43,7 +43,7 @@ def process_file_worker(session_id: str, temp_file_paths: list[str], progress_ca
         if not file_objs:
             raise ValueError("No processable files were found in the upload(s).")
 
-        update_progress(25, "Parsing and consolidating files") # Adjusted progress
+        update_progress(25, "Parsing and consolidating files")
 
         def file_progress_callback(progress_percent=None, stage=None, message=None, **kwargs):
             if progress_percent is not None:
@@ -59,6 +59,7 @@ def process_file_worker(session_id: str, temp_file_paths: list[str], progress_ca
         )
 
         update_progress(98, "Storing results")
+        # Only store messages, no separate participants
         session_manager.store_processed_messages(session_id, processed_messages)
 
         update_progress(100, "File processing completed")
@@ -89,9 +90,9 @@ def process_file_worker(session_id: str, temp_file_paths: list[str], progress_ca
                     log(f"Error cleaning up temp file {temp_file_path}: {e}")
 
 
-def run_analysis_worker(messages: list, session_id: str, modules_to_run: list = None,
+def run_analysis_worker(session_id: str, modules_to_run: list = None,
                         progress_callback: callable = None):
-    """Worker function to run the main ChatAnalyzer with simplified progress reporting."""
+    """Worker function to run the main ChatAnalyzer with filtered data only."""
 
     def update_progress(progress, stage):
         """Helper to safely update progress."""
@@ -104,18 +105,37 @@ def run_analysis_worker(messages: list, session_id: str, modules_to_run: list = 
     try:
         update_progress(5, "Initializing analyzer")
 
-        # Create a progress mapper for the analyzer
+        filtered_data = session_manager.get_filtered_messages(session_id)
+        if not filtered_data:
+            raise ValueError("No filtered messages found. Please run filtering first.")
+
+        filtered_messages = filtered_data.get('messages', [])
+
+        # --- FIX START ---
+        # The participant data is nested inside the 'metadata' object.
+        metadata = filtered_data.get('metadata', {})
+        participants_metadata = metadata.get('participants', {})
+        # --- FIX END ---
+
+        # This now correctly extracts the names of the original senders.
+        participants = list(participants_metadata.keys())
+
+        if not filtered_messages:
+            raise ValueError("No messages found in filtered data.")
+
+        log(f"Found {len(participants)} participants: {participants}")
+
         def analyzer_progress_callback(progress_percent=None, step_name=None, **kwargs):
-            # Map the analyzer's progress to our range (10-95%)
             if progress_percent is not None:
-                mapped_progress = 10 + (progress_percent * 0.85)  # Scale to 85% of remaining
+                mapped_progress = 10 + (progress_percent * 0.85)
                 stage = step_name or "Running analysis"
                 update_progress(mapped_progress, stage)
 
         analyzer = ChatAnalyzer(
-            file_path_or_messages=messages,
+            file_path_or_messages=filtered_messages,
             input_type='messages',
-            progress_callback=analyzer_progress_callback
+            progress_callback=analyzer_progress_callback,
+            participants=participants  # This will now be correctly populated
         )
 
         update_progress(10, "Loading and preprocessing data")
