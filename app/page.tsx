@@ -15,6 +15,7 @@ import TaskProgress from '@/components/Tasks/TaskProgress';
 import { useRouter } from 'next/navigation';
 import DataExport from "@/components/Export/DataExport";
 
+// This helper hook is fine as is.
 function usePrevious<T>(value: T): T | undefined {
   const ref = useRef<T>();
   useEffect(() => {
@@ -30,29 +31,35 @@ export default function HomePage() {
   const router = useRouter();
   const [isNavigating, setIsNavigating] = useState(false);
 
+  // MODIFIED: We now track the length of the messages array within filteredData
   const prevProcessedCount = usePrevious(state.processedMessages.length);
-  const prevFilteredCount = usePrevious(state.filteredMessages.length);
+  const prevFilteredCount = usePrevious(state.filteredData?.messages?.length ?? 0);
 
   useEffect(() => {
     const newProcessedCount = state.processedMessages.length;
-    const newFilteredCount = state.filteredMessages.length;
+    // MODIFIED: Get the new count from the correct state property.
+    const newFilteredCount = state.filteredData?.messages?.length ?? 0;
 
+    // This logic now works correctly.
     const justProcessed = (prevProcessedCount ?? 0) === 0 && newProcessedCount > 0;
     if (justProcessed && activeTab === 'upload') {
       setActiveTab('filter');
     }
 
+    // This logic now works correctly.
     const justFiltered = (prevFilteredCount ?? 0) === 0 && newFilteredCount > 0;
     if (justFiltered && activeTab === 'filter') {
       setActiveTab('analyze');
     }
-  }, [state.processedMessages.length, state.filteredMessages.length, activeTab, prevProcessedCount, prevFilteredCount]);
+    // MODIFIED: The dependency array must now watch state.filteredData.
+  }, [state.processedMessages.length, state.filteredData, activeTab, prevProcessedCount, prevFilteredCount]);
 
   const tabs = [
     { id: 'upload', label: '1. Upload', icon: MessageCircle, disabled: false },
+    // MODIFIED: Check the new state property to enable/disable tabs.
     { id: 'filter', label: '2. Filter', icon: Filter, disabled: state.processedMessages.length === 0 },
-    { id: 'analyze', label: '3. Analyze', icon: BarChart3, disabled: state.filteredMessages.length === 0 },
-    { id: 'search', label: '4. Search', icon: Search, disabled: state.filteredMessages.length === 0 },
+    { id: 'analyze', label: '3. Analyze', icon: BarChart3, disabled: !state.filteredData || state.filteredData.messages.length === 0 },
+    { id: 'search', label: '4. Search', icon: Search, disabled: !state.filteredData || state.filteredData.messages.length === 0 },
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, disabled: !state.analysisResult, loading: isNavigating }
   ];
 
@@ -69,7 +76,8 @@ export default function HomePage() {
     const hasRunningTasks = state.tasks.some(t => t.status === 'running' || t.status === 'pending');
     if (hasRunningTasks) return "Processing...";
     if (state.analysisResult) return "Analysis complete! Go to Dashboard.";
-    if (state.filteredMessages.length > 0) return "Ready for analysis or search.";
+    // MODIFIED: Check the new state property.
+    if (state.filteredData && state.filteredData.messages.length > 0) return "Ready for analysis or search.";
     if (state.processedMessages.length > 0) return "Ready for filtering.";
     return "Upload your data to begin.";
   };
@@ -101,12 +109,8 @@ export default function HomePage() {
                 transition={{ delay: 0.3 }}
                 className="mt-6"
             >
-              {/* --- MODIFICATION: Component name corrected --- */}
               <DataExport />
             </motion.div>
-
-            {/* --- MODIFICATION: The entire block of 3 cards has been removed as requested --- */}
-
           </div>
         </main>
       </div>

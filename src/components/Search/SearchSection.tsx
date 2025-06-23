@@ -25,7 +25,13 @@ export default function SearchSection() {
         },
     ];
 
-    if (!state.filteredMessages.length) {
+    // --- FIX IS HERE ---
+    // MODIFIED: Derive the message list from the correct state property,
+    // safely handling cases where filteredData might be null.
+    const filteredMessages = state.filteredData?.messages || [];
+
+    // MODIFIED: Use the derived list for the check.
+    if (filteredMessages.length === 0) {
         return (
             <div className="text-center py-12">
                 <p className="text-muted-foreground">

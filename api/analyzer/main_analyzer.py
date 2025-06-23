@@ -24,7 +24,9 @@ class ChatAnalyzer:
                  file_path_or_messages: Union[str, List[Dict]],
                  input_type: str = 'file',
                  progress_callback: Optional[Callable] = None,
-                 participants: Optional[List[str]] = None):
+                 participants: Optional[List[str]] = None,
+                 metadata: Optional[Dict] = None,
+                 filter_settings: Optional[Dict] = None):
         """
         Initialize the ChatAnalyzer.
 
@@ -67,6 +69,8 @@ class ChatAnalyzer:
         self.romance_words = sentiment_lexicons.romance_words
         self.sexual_words = sentiment_lexicons.sexual_words
         self.argument_words = sentiment_lexicons.argument_words
+        self.metadata = metadata or {}
+        self.filter_settings = filter_settings or {}
 
     def _build_dynamic_inline_reaction_pattern(self) -> Optional[re.Pattern]:
         """Builds a regex that uses the emoji library for comprehensive emoji matching."""
@@ -599,6 +603,10 @@ class ChatAnalyzer:
                 error_msg = f"Error in module '{module_name}': {type(e).__name__} - {e}"
                 print(error_msg)
                 self.report[module_name] = {"error": error_msg}
+        if self.metadata:
+            self.report['metadata'] = self.metadata
+        if self.filter_settings:
+            self.report['filter_settings'] = self.filter_settings
 
         self._update_progress(100, "Analysis completed")
         return self.convert_to_serializable(self.report)

@@ -57,18 +57,11 @@ def make_json_response(
         )
         resp.status_code = status_code
     else:
-        # --- MODIFICATION START ---
-        # Create a standard Flask Response object instead of returning the raw string
+
         resp = Response(pretty, mimetype='application/json', status=status_code)
-        # --- MODIFICATION END ---
 
-
-    # --- MODIFICATION START ---
-    # Add headers to the response object to prevent browser caching.
-    # This forces the frontend to always get fresh data when it calls the API.
     resp.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
     resp.headers['Pragma'] = 'no-cache'
     resp.headers['Expires'] = '0'
-    # --- MODIFICATION END ---
 
     return resp

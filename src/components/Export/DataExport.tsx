@@ -34,13 +34,15 @@ export default function DataExport() {
     };
 
     const handleDownloadHtml = () => {
-        const data = state.filteredMessages;
-        if (!data || data.length === 0) return;
+        // MODIFIED: Get the message list from the correct state object.
+        const messages = state.filteredData?.messages || [];
+        if (messages.length === 0) return;
         setError(null);
         setProgress(0);
         startTransition(async () => {
             try {
-                const htmlBlob = await api.downloadChatAsHtml(data, (p) => setProgress(p));
+                // The API call correctly receives the message list.
+                const htmlBlob = await api.downloadChatAsHtml(messages, (p) => setProgress(p));
                 downloadFile(htmlBlob, `filtered_messages.html`);
             } catch (err: unknown) {
                 setError('Failed to render HTML. Please try again.');
@@ -50,7 +52,9 @@ export default function DataExport() {
     };
 
     const handleDownloadJson = () => {
-        downloadDataAsJson(state.filteredMessages, 'filtered_messages');
+        // MODIFIED: Pass the entire filteredData object to the download function.
+        // This ensures the downloaded JSON includes the messages, metadata, and settings.
+        downloadDataAsJson(state.filteredData, 'filtered_messages');
     };
 
     const DownloadRow = ({ title, description, buttonLabel, onDownload, disabled }: {
@@ -81,15 +85,18 @@ export default function DataExport() {
         </div>
     );
 
+    // This derived state is correct, but was not being used everywhere.
+    const filteredMessages = state.filteredData?.messages || [];
+
     return (
         <Card className="glass p-6 mt-6">
-            {/* --- MODIFICATION: The header now contains the title and the total message count --- */}
             <CardHeader className="p-0 mb-4">
                 <div className="flex justify-between items-center">
                     <CardTitle>Data Export</CardTitle>
-                    {state.filteredMessages.length > 0 && (
+                    {/* This UI part is correct. */}
+                    {filteredMessages.length > 0 && (
                         <div className="text-sm font-semibold text-primary">
-                            Total Messages: {state.filteredMessages.length.toLocaleString()}
+                            Total Messages: {filteredMessages.length.toLocaleString()}
                         </div>
                     )}
                 </div>
@@ -105,7 +112,6 @@ export default function DataExport() {
 
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-t border-border/50 pt-4">
                         <div className="flex-1">
-                            {/* --- MODIFICATION: The badge has been removed from here --- */}
                             <h4 className="font-semibold text-foreground">
                                 Filtered Messages
                             </h4>
@@ -118,7 +124,7 @@ export default function DataExport() {
                                 variant="outline"
                                 icon={Download}
                                 onClick={handleDownloadHtml}
-                                disabled={state.filteredMessages.length === 0 || isPending}
+                                disabled={filteredMessages.length === 0 || isPending}
                                 className="flex-shrink-0 w-full sm:w-auto"
                             >
                                 Download HTML
@@ -127,7 +133,8 @@ export default function DataExport() {
                                 variant="outline"
                                 icon={Download}
                                 onClick={handleDownloadJson}
-                                disabled={state.filteredMessages.length === 0 || isPending}
+                                // This check is also correct now.
+                                disabled={!state.filteredData || isPending}
                                 className="flex-shrink-0 w-full sm:w-auto"
                             >
                                 Download JSON

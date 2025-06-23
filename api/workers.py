@@ -114,11 +114,11 @@ def run_analysis_worker(session_id: str, modules_to_run: list = None,
         # --- FIX START ---
         # The participant data is nested inside the 'metadata' object.
         metadata = filtered_data.get('metadata', {})
-        participants_metadata = metadata.get('participants', {})
-        # --- FIX END ---
+        metadata = filtered_data.get('metadata', {})
+        filter_settings = filtered_data.get('filter_settings', {})
+        participants = list(metadata.get('participants', {}).keys())
 
-        # This now correctly extracts the names of the original senders.
-        participants = list(participants_metadata.keys())
+
 
         if not filtered_messages:
             raise ValueError("No messages found in filtered data.")
@@ -135,9 +135,10 @@ def run_analysis_worker(session_id: str, modules_to_run: list = None,
             file_path_or_messages=filtered_messages,
             input_type='messages',
             progress_callback=analyzer_progress_callback,
-            participants=participants  # This will now be correctly populated
+            participants=participants,
+            metadata=metadata,
+            filter_settings=filter_settings
         )
-
         update_progress(10, "Loading and preprocessing data")
         analyzer.load_and_preprocess()
 

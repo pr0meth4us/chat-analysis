@@ -27,7 +27,7 @@ type AppAction =
     | { type: 'SET_LOADING'; payload: boolean }
     | { type: 'SET_ERROR'; payload: string | null }
     | { type: 'SET_PROCESSED_MESSAGES'; payload: Message[] }
-    | { type: 'SET_FILTERED_MESSAGES'; payload: Message[] }
+    | { type: 'SET_FILTERED_DATA'; payload: FilteredData | null }
     | { type: 'SET_SENDERS'; payload: string[] }
     | { type: 'SET_TASKS'; payload: TaskStatus[] }
     | { type: 'UPDATE_TASK'; payload: TaskStatus }
@@ -36,7 +36,8 @@ type AppAction =
 
 const initialState: AppState = {
     processedMessages: [],
-    filteredMessages: [],
+    // MODIFIED: Replace 'filteredMessages' with 'filteredData' and set its initial value to null.
+    filteredData: null,
     senders: [],
     tasks: [],
     analysisResult: null,
@@ -44,6 +45,7 @@ const initialState: AppState = {
     error: null,
 };
 
+// Your reducer is already correct, as it uses 'SET_FILTERED_DATA'.
 function appReducer(state: AppState, action: AppAction): AppState {
     switch (action.type) {
         case 'SET_LOADING':
@@ -52,14 +54,16 @@ function appReducer(state: AppState, action: AppAction): AppState {
             return { ...state, error: action.payload, isLoading: false };
         case 'SET_PROCESSED_MESSAGES':
             return { ...state, processedMessages: action.payload };
-        case 'SET_FILTERED_MESSAGES':
-            return { ...state, filteredMessages: action.payload };
+        // This case now correctly updates the 'filteredData' property defined in initialState.
+        case 'SET_FILTERED_DATA':
+            return { ...state, filteredData: action.payload };
         case 'SET_SENDERS':
             return { ...state, senders: action.payload };
         case 'SET_ANALYSIS_RESULT':
             return { ...state, analysisResult: action.payload, isLoading: false };
         case 'RESET_STATE':
-            return initialState;
+            // This now correctly resets the new state property as well
+            return { ...initialState };
         case 'UPDATE_TASK': {
             const newTasks = [...state.tasks];
             const taskIndex = state.tasks.findIndex(
@@ -105,12 +109,9 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
                 (async () => {
                     try {
                         const filteredData = await api.getFilteredMessages();
-                        // CORRECTED: Extract the 'messages' array from the response object.
-                        // Default to an empty array if the structure is not what's expected.
-                        const messages = (filteredData && filteredData.messages) ? filteredData.messages : [];
-                        dispatch({ type: 'SET_FILTERED_MESSAGES', payload: messages });
+                        dispatch({ type: 'SET_FILTERED_DATA', payload: filteredData });
                     } catch (error) {
-                        dispatch({ type: 'SET_FILTERED_MESSAGES', payload: [] });
+                        dispatch({ type: 'SET_FILTERED_DATA', payload: null });
                     }
                 })(),
                 (async () => {

@@ -6,6 +6,7 @@ from collections import Counter
 from thefuzz import fuzz
 
 search_bp = Blueprint('countword', __name__)
+
 @search_bp.route('/count_keyword', methods=['POST'])
 def count_keyword_endpoint():
     payload = request.get_json()
@@ -15,20 +16,31 @@ def count_keyword_endpoint():
     keyword = payload['keyword']
     session_id = session_manager.get_session_id()
 
-    messages = session_manager.get_filtered_messages(session_id)
-    if not messages:
+    # --- FIX START ---
+    # get_filtered_messages returns the entire data object, not just the message list.
+    filtered_data = session_manager.get_filtered_messages(session_id)
+
+    # We must extract the list of messages from the 'messages' key.
+    if not filtered_data or 'messages' not in filtered_data:
         return jsonify({"error": "No filtered messages found. Please filter messages before searching."}), 400
 
-    log(f"Counting keyword '{keyword}' for session {session_id} in {len(messages)} messages.")
+    messages_list = filtered_data.get('messages', [])
+    # --- FIX END ---
+
+    log(f"Counting keyword '{keyword}' for session {session_id} in {len(messages_list)} messages.")
 
     pattern = re.compile(r'\b' + re.escape(keyword) + r'\b', re.IGNORECASE)
 
     sender_counts = Counter()
     total_matches = 0
 
-    for msg in messages:
+    # Now we iterate over the correct list of message dictionaries.
+    for msg in messages_list:
         sender = msg.get('sender', 'Unknown')
         message_text = msg.get('message', '')
+
+        if not message_text:
+            continue
 
         matches = pattern.findall(message_text)
         if matches:
@@ -39,7 +51,7 @@ def count_keyword_endpoint():
     result = {
         "counts": dict(sender_counts),
         "total_matches": total_matches,
-        "message_count": len(messages)
+        "message_count": len(messages_list)
     }
 
     return jsonify(result), 200
@@ -54,14 +66,17 @@ def fuzzy_search_endpoint():
     cutoff = int(payload.get('cutoff', 75))
     session_id = session_manager.get_session_id()
 
-    messages = session_manager.get_filtered_messages(session_id)
-    if not messages:
+    filtered_data = session_manager.get_filtered_messages(session_id)
+
+    if not filtered_data or 'messages' not in filtered_data:
         return jsonify({"error": "No filtered messages found. Please filter messages before searching."}), 400
+
+    messages_list = filtered_data.get('messages', [])
 
     log(f"Starting fuzzy search for query '{query}' with cutoff {cutoff} for session {session_id}.")
 
     matched_messages = []
-    for msg in messages:
+    for msg in messages_list:
         message_text = msg.get('message', '')
         if not message_text:
             continue
@@ -80,7 +95,7 @@ def fuzzy_search_endpoint():
     result = {
         "matches": matched_messages,
         "match_count": len(matched_messages),
-        "total_messages_searched": len(messages),
+        "total_messages_searched": len(messages_list),
         "query": query,
         "similarity_cutoff": cutoff
     }

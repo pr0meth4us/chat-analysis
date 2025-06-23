@@ -63,7 +63,7 @@ export default function FilterSection() {
 
     const handleAssign = (sender: string, newAssignment: Assignment) => {
         setAssignments(prev => ({...prev, [sender]: newAssignment}));
-    }
+    };
 
     const { unassigned, group1, group2, remove } = useMemo(() => {
         const lists: Record<Assignment, string[]> = { unassigned: [], group1: [], group2: [], remove: [] };
@@ -82,9 +82,10 @@ export default function FilterSection() {
             remove: remove,
             unassigned_label: 'Other',
         });
-    }
+    };
 
-    const hasFilteredMessages = state.filteredMessages.length > 0;
+
+    const hasFilteredMessages = !!state.filteredData && state.filteredData.messages.length > 0;
     const isFilterTaskActive = state.tasks.some(task => task.name?.toLowerCase().includes('filter') && (task.status === 'pending' || task.status === 'running'));
 
     if (hasFilteredMessages) {
@@ -95,7 +96,8 @@ export default function FilterSection() {
                         <CheckCircle className="h-12 w-12 text-green-500" />
                         <div>
                             <h3 className="text-xl font-bold text-green-700 dark:text-green-300">Filtering Complete</h3>
-                            <p className="text-muted-foreground mt-2">{state.filteredMessages.length.toLocaleString()} messages remain after filtering.</p>
+                            {/* MODIFIED: Get the message count from the new state object. */}
+                            <p className="text-muted-foreground mt-2">{state.filteredData.messages.length.toLocaleString()} messages remain after filtering.</p>
                         </div>
                         <Button variant="destructive" className="mt-4" icon={RefreshCw} onClick={actions.clearFiltered} loading={state.isLoading}>Clear Filter & Re-Filter</Button>
                     </div>
@@ -103,7 +105,6 @@ export default function FilterSection() {
             </div>
         );
     }
-
     return (
         <div className="space-y-8">
             <div className="text-center">

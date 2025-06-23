@@ -2,6 +2,7 @@ from flask import Blueprint, jsonify, request
 from api.session_manager import session_manager
 from api.helpers.response_helpers import make_json_response
 from utils import log
+from collections import Counter
 
 data_bp = Blueprint('data', __name__)
 
@@ -14,7 +15,6 @@ def download_processed_messages():
         return jsonify({"error": "No processed messages found in session."}), 404
 
     log(f"Providing download for {len(messages)} processed messages.")
-    # This now returns a response with the correct headers
     return make_json_response(messages, filename="processed_messages.json")
 
 
@@ -27,7 +27,6 @@ def download_filtered_messages():
         return jsonify({"error": "No filtered messages found in session. Please filter first."}), 404
 
     log(f"Providing download for {len(messages)} filtered messages.")
-    # This now returns a response with the correct headers
     return make_json_response(messages, filename="filtered_messages.json")
 
 
@@ -40,7 +39,6 @@ def download_analysis_report():
         return jsonify({"error": "No analysis report found in session. Please run an analysis first."}), 404
 
     log("Providing download for analysis report.")
-    # This now returns a response with the correct headers
     return make_json_response(report, filename="analysis_report.json")
 
 
@@ -64,19 +62,43 @@ def insert_processed_messages():
 @data_bp.route('/data/insert/filtered', methods=['POST'])
 def insert_filtered_messages():
     session_id = session_manager.get_session_id()
-    messages = request.get_json()
+    messages_list = request.get_json()
 
-    if not messages or not isinstance(messages, list):
+    if not messages_list or not isinstance(messages_list, list):
         return jsonify({"error": "Request body must be a JSON list of message objects."}), 400
 
+    participants = Counter(msg.get('sender') for msg in messages_list if msg.get('sender'))
+    compact_participants_metadata = {
+        sender: f"Unknown, {count}" for sender, count in participants.items()
+    }
+
+    filtered_data_to_store = {
+        'messages': messages_list,
+        'metadata': {
+            'participants': compact_participants_metadata,
+            'messages_total': len(messages_list),
+            'filtered_messages': len(messages_list)
+        },
+        'filter_settings': {
+            'info': 'Data inserted externally, no filter settings applied.',
+            'group_mappings': {},
+            'unassigned_label': 'Other',
+            'removed_senders': []
+        },
+        'timestamp': session_manager._get_current_timestamp(),
+        'count': len(messages_list)
+    }
+
     try:
-        session_manager.store_filtered_messages(session_id, messages)
-        log(f"Inserted {len(messages)} filtered messages into session {session_id}.")
-        return jsonify({"message": "Successfully inserted filtered messages.", "count": len(messages)}), 201
+        session_manager.store_filtered_messages(session_id, filtered_data_to_store)
+        log(f"Inserted {len(messages_list)} filtered messages into session {session_id}.")
+        return jsonify({
+            "message": "Successfully inserted filtered messages.",
+            "count": len(messages_list)
+        }), 201
     except Exception as e:
         log(f"ERROR inserting filtered messages: {e}")
         return jsonify({"error": "An internal error occurred while storing messages."}), 500
-
 
 @data_bp.route('/data/insert/report', methods=['POST'])
 def insert_analysis_report():

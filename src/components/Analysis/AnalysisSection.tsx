@@ -18,12 +18,9 @@ export default function AnalysisSection() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isNavigating, setIsNavigating] = useState(false);
 
-    // --- CORRECTED LOGIC ---
     const isAnalysisTaskActive = useMemo(() => {
         return state.tasks.some(
             (task) =>
-                // Check if the task name includes "analysis", ignoring case.
-                // This correctly matches "Run Analysis Worker", "Analysis", etc.
                 task.name?.toLowerCase().includes('analysis') &&
                 (task.status === 'pending' || task.status === 'running')
         );
@@ -64,7 +61,13 @@ export default function AnalysisSection() {
         }
     };
 
-    if (!state.filteredMessages.length) {
+    // --- FIX IS HERE ---
+    // MODIFIED: Derive the message list from the correct state property.
+    // This safely handles cases where filteredData might be null.
+    const filteredMessages = state.filteredData?.messages || [];
+
+    // MODIFIED: Use the derived list for the check.
+    if (filteredMessages.length === 0) {
         return (
             <div className="text-center py-12">
                 <p className="text-muted-foreground">
@@ -88,8 +91,9 @@ export default function AnalysisSection() {
                                 {selectedModules.length}/{ANALYSIS_MODULES.length}
                             </Badge>
                         </CardTitle>
+                        {/* MODIFIED: Use the derived list's length for the count. */}
                         <p className="text-sm text-muted-foreground pt-1">
-                            Select modules to run on your {state.filteredMessages.length.toLocaleString()} filtered messages.
+                            Select modules to run on your {filteredMessages.length.toLocaleString()} filtered messages.
                         </p>
                     </CardHeader>
                     <CardContent>
@@ -143,9 +147,12 @@ export default function AnalysisSection() {
                         </CardHeader>
                         <CardContent>
                             <div className="text-center p-6 rounded-lg bg-muted/30">
-                                <h4 className="font-medium text-lg mb-2">Report Generated!</h4>
+                                <h4 className="font-medium text-lg mb-2">
+                                    Report Generated!
+                                </h4>
                                 <p className="text-sm text-muted-foreground mb-4">
-                                    A report with {Object.keys(state.analysisResult).length} modules has been created.
+                                    {/* This part correctly uses analysisResult, so it's fine. */}
+                                    A report with {Object.keys(state.analysisResult?.analysis_results || state.analysisResult || {}).length} modules has been created.
                                 </p>
                                 <div className="flex justify-center items-center gap-4">
                                     <Button icon={Download} variant="outline" onClick={downloadReport}>Download Report</Button>
@@ -156,7 +163,7 @@ export default function AnalysisSection() {
                                     </Link>
                                 </div>
                                 <div className="mt-6 border-t pt-4">
-                                    <Button variant="link" size="sm" className="text-muted-foreground" icon={RefreshCw} onClick={actions.clearAnalysis} loading={state.isLoading}>
+                                    <Button variant="link" size="sm" className="text-muted-foreground" icon={RefreshCw} onClick={actions.clearAnalysis} loading={isLoading}>
                                         Clear Report & Re-run Analysis
                                     </Button>
                                 </div>

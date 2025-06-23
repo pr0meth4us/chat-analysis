@@ -41,10 +41,8 @@ class SessionManager:
     def store_processed_messages(self, session_id, messages):
         """Store processed messages for a session (messages only, no participants)"""
         with self.lock:
-            # Store messages directly (not wrapped in dict)
             self.processed_messages_store[session_id] = messages
 
-            # Also store to file for persistence
             file_path = self._get_file_path(session_id, 'processed')
             try:
                 with open(file_path, 'w', encoding='utf-8') as f:
@@ -79,10 +77,8 @@ class SessionManager:
     def store_filtered_messages(self, session_id, filtered_data):
         """Store filtered messages with metadata for a session"""
         with self.lock:
-            # Store complete filtered data structure in memory
             self.filtered_messages_store[session_id] = filtered_data
 
-            # Also store to file for persistence
             file_path = self._get_file_path(session_id, 'filtered')
             try:
                 with open(file_path, 'w', encoding='utf-8') as f:
@@ -92,17 +88,14 @@ class SessionManager:
 
     def get_filtered_messages(self, session_id):
         """Retrieve filtered messages for a session"""
-        # Try memory first
         if session_id in self.filtered_messages_store:
             return self.filtered_messages_store[session_id]
 
-        # Try loading from file
         file_path = self._get_file_path(session_id, 'filtered')
         if os.path.exists(file_path):
             try:
                 with open(file_path, 'r', encoding='utf-8') as f:
                     filtered_data = json.load(f)
-                    # Cache in memory
                     self.filtered_messages_store[session_id] = filtered_data
                     return filtered_data
             except Exception as e:

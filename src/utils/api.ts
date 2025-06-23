@@ -87,11 +87,11 @@ export const api = {
         return handleResponse<Message[]>(response);
     },
 
-    async getFilteredMessages(): Promise<Message[]> {
+    async getFilteredMessages(): Promise<FilteredData> {
         const response = await fetch(`${API_BASE}/data/filtered`, {
             credentials: 'include',
         });
-        return handleResponse<Message[]>(response);
+        return handleResponse<FilteredData>(response);
     },
 
     async getAnalysisReport(): Promise<AnalysisResult> {
