@@ -10,16 +10,7 @@ import emoji
 from . import analysis_modules as af
 from . import sentiment_lexicons
 
-warnings.filterwarnings('ignore', category=UserWarning, module='sklearn')
-warnings.filterwarnings('ignore', category=RuntimeWarning)
-
-
 class ChatAnalyzer:
-    """
-    Analyzes chat data by dynamically parsing messages and generating a comprehensive report.
-    Now includes information sharing detection to filter out non-personal content.
-    """
-
     def __init__(self,
                  file_path_or_messages: Union[str, List[Dict]],
                  input_type: str = 'file',
@@ -27,15 +18,6 @@ class ChatAnalyzer:
                  participants: Optional[List[str]] = None,
                  metadata: Optional[Dict] = None,
                  filter_settings: Optional[Dict] = None):
-        """
-        Initialize the ChatAnalyzer.
-
-        Args:
-            file_path_or_messages: Path to JSON file or list of message dictionaries
-            input_type: 'file' or 'messages'
-            progress_callback: Optional callback function for progress updates
-            participants: List of participant names for analysis
-        """
         self.input_type = input_type
         self.file_path = file_path_or_messages if input_type == 'file' else None
         self.data = [] if input_type == 'file' else file_path_or_messages
@@ -90,16 +72,6 @@ class ChatAnalyzer:
         return dynamic_pattern
 
     def _detect_info_sharing(self, message: str) -> Dict[str, Any]:
-        """
-        Detects if a message is information sharing (news, announcements, formal content)
-        rather than personal conversation.
-
-        Args:
-            message: The message text to analyze
-
-        Returns:
-            Dict containing detection results and confidence score
-        """
         if not isinstance(message, str) or len(message.strip()) == 0:
             return {
                 'is_info_sharing': False,
@@ -293,16 +265,6 @@ class ChatAnalyzer:
         return None
 
     def filter_personal_messages(self, exclude_info_sharing: bool = True, confidence_threshold: float = 0.4) -> pd.DataFrame:
-        """
-        Filter the dataframe to exclude information sharing messages.
-
-        Args:
-            exclude_info_sharing: Whether to exclude info sharing messages
-            confidence_threshold: Minimum confidence to consider as info sharing
-
-        Returns:
-            Filtered dataframe for personal conversation analysis
-        """
         if not exclude_info_sharing:
             return self.df
 
@@ -373,7 +335,6 @@ class ChatAnalyzer:
                     result['text_content'] = ''
                     return result
 
-            # Check for inline reactions (emoji + name)
             if dynamic_inline_pattern:
                 inline_match = dynamic_inline_pattern.search(text_to_parse)
                 if inline_match:
@@ -397,7 +358,6 @@ class ChatAnalyzer:
 
                     return result
 
-            # Check for standard reactions
             standard_reaction_type = self._find_reaction_type(text_to_parse)
             if standard_reaction_type:
                 result['is_reaction'] = True
@@ -405,15 +365,13 @@ class ChatAnalyzer:
                 result['text_content'] = ''
                 return result
 
-            # Default case for regular messages
             urls = self.url_pattern.findall(text_to_parse)
             if urls:
                 result['urls'] = [u[0] for u in urls]
-                result['text_content'] = ''  # Exclude URL-only messages from text analysis
+                result['text_content'] = ''
             else:
                 result['text_content'] = text_to_parse.strip()
 
-            # Information sharing detection for regular messages
             if result['text_content']:
                 info_result = self._detect_info_sharing(result['text_content'])
                 result['is_info_sharing'] = info_result['is_info_sharing']
@@ -423,12 +381,10 @@ class ChatAnalyzer:
 
             return result
 
-        # Apply parsing to all messages
         parsed_data = df.apply(parse_message_content, axis=1)
         parsed_df = pd.json_normalize(parsed_data)
         df = df.join(parsed_df)
 
-        # Feature Engineering
         self._update_progress(60, "Engineering features")
         df['message_length'] = df['text_content'].str.len()
         df['word_count'] = df['text_content'].str.split().str.len()
@@ -436,7 +392,6 @@ class ChatAnalyzer:
         df['has_question'] = df['text_content'].str.contains(r'\?', na=False)
         df['has_url'] = df['urls'].apply(len) > 0
 
-        # Temporal features
         dt = df['datetime'].dt
         df['date'] = pd.to_datetime(dt.date)
         df['hour'] = dt.hour
@@ -449,7 +404,6 @@ class ChatAnalyzer:
         self._update_progress(70, "Preprocessing completed")
 
     def _update_progress(self, progress_percent: float, step_name: str):
-        """Simplified progress update helper."""
         if self.progress_callback:
             try:
                 self.progress_callback(
@@ -460,7 +414,6 @@ class ChatAnalyzer:
                 print(f"Progress callback error: {e}")
 
     def convert_to_serializable(self, obj):
-        """Recursively converts numpy/pandas types to JSON serializable types."""
         if isinstance(obj, (np.integer, np.int64, np.int32)):
             return int(obj)
         if isinstance(obj, (np.floating, np.float64, np.float32)):
@@ -483,17 +436,6 @@ class ChatAnalyzer:
                                       modules_to_run: Optional[List[str]] = None,
                                       exclude_info_sharing: bool = True,
                                       confidence_threshold: float = 0.4) -> Dict:
-        """
-        Generates a full analysis report by running all specified modules.
-
-        Args:
-            modules_to_run: List of analysis modules to run (None for all)
-            exclude_info_sharing: Whether to exclude info sharing from analysis
-            confidence_threshold: Minimum confidence to consider as info sharing
-
-        Returns:
-            Comprehensive analysis report dictionary
-        """
         if self.df.empty:
             return {"error": "DataFrame is empty, cannot generate report."}
 
@@ -521,7 +463,6 @@ class ChatAnalyzer:
                 'confidence_threshold_used': confidence_threshold
             }
 
-        # Analysis module registry
         ANALYSIS_REGISTRY = {
             'dataset_overview': {'func': af.dataset_overview, 'deps': [], 'args': {}},
             'first_last_messages': {'func': af.first_last_messages, 'deps': [], 'args': {}},
@@ -590,12 +531,10 @@ class ChatAnalyzer:
                 module_info = ANALYSIS_REGISTRY[module_name]
                 kwargs = module_info['args'].copy()
 
-                # Special handling for relationship metrics
                 if module_name == 'relationship_metrics':
                     kwargs['conversation_patterns_data'] = self.report.get('conversation_patterns', {})
                     kwargs['response_metrics_data'] = self.report.get('response_metrics', {})
 
-                # Execute the analysis function with filtered data
                 result = module_info['func'](analysis_df, **kwargs)
                 self.report[module_name] = result
 

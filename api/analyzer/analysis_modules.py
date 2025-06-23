@@ -15,9 +15,6 @@ emotion_classifier = pipeline(
 
 
 def dataset_overview(df: pd.DataFrame) -> dict:
-    """
-    Provides a basic, high-level overview of the dataset.
-    """
     if df.empty:
         return {}
 
@@ -196,9 +193,6 @@ def analyze_unbroken_streaks(df: pd.DataFrame) -> dict:
         'top_streaks': top_streaks_data,
         'total_active_days': len(unique_dates)
     }
-# ==============================================================================
-# 3. INTERACTION & ENGAGEMENT ANALYSIS
-# ==============================================================================
 
 def icebreaker_analysis(df: pd.DataFrame) -> dict:
     """Identifies who starts conversations and what the first message is."""
@@ -264,7 +258,6 @@ def calculate_response_metrics(df: pd.DataFrame) -> dict:
     return response_data
 
 def detect_ghost_periods(df: pd.DataFrame) -> dict:
-    """Detects and analyzes significant periods of silence (ghosting) in the conversation."""
     if df.empty: return {}
 
     long_gaps_df = df[df['time_gap_minutes'] > 720].copy() # 12 hours
@@ -294,10 +287,6 @@ def detect_ghost_periods(df: pd.DataFrame) -> dict:
         'who_breaks_silence_most': [{"user": u, "count": c} for u, c in silence_breaker_counts.most_common()],
         'top_ghost_periods': ghost_periods[:10],
     }
-
-# ==============================================================================
-# 4. CONTENT & LANGUAGE ANALYSIS
-# ==============================================================================
 
 def analyze_word_patterns(df: pd.DataFrame, word_pattern: re.Pattern, generic_words: set, **kwargs) -> dict:
     """Performs a comprehensive analysis of word usage, n-grams, and language distribution."""
@@ -346,7 +335,6 @@ def emoji_analysis(df: pd.DataFrame) -> dict:
     if df.empty or 'has_emoji' not in df.columns: return {}
     if not df['has_emoji'].any(): return {'total_emojis_used': 0}
 
-    # Use the original 'message' column to capture emojis in both messages and reactions
     emoji_df = df[df['has_emoji']].copy()
     if emoji_df.empty: return {'total_emojis_used': 0}
 
@@ -505,12 +493,6 @@ def analyze_topics(df: pd.DataFrame, generic_words: set, n_topics: int = 7, n_to
     except Exception as e:
         return {"error": f"Topic modeling failed: {str(e)}"}
 
-# ==============================================================================
-# 5. THEMATIC & BEHAVIORAL ANALYSIS
-# ==============================================================================
-
-# In analysis_modules.py
-
 def analyze_user_behavior(df: pd.DataFrame) -> dict:
     """Provides a detailed breakdown of individual user behavior and communication style."""
     if df.empty: return {}
@@ -560,7 +542,6 @@ def analyze_user_behavior(df: pd.DataFrame) -> dict:
             }
         }
     return user_analysis
-# In analysis_modules.py
 
 def analyze_conversation_patterns(df: pd.DataFrame) -> dict:
 
@@ -599,16 +580,13 @@ def analyze_conversation_patterns(df: pd.DataFrame) -> dict:
         # 2. Engagement
         turn_taking_ratio = (conv_df['sender'] != conv_df['sender'].shift(1)).sum() / len(conv_df)
 
-        # 3. Pace (both absolute and relative)
         conv_responses = conv_df[conv_df['sender'] != conv_df['sender'].shift(1)]
         conv_avg_seconds = conv_responses['datetime'].diff().dt.total_seconds().mean() if len(conv_responses) > 1 else population_avg_seconds
         if pd.isna(conv_avg_seconds): conv_avg_seconds = population_avg_seconds
 
-        # --- NEW: Calculate the Relative Pace Factor ---
-        # How much faster is this conversation than the norm? We use log1p to dampen extreme values.
+
         relative_pace_factor = np.log1p(population_avg_seconds / (conv_avg_seconds + 1)) # +1 to avoid division by zero
 
-        # --- UPDATED: The new, smarter intensity score ---
         intensity_score = (
                 np.log1p(messages_per_hour) * # Volume component
                 turn_taking_ratio * # Engagement component
@@ -802,10 +780,6 @@ def calculate_relationship_metrics(df: pd.DataFrame, conversation_patterns_data:
 
 
 def analyze_emotions_ml(df: pd.DataFrame, sample_size: int = 1000) -> dict:
-    """
-    Analyzes the emotional content of messages using a pre-trained transformer model.
-    Samples data if the dataset is too large to prevent timeouts.
-    """
     if pipeline is None:
         return {"error": "The 'transformers' and 'torch' libraries are required. Please run 'pip install transformers torch'."}
 
@@ -874,26 +848,17 @@ def analyze_emotions_ml(df: pd.DataFrame, sample_size: int = 1000) -> dict:
     }
 
 def analyze_reactions(df: pd.DataFrame) -> dict:
-    """
-    Analyzes reaction patterns based on the corrected parsing logic.
-    Focuses on who GAVE reactions and what types were used.
-    """
-    # Filter for all rows that were identified as any kind of reaction
+
     reaction_df = df[df['is_reaction']].copy()
     if reaction_df.empty:
         return {'total_reactions': 0, 'note': 'No reactions found.'}
 
-    # --- CALCULATIONS ---
     total_reactions = len(reaction_df)
 
-    # Count reactions by type (e.g., '👍', '😂', 'love')
     reactions_by_type = reaction_df['reaction_type'].value_counts()
 
-    # Count how many reactions each person GAVE.
-    # The 'sender' of a reaction row is the person who reacted.
     reactions_given_by_user = reaction_df['sender'].value_counts()
 
-    # --- FORMATTING OUTPUT ---
     return {
         'total_reactions': int(total_reactions),
         'reaction_counts_by_type': [{"type": str(k), "count": int(v)} for k, v in reactions_by_type.items()],
@@ -902,9 +867,6 @@ def analyze_reactions(df: pd.DataFrame) -> dict:
     }
 
 def analyze_attachments(df: pd.DataFrame) -> dict:
-    """
-    Analyzes messages that were flagged as sending an attachment.
-    """
     if 'is_attachment' not in df.columns:
         return {'error': 'is_attachment column not found.'}
 
@@ -913,7 +875,6 @@ def analyze_attachments(df: pd.DataFrame) -> dict:
     if attachment_df.empty:
         return {'total_attachments': 0}
 
-    # Analyze the text that was sent ALONG WITH attachments
     accompanying_text = ' '.join(attachment_df['text_content'].dropna())
     word_counts = Counter(re.findall(r'\b\w+\b', accompanying_text.lower()))
 
