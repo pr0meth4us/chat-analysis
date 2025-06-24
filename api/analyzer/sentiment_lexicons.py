@@ -48,7 +48,7 @@ ARGUMENT_BASE = {
     # Accusations & Blame
     'you always', 'you never', 'your fault', 'blame', 'accuse', 'selfish',
     'inconsiderate', 'thoughtless', 'nagging', 'lying', 'liar', 'cheater', 'cheating',
-    'betrayed', 'unfaithful',
+    'betrayed', 'unfaithful', 'bullshit', 'hypocritical'
 
     # Dismissal & Invalidation
     'whatever', 'fine', 'k.', 'over it', 'dont care', "don't care", 'leave me alone',

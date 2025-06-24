@@ -182,16 +182,17 @@ class ChatAnalyzer:
 
             # --- Thematic Analysis Runners (CHANGED) ---
             # Each runner now uses the specific, non-overlapping keyword set from the `analysis_keywords` dictionary.
-            'argument_analysis': {'func': af.analyze_argument_language, 'deps': [],
-                                  'args': {'argument_words': self.analysis_keywords['ARGUMENT']}},
-            'sad_tone_analysis': {'func': af.analyze_sad_tone, 'deps': [],
-                                  'args': {'sad_words': self.analysis_keywords['SAD']}},
-            'romance_tone_analysis': {'func': af.analyze_romance_tone, 'deps': [],
-                                      'args': {'romance_words': self.analysis_keywords['ROMANTIC']}},
-            'happy_tone_analysis': {'func': af.analyze_happy_tone, 'deps': [],
-                                    'args': {'positive_words': self.analysis_keywords['HAPPY']}},
-            'sexual_tone_analysis': {'func': af.analyze_sexual_tone, 'deps': [],
-                                     'args': {'sexual_words': self.sexual_content}},
+            # 'argument_analysis': {'func': af.analyze_argument_language, 'deps': [],
+            #                       'args': {'argument_words': self.analysis_keywords['ARGUMENT']}},
+            # 'sad_tone_analysis': {'func': af.analyze_sad_tone, 'deps': [],
+            #                       'args': {'sad_words': self.analysis_keywords['SAD']}},
+            # 'romance_tone_analysis': {'func': af.analyze_romance_tone, 'deps': [],
+            #                           'args': {'romance_words': self.analysis_keywords['ROMANTIC']}},
+            # 'happy_tone_analysis': {'func': af.analyze_happy_tone, 'deps': [],
+            #                         'args': {'positive_words': self.analysis_keywords['HAPPY']}},
+            # 'sexual_tone_analysis': {'func': af.analyze_sexual_tone, 'deps': [],
+            #                          'args': {'sexual_words': self.sexual_content}},
+
 
             # --- General Sentiment (using base lexicons) ---
             'sentiment_analysis': {'func': af.analyze_sentiment, 'deps': [],
@@ -215,4 +216,6 @@ class ChatAnalyzer:
             'relationship_metrics': {'func': af.calculate_relationship_metrics,
                                      'deps': ['conversation_patterns', 'response_metrics'], 'args': {}},
             'emotion_analysis': {'func': af.analyze_emotions_ml, 'deps': [], 'args': {}},
+            'emotion_ml': {'func': af.analyze_emotions_with_hf, 'args': {'confidence_threshold': 0.65}},
+
         }

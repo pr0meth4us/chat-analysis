@@ -5,6 +5,6 @@ from .conversation import analyze_conversation_patterns, analyze_rapid_fire_conv
 from .content import analyze_word_patterns, emoji_analysis, analyze_questions, analyze_shared_links
 from .sentiment_emotion import analyze_sentiment, analyze_emotions_ml
 from .topics import analyze_topics
-from .thematic import analyze_argument_language, analyze_sad_tone, analyze_romance_tone, analyze_sexual_tone, analyze_happy_tone, _create_thematic_report
+from .thematic import analyze_emotions_with_hf, analyze_argument_language, analyze_sad_tone, analyze_romance_tone, analyze_sexual_tone, analyze_happy_tone, _create_thematic_report
 from .relationship import calculate_relationship_metrics
 from .features import analyze_reactions, analyze_attachments
