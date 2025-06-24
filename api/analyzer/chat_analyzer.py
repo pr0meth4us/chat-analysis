@@ -216,6 +216,5 @@ class ChatAnalyzer:
             'relationship_metrics': {'func': af.calculate_relationship_metrics,
                                      'deps': ['conversation_patterns', 'response_metrics'], 'args': {}},
             'emotion_analysis': {'func': af.analyze_emotions_ml, 'deps': [], 'args': {}},
-            'emotion_ml': {'func': af.analyze_emotions_with_hf, 'args': {'confidence_threshold': 0.65}},
 
         }

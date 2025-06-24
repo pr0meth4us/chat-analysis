@@ -61,44 +61,43 @@ def insert_processed_messages():
 
 @data_bp.route('/data/insert/filtered', methods=['POST'])
 def insert_filtered_messages():
+    """
+    Accepts a full JSON object containing a 'messages' list and other metadata,
+    and stores the entire object in the session.
+    """
     session_id = session_manager.get_session_id()
-    messages_list = request.get_json()
 
-    if not messages_list or not isinstance(messages_list, list):
-        return jsonify({"error": "Request body must be a JSON list of message objects."}), 400
+    # 1. Get the entire JSON object from the request
+    request_data = request.get_json()
 
-    participants = Counter(msg.get('sender') for msg in messages_list if msg.get('sender'))
-    compact_participants_metadata = {
-        sender: f"Unknown, {count}" for sender, count in participants.items()
-    }
+    # 2. Validate the new structure: Must be a dictionary containing a 'messages' list
+    if not isinstance(request_data, dict):
+        return jsonify({"error": "Request body must be a JSON object."}), 400
 
-    filtered_data_to_store = {
-        'messages': messages_list,
-        'metadata': {
-            'participants': compact_participants_metadata,
-            'messages_total': len(messages_list),
-            'filtered_messages': len(messages_list)
-        },
-        'filter_settings': {
-            'info': 'Data inserted externally, no filter settings applied.',
-            'group_mappings': {},
-            'unassigned_label': 'Other',
-            'removed_senders': []
-        },
-        'timestamp': session_manager._get_current_timestamp(),
-        'count': len(messages_list)
-    }
+    if 'messages' not in request_data or not isinstance(request_data['messages'], list):
+        return jsonify(
+            {"error": "Request JSON object must contain a 'messages' key with a list of message objects."}), 400
+
+    # 3. Use the received object directly as the data to store
+    # We will just add/update a timestamp and count for consistency
+    filtered_data_to_store = request_data.copy()
+    message_count = len(filtered_data_to_store['messages'])
+
+    # Add timestamp and count for session management consistency
+    filtered_data_to_store['timestamp'] = session_manager._get_current_timestamp()
+    filtered_data_to_store['count'] = message_count
 
     try:
         session_manager.store_filtered_messages(session_id, filtered_data_to_store)
-        log(f"Inserted {len(messages_list)} filtered messages into session {session_id}.")
+        log(f"Inserted full filtered data object with {message_count} messages into session {session_id}.")
         return jsonify({
-            "message": "Successfully inserted filtered messages.",
-            "count": len(messages_list)
+            "message": "Successfully inserted filtered data object.",
+            "count": message_count
         }), 201
     except Exception as e:
-        log(f"ERROR inserting filtered messages: {e}")
-        return jsonify({"error": "An internal error occurred while storing messages."}), 500
+        log(f"ERROR inserting filtered data object: {e}")
+        return jsonify({"error": "An internal error occurred while storing the data."}), 500
+
 
 @data_bp.route('/data/insert/report', methods=['POST'])
 def insert_analysis_report():

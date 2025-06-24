@@ -40,7 +40,7 @@ Content-Type: multipart/form-data; boundary=----WebAppBoundary
 ------WebAppBoundary
 Content-Disposition: form-data; name="file"; filename="data.zip"
 
-< /Users/nicksng/Desktop/school/aupp/code/google-drive-html-downloader/all_chats.zip
+< C:\Users\phear\Downloads\Telegram Desktop\all_chats.zip
 ------WebAppBoundary--
 
 ### STEP 3: Filter Data
@@ -48,9 +48,28 @@ POST {{host}}/filter
 Content-Type: application/json
 
 {
-  "me": ["Me","Neron","Neternal Soeung","Ni","konkhmerlaorlek1","neron - ណឺរ៉ូន","neron - ូន","xeno.bozo"],
-  "remove": ["Jockie Music (1)"],
-  "other_label": "other"
+  "group_mappings": {
+    "Adam": [
+      "Me",
+      "Neron",
+      "Neternal Soeung",
+      "Ni",
+      "konkhmerlaorlek1",
+      "neron - ណឺរ៉ូន",
+      "neron - ូន",
+      "xeno.bozo"
+    ],
+    "Eve": [
+      "Pin",
+      "Gray Kray",
+      "daizy1901",
+      "luna",
+      "dwillqx",
+      "iammrrcrab199@gmail.com"
+    ]
+  },
+  "unassigned_label": "Other",
+  "remove": []
 }
 
 ### STEP 4: Analyze Data
