@@ -2,7 +2,7 @@ import os
 from zipfile import ZipFile, is_zipfile
 from api.session_manager import session_manager
 from parser.main_parser import process_uploaded_files
-from api.analyzer.main_analyzer import ChatAnalyzer
+from api.analyzer.chat_analyzer import ChatAnalyzer
 from utils import log
 
 

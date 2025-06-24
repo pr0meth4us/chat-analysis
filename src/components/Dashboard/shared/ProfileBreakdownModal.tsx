@@ -27,18 +27,25 @@ import { FaTiktok } from 'react-icons/fa6';
 const PlatformIcon = ({ platform }: { platform: string }) => {
     switch (platform.toLowerCase()) {
         case 'facebook':
+            // @ts-ignore
             return <FaFacebookF className="h-4 w-4 text-blue-600" />;
         case 'instagram':
+            // @ts-ignore
             return <FaInstagram className="h-4 w-4 text-pink-500" />;
         case 'telegram':
+            // @ts-ignore
             return <FaTelegramPlane className="h-4 w-4 text-sky-400" />;
         case 'discord':
+            // @ts-ignore
             return <FaDiscord className="h-4 w-4 text-indigo-500" />;
         case 'tiktok':
+            // @ts-ignore
             return <FaTiktok className="h-4 w-4 text-gray-900" />;
         case 'imessage':
+            // @ts-ignore
             return <FaCommentAlt className="h-4 w-4 text-green-500" />;
         default:
+            // @ts-ignore
             return <FaCommentAlt className="h-4 w-4 text-gray-400" />;
     }
 };
