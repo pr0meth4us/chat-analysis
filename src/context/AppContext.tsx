@@ -188,8 +188,24 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     const handleClearAction = async (clearFunction: () => Promise<any>, stageName: string) => {
         dispatch({ type: 'SET_LOADING', payload: true });
         try {
+            // Call the backend API to delete the file
             await clearFunction();
-            await refreshData();
+
+            // --- FIXED LOGIC ---
+            // Instead of a full, risky refresh, just update the specific part of the state.
+            if (stageName === 'analysis') {
+                dispatch({ type: 'SET_ANALYSIS_RESULT', payload: null });
+            } else if (stageName === 'filtered') {
+                dispatch({ type: 'SET_FILTERED_DATA', payload: null });
+                // You might also want to clear the analysis result here too, since it depends on filtered data
+                dispatch({ type: 'SET_ANALYSIS_RESULT', payload: null });
+            } else if (stageName === 'processed') {
+                dispatch({ type: 'SET_PROCESSED_MESSAGES', payload: [] });
+                dispatch({ type: 'SET_FILTERED_DATA', payload: null });
+                dispatch({ type: 'SET_ANALYSIS_RESULT', payload: null });
+            }
+            // --- END FIXED LOGIC ---
+
         } catch (error: any) {
             dispatch({ type: 'SET_ERROR', payload: `Could not clear ${stageName} data.` });
         } finally {

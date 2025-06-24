@@ -1,10 +1,11 @@
 import json
-from typing import Dict, Any, List, Optional, Union, Callable
-import pandas as pd
+from typing import Dict, List, Optional, Union, Callable
 import emoji
+import pandas as pd
+
 from . import chat_analysis as af
-from . import sentiment_lexicons  # This now refers to your new, refactored file
-from .message_parser import MessageParser
+from . import sentiment_lexicons
+from .df_parser import DfParser
 from .utils import AnalysisUtils
 
 
@@ -25,25 +26,14 @@ class ChatAnalyzer:
         self.participants = participants or []
         self.metadata = metadata or {}
         self.filter_settings = filter_settings or {}
-
-        # Initialize message parser and utils
-        self.message_parser = MessageParser(self.participants)
+        self.message_parser = DfParser(self.participants)
         self.utils = AnalysisUtils()
+        self.analysis_keywords = sentiment_lexicons.ANALYSIS_KEYWORDS
+        self.positive_base = sentiment_lexicons.HAPPY_BASE
+        self.negative_base = sentiment_lexicons.SAD_BASE
+        self.sexual_content = sentiment_lexicons.SEXUAL_CONTENT
 
-        # --- LEXICONS & DYNAMIC STOP WORDS (CHANGED) ---
-        # Load the new, pre-processed keyword sets and other specific lexicons.
-        # This single dictionary contains the non-overlapping sets for thematic analysis.
-        self.analysis_keywords = sentiment_lexicons.ANALYSIS_KEYWORDS  # NEW
-
-        # Load base lexicons for general sentiment analysis (if needed) and other categories
-        self.positive_base = sentiment_lexicons.HAPPY_BASE  # NEW (for general sentiment)
-        self.negative_base = sentiment_lexicons.SAD_BASE  # NEW (for general sentiment)
-        self.sexual_content = sentiment_lexicons.SEXUAL_CONTENT  # NEW (renamed for clarity)
-
-        # Load stopwords for filtering
-        stopwords = sentiment_lexicons.COMPREHENSIVE_STOPWORDS  # CHANGED: Using the new comprehensive set
-
-        # Create dynamic stop word list including participant names
+        stopwords = sentiment_lexicons.COMPREHENSIVE_STOPWORDS
         name_stop_words = set()
         for name in self.participants:
             name_stop_words.update(name.lower().split())
@@ -165,10 +155,6 @@ class ChatAnalyzer:
         return self.utils.convert_to_serializable(self.report)
 
     def _get_analysis_registry(self) -> Dict:
-        """
-        Get the analysis registry with all available modules.
-        CHANGED: This now points to the new, non-overlapping keyword sets.
-        """
         return {
             'dataset_overview': {'func': af.dataset_overview, 'deps': [], 'args': {}},
             'first_last_messages': {'func': af.first_last_messages, 'deps': [], 'args': {}},
@@ -179,28 +165,20 @@ class ChatAnalyzer:
             'topic_modeling': {'func': af.analyze_topics, 'deps': [],
                                'args': {'generic_words': self.dynamic_generic_words}},
             'user_behavior': {'func': af.analyze_user_behavior, 'deps': [], 'args': {}},
-
-            # --- Thematic Analysis Runners (CHANGED) ---
-            # Each runner now uses the specific, non-overlapping keyword set from the `analysis_keywords` dictionary.
-            # 'argument_analysis': {'func': af.analyze_argument_language, 'deps': [],
-            #                       'args': {'argument_words': self.analysis_keywords['ARGUMENT']}},
-            # 'sad_tone_analysis': {'func': af.analyze_sad_tone, 'deps': [],
-            #                       'args': {'sad_words': self.analysis_keywords['SAD']}},
-            # 'romance_tone_analysis': {'func': af.analyze_romance_tone, 'deps': [],
-            #                           'args': {'romance_words': self.analysis_keywords['ROMANTIC']}},
-            # 'happy_tone_analysis': {'func': af.analyze_happy_tone, 'deps': [],
-            #                         'args': {'positive_words': self.analysis_keywords['HAPPY']}},
-            # 'sexual_tone_analysis': {'func': af.analyze_sexual_tone, 'deps': [],
-            #                          'args': {'sexual_words': self.sexual_content}},
-
-
-            # --- General Sentiment (using base lexicons) ---
+            'argument_analysis': {'func': af.analyze_argument_language, 'deps': [],
+                                  'args': {'argument_words': self.analysis_keywords['ARGUMENT']}},
+            'sad_tone_analysis': {'func': af.analyze_sad_tone, 'deps': [],
+                                  'args': {'sad_words': self.analysis_keywords['SAD']}},
+            'romance_tone_analysis': {'func': af.analyze_romance_tone, 'deps': [],
+                                      'args': {'romance_words': self.analysis_keywords['ROMANTIC']}},
+            'happy_tone_analysis': {'func': af.analyze_happy_tone, 'deps': [],
+                                    'args': {'positive_words': self.analysis_keywords['HAPPY']}},
+            'sexual_tone_analysis': {'func': af.analyze_sexual_tone, 'deps': [],
+                                     'args': {'sexual_words': self.sexual_content}},
             'sentiment_analysis': {'func': af.analyze_sentiment, 'deps': [],
                                    'args': {'word_pattern': self.message_parser.word_pattern,
                                             'positive_words': self.positive_base,
                                             'negative_words': self.negative_base}},
-
-            # --- Other existing modules ---
             'unbroken_streaks': {'func': af.analyze_unbroken_streaks, 'deps': [], 'args': {}},
             'ghost_periods': {'func': af.detect_ghost_periods, 'deps': [], 'args': {}},
             'icebreaker_analysis': {'func': af.icebreaker_analysis, 'deps': [], 'args': {}},

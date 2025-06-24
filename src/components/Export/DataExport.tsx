@@ -115,9 +115,6 @@ export default function DataExport() {
                             <h4 className="font-semibold text-foreground">
                                 Filtered Messages
                             </h4>
-                            <p className="text-sm text-muted-foreground mt-1">
-                                The data after applying your sender filters.
-                            </p>
                         </div>
                         <div className="flex items-center gap-2 w-full sm:w-auto">
                             <Button

@@ -1,9 +1,8 @@
 import re
 from typing import Dict, Any, List, Optional
-import emoji
 
 
-class MessageParser:
+class DfParser:
     def __init__(self, participants: List[str]):
         self.participants = participants
 
@@ -32,7 +31,8 @@ class MessageParser:
         )
         return dynamic_pattern
 
-    def _detect_info_sharing(self, message: str) -> Dict[str, Any]:
+    @staticmethod
+    def _detect_info_sharing(message: str) -> Dict[str, Any]:
         if not isinstance(message, str) or len(message.strip()) == 0:
             return {
                 'is_info_sharing': False,
@@ -182,7 +182,8 @@ class MessageParser:
             'word_count': word_count
         }
 
-    def _find_reaction_type(self, message: str) -> Optional[str]:
+    @staticmethod
+    def _find_reaction_type(message: str) -> Optional[str]:
         """Identifies if a message is a reaction and returns the reaction type."""
         if not isinstance(message, str) or len(message.strip()) == 0:
             return None

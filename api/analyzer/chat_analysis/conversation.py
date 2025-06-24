@@ -25,6 +25,10 @@ def analyze_conversation_patterns(df: pd.DataFrame) -> dict:
         start_time = conv_df['datetime'].min()
         end_time = conv_df['datetime'].max()
         duration_minutes = (end_time - start_time).total_seconds() / 60
+
+        if duration_minutes < 60:
+            continue
+
         effective_duration_hours = max(duration_minutes / 60, 0.001)
         messages_per_hour = len(conv_df) / effective_duration_hours
         turn_taking_ratio = (conv_df['sender'] != conv_df['sender'].shift(1)).sum() / len(conv_df)
@@ -50,7 +54,7 @@ def analyze_conversation_patterns(df: pd.DataFrame) -> dict:
         })
 
     if not conversations:
-        return {'total_conversations': 0, 'message': 'No valid multi-participant conversations found.'}
+        return {'total_conversations': 0, 'message': 'No valid multi-participant conversations lasting 60+ minutes were found.'}
 
     most_intense = sorted(conversations, key=lambda x: x['intensity_score'], reverse=True)[:10]
     longest_by_duration = sorted(conversations, key=lambda x: x['duration_minutes'], reverse=True)[:10]

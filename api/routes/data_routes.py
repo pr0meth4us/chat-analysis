@@ -61,29 +61,16 @@ def insert_processed_messages():
 
 @data_bp.route('/data/insert/filtered', methods=['POST'])
 def insert_filtered_messages():
-    """
-    Accepts a full JSON object containing a 'messages' list and other metadata,
-    and stores the entire object in the session.
-    """
     session_id = session_manager.get_session_id()
-
-    # 1. Get the entire JSON object from the request
     request_data = request.get_json()
-
-    # 2. Validate the new structure: Must be a dictionary containing a 'messages' list
     if not isinstance(request_data, dict):
         return jsonify({"error": "Request body must be a JSON object."}), 400
 
     if 'messages' not in request_data or not isinstance(request_data['messages'], list):
         return jsonify(
             {"error": "Request JSON object must contain a 'messages' key with a list of message objects."}), 400
-
-    # 3. Use the received object directly as the data to store
-    # We will just add/update a timestamp and count for consistency
     filtered_data_to_store = request_data.copy()
     message_count = len(filtered_data_to_store['messages'])
-
-    # Add timestamp and count for session management consistency
     filtered_data_to_store['timestamp'] = session_manager._get_current_timestamp()
     filtered_data_to_store['count'] = message_count
 

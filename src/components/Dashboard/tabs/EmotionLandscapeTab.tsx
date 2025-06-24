@@ -5,31 +5,32 @@ import { ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadius
 import { AnalysisResult } from '@/types/analysis';
 import { Card } from '../layout/Card';
 import { InfoPopup } from '../layout/InfoPopup';
-import {CustomTooltip} from "@/components/Dashboard/shared/CustomTooltip";
-import {formatDate} from "@/utils/formatDate";
-
+import { CustomTooltip } from "@/components/Dashboard/shared/CustomTooltip";
+import { formatDate } from "@/utils/formatDate";
 
 interface EmotionLandscapeTabProps {
     result: AnalysisResult;
     processedData: any;
 }
 
+// EmotionRadar component remains the same
 const EmotionRadar = ({ data, title }: { data: any[], title: string }) => (
     <Card>
         <h3 className="text-lg font-semibold mb-4 text-gray-200 text-center">{title}</h3>
         <ResponsiveContainer width="100%" height={300}>
             <RadarChart cx="50%" cy="50%" outerRadius="80%" data={data}>
                 <PolarGrid stroke="#4a5568" />
-                <PolarAngleAxis dataKey="emotion" stroke="#9ca3af" fontSize={12} tick={{fill: '#e5e7eb'}}/>
+                <PolarAngleAxis dataKey="emotion" stroke="#9ca3af" fontSize={12} tick={{ fill: '#e5e7eb' }} />
                 <PolarRadiusAxis angle={30} domain={[0, 1]} tick={false} axisLine={false} />
                 <Radar name="Score" dataKey="score" stroke="#8884d8" fill="#8884d8" fillOpacity={0.6} />
-                <Tooltip content={<CustomTooltip/>}/>
+                <Tooltip content={<CustomTooltip />} />
             </RadarChart>
         </ResponsiveContainer>
     </Card>
 );
 
-const EmotionMessages =  ({ emotion, messages }: { emotion: string, messages: { message: string, sender: string, score: number, datetime: string }[] }) => (
+// EmotionMessages component remains the same
+const EmotionMessages = ({ emotion, messages }: { emotion: string, messages: { message: string, sender: string, score: number, datetime: string }[] }) => (
     <div>
         <h4 className="font-bold text-xl capitalize text-center mb-4 text-blue-300">{emotion}</h4>
         <div className="space-y-3 pr-2" style={{ maxHeight: '300px', overflowY: 'auto' }}>
@@ -49,6 +50,10 @@ const EmotionMessages =  ({ emotion, messages }: { emotion: string, messages: { 
 export const EmotionLandscapeTab: React.FC<EmotionLandscapeTabProps> = ({ result, processedData }) => {
     const { user1Name, user2Name, emotionSummary, user1Emotion, user2Emotion } = processedData;
 
+    // --- CHANGED: Prepare the list of emotions to display dynamically ---
+    const topEmotionsData = result.emotion_analysis?.top_messages_per_emotion || {};
+    const emotionsToShow = Object.keys(topEmotionsData);
+
     return (
         <div className="space-y-6">
             <Card>
@@ -64,10 +69,15 @@ export const EmotionLandscapeTab: React.FC<EmotionLandscapeTabProps> = ({ result
             </Card>
             <Card>
                 <h3 className="text-lg font-semibold mb-4 text-gray-200">Top Messages by Emotion</h3>
+                {/* --- CHANGED: Dynamically render EmotionMessages for each emotion --- */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <EmotionMessages emotion="joy" messages={result.emotion_analysis?.top_messages_per_emotion.joy || []} />
-                    <EmotionMessages emotion="sadness" messages={result.emotion_analysis?.top_messages_per_emotion.sadness || []} />
-                    <EmotionMessages emotion="anger" messages={result.emotion_analysis?.top_messages_per_emotion.anger || []} />
+                    {emotionsToShow.map((emotion) => (
+                        <EmotionMessages
+                            key={emotion}
+                            emotion={emotion}
+                            messages={topEmotionsData[emotion] || []}
+                        />
+                    ))}
                 </div>
             </Card>
         </div>

@@ -10,16 +10,72 @@ BASE_GENERIC_WORDS = {
     'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'should', 'can',
     'could', 'not', 'no', 'very', 'just', 'all', 'any', 'some', 'about', 'what', 'when',
     'where', 'who', 'how', 'why', 'then', 'there', 'out', 'up', 'get', 'got', 'go',
-    'going', 'really', 'see', 'say', 'said', 'know', 'think', 'one', 'like', 'also'
+    'going', 'really', 'see', 'say', 'said', 'know', 'think', 'one', 'like', 'also',
+    'absolutely',
+    'certainly',
+    'course',          # For "of course"
+    'definitely',
+    'indeed',
+    'ofc',             # Already in slang, but good to have here too
+    'right',
+    'sure',
+    'totally',
+    'true',
+    'yep',
+    'yup',
+    'yes',
+    'yessir',
+
+    # Disagreement / Negation
+    'nah',
+    'naw',
+    'no',
+    'nope',
+
+    # These multi-word phrases will be caught by the ngram_range=(1, 2)
+    'of course',
+    'for sure',
+    'no way',
+    'not really'
 }
 
 CHAT_SLANG_STOPWORDS = {
+    # Original Slang
     'lol', 'haha', 'lmao', 'rofl', 'omg', 'wtf', 'btw', 'fyi', 'imo', 'tbh', 'ngl',
     'smh', 'ikr', 'brb', 'ttyl', 'ok', 'okay', 'kk', 'k', 'yeah', 'yep', 'ya', 'nah',
     'nope', 'fr', 'frfr', 'ong', 'u', 'ur', 'abt', 'im', 'hey', 'yo', 'sup', 'bruh',
-    'bro', 'dude', 'sis', 'bestie', 'hmm', 'mhm', 'ahh', 'oh', 'well', 'anyway'
-}
+    'bro', 'dude', 'sis', 'bestie', 'hmm', 'mhm', 'ahh', 'oh', 'well', 'anyway',
 
+    # Previous custom additions
+    'jg', 'tv', 'mex', 'ot', 'hz', 'ban', 'man', 'yy', 'dae',
+    'ort', 'te', 'dg', 'pg', 'mean', 'yul', 'ey', 'ng', 'ke',
+    'ah', 'ter', 'na', 'xd', 'don', 'jk', 'err', 'men', 'aii',
+    'unsent', 'message', 'pinned', 'jum', 'tt', 'saey', 'chub',
+    'ask', 'bek', 'brab', 'dear', 'either', 'eng', 'h', 'hmmm',
+    'idk', 'jam', 'jes', 'kit', 'kom', 'kor', 'laor', 'long',
+    'maybe', 'mer', 'mx', 'nh', 'oy', 'ppl', 'rean',
+    'rg', 'sir', 'som', 'sur', 'ta', 'talk', 'tha', 'time',
+    'too', 'true', 'yey',
+
+    # --- NEW WORDS ADDED June 25, 2025 ---
+    'ai',
+    'am',
+    'doch',
+    'indeed',
+    'knea',
+    'love',
+    'may',
+    'min',
+    'moa',
+    'much',
+    'ngai',
+    'nham',
+    'ofc',
+    'pi',
+    'sl',
+    'way',
+    'yes' # 'yes' was likely missed before, adding it now
+}
 HAPPY_BASE = {
     'happy', 'joy', 'wonderful', 'amazing', 'awesome', 'fantastic', 'excellent',
     'perfect', 'great', 'good', 'nice', 'fun', 'funny', 'hilarious', 'laughing',
@@ -36,12 +92,19 @@ SAD_BASE = {
 }
 
 ROMANTIC_BASE = {
-    'love', 'adore', 'babe', 'baby', 'honey', 'sweetheart', 'darling', 'my love',
+    'love you', 'i like you', 'adore', 'babe', 'baby', 'honey', 'sweetheart', 'darling', 'my love',
     'soulmate', 'my everything', 'my world', 'bae', 'crush', 'miss you',
     'thinking of you', 'date', 'kiss', 'kisses', 'hug', 'hugs', 'cuddle', 'snuggle',
     'beautiful', 'handsome', 'gorgeous', 'sexy', 'cute', 'attractive', 'romance',
     'romantic', 'passion', 'desire', 'wifey', 'hubby', 'my king', 'my queen',
-    'o sl b', 'b sl o', 'srolang', 'oun', 'chit', 'sne', 'klaing' # Khmer examples
+    'o sl b', 'b sl o', 'srolang', 'forever and always',
+    'yours forever',
+    'forever yours',
+    'love you forever',
+    'together forever',
+    'my forever',
+    'mine forever',
+    'us forever'
 }
 
 ARGUMENT_BASE = {
@@ -51,12 +114,12 @@ ARGUMENT_BASE = {
     'betrayed', 'unfaithful', 'bullshit', 'hypocritical'
 
     # Dismissal & Invalidation
-    'whatever', 'fine', 'k.', 'over it', 'dont care', "don't care", 'leave me alone',
+    'k.', 'over it', 'dont care', "don't care", 'leave me alone', 'over with',
     'shut up', 'piss off', 'ridiculous', 'absurd', 'unbelievable', 'not listening',
     'you dont understand', "you don't understand",
 
     # Explicit Conflict & Anger
-    'argument', 'fight', 'fighting', 'angry', 'pissed', 'furious', 'mad', 'upset with you',
+    'argument', 'fight', 'fighting', 'pissed', 'furious', 'upset with you',
     'hate you', 'fuck you', 'asshole', 'bitch', 'jerk', 'screw you', 'go to hell',
 
     # Relationship State Issues
