@@ -3,6 +3,7 @@ from sklearn.decomposition import NMF
 from sklearn.feature_extraction.text import TfidfVectorizer
 from collections import Counter
 
+
 def analyze_topics(df: pd.DataFrame, generic_words: set, n_topics: int = 7, n_top_words: int = 10) -> dict:
     if df.empty or 'text_content' not in df.columns:
         return {"error": "No data for topic modeling."}

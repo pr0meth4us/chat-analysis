@@ -192,7 +192,7 @@ class ChatAnalyzer:
             'link_analysis': {'func': af.analyze_shared_links, 'deps': [], 'args': {}},
             'attachment_analysis': {'func': af.analyze_attachments, 'deps': [], 'args': {}},
             'relationship_metrics': {'func': af.calculate_relationship_metrics,
-                                     'deps': ['conversation_patterns', 'response_metrics'], 'args': {}},
+                                     'deps': ['response_metrics'], 'args': {}},
             'emotion_analysis': {'func': af.analyze_emotions_ml, 'deps': [], 'args': {}},
 
         }

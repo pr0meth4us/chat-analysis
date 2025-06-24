@@ -37,7 +37,6 @@ def analyze_sentiment(df: pd.DataFrame, word_pattern: re.Pattern, positive_words
         'neutral_message_count': int((analysis_df[analysis_df['text_content'] != '']['sentiment_raw'] == 0).sum())
     }
 
-# In your Python analysis file
 
 def analyze_emotions_ml(df: pd.DataFrame, sample_size: int = 1000) -> dict:
     analysis_df = df[df['text_content'].str.strip() != ''].copy()
@@ -61,7 +60,6 @@ def analyze_emotions_ml(df: pd.DataFrame, sample_size: int = 1000) -> dict:
         for emotion in res_list:
             analysis_df.loc[analysis_df.index[i], f"emotion_{emotion['label']}"] = emotion['score']
 
-    # This model has 'neutral' but we will exclude it from the top messages.
     emotion_columns = [f"emotion_{label}" for label in ['anger', 'disgust', 'fear', 'joy', 'sadness', 'surprise']]
     overall_avg_scores = {
         col.replace('emotion_', ''): analysis_df[col].mean()
@@ -69,10 +67,9 @@ def analyze_emotions_ml(df: pd.DataFrame, sample_size: int = 1000) -> dict:
     }
 
     top_messages_per_emotion = {}
-    # --- CHANGED: Expand the list to include all key emotions from the model ---
     for emotion in ['anger', 'joy', 'sadness', 'disgust', 'fear', 'surprise']:
         col_name = f'emotion_{emotion}'
-        if col_name in analysis_df.columns:>
+        if col_name in analysis_df.columns:
             top_5_df = analysis_df.nlargest(5, col_name)
             top_messages_per_emotion[emotion] = [
                 {"message": row['message'], "sender": row['sender'], "datetime": row['datetime'].isoformat(), "score": round(row[col_name], 4)}
@@ -83,7 +80,6 @@ def analyze_emotions_ml(df: pd.DataFrame, sample_size: int = 1000) -> dict:
     for sender, group in analysis_df.groupby('sender', observed=False):
         user_avg_scores = {
             col.replace('emotion_', ''): group[col].mean()
-            # Note: We now need to include all model labels here for the radar charts to be complete
             for col in [f"emotion_{l}" for l in ['anger', 'disgust', 'fear', 'joy', 'neutral', 'sadness', 'surprise']] if col in group.columns
         }
         if user_avg_scores:

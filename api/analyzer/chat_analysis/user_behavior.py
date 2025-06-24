@@ -1,6 +1,7 @@
 import pandas as pd
 from collections import defaultdict
 
+
 def analyze_user_behavior(df: pd.DataFrame) -> dict:
     if df.empty: return {}
     user_analysis = {}
@@ -44,6 +45,7 @@ def analyze_user_behavior(df: pd.DataFrame) -> dict:
         }
     return user_analysis
 
+
 def icebreaker_analysis(df: pd.DataFrame) -> dict:
     if df.empty: return {}
     analysis_df = df[~df['is_reaction']].copy()
@@ -64,6 +66,7 @@ def icebreaker_analysis(df: pd.DataFrame) -> dict:
         }
     }
 
+
 def calculate_response_metrics(df: pd.DataFrame) -> dict:
     if df.empty or len(df) < 2: return {}
     analysis_df = df[~df['is_reaction']].copy()
@@ -75,16 +78,18 @@ def calculate_response_metrics(df: pd.DataFrame) -> dict:
         (analysis_df['sender'] != analysis_df['next_sender']) &
         (analysis_df['datetime'].notna()) &
         (analysis_df['next_datetime'].notna())
-    ].copy()
+        ].copy()
 
-    response_pairs['response_time_minutes'] = (response_pairs['next_datetime'] - response_pairs['datetime']).dt.total_seconds() / 60
-    valid_responses = response_pairs[(response_pairs['response_time_minutes'] > 0) & (response_pairs['response_time_minutes'] <= 2880)].copy()
+    response_pairs['response_time_minutes'] = (response_pairs['next_datetime'] - response_pairs[
+        'datetime']).dt.total_seconds() / 60
+    valid_responses = response_pairs[
+        (response_pairs['response_time_minutes'] > 0) & (response_pairs['response_time_minutes'] <= 2880)].copy()
 
     if valid_responses.empty:
         return {'message': 'No direct user-to-user responses found within the 48-hour threshold.'}
 
     agg_metrics = valid_responses.groupby(['next_sender', 'sender'], observed=False)['response_time_minutes'].agg([
-        'mean', 'median', 'min', 'max', 'std', 'count', lambda x: x.quantile(0.90) # Added 'count'
+        'mean', 'median', 'min', 'max', 'std', 'count', lambda x: x.quantile(0.90)  # Added 'count'
     ]).rename(columns={'<lambda_0>': 'p90'}).fillna(0)
 
     response_data = defaultdict(dict)

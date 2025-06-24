@@ -2,10 +2,8 @@ import pandas as pd
 from datetime import timedelta
 import numpy as np
 
+
 def temporal_patterns(df: pd.DataFrame) -> dict:
-    """
-    Analyzes temporal messaging patterns across hours, days (by name and date), and months.
-    """
     if df.empty: return {}
 
     analysis_df = df
@@ -38,10 +36,8 @@ def temporal_patterns(df: pd.DataFrame) -> dict:
             analysis_df['is_weekend'].sum() / total_activities * 100)
     }
 
+
 def analyze_unbroken_streaks(df: pd.DataFrame) -> dict:
-    """
-    Finds the top 3 longest consecutive streaks of days with at least one message.
-    """
     analysis_df = df[~df['is_reaction']].copy()
     if analysis_df.empty:
         return {'top_streaks': [], 'total_active_days': 0}
@@ -102,6 +98,7 @@ def analyze_unbroken_streaks(df: pd.DataFrame) -> dict:
         'top_streaks': top_streaks_data,
         'total_active_days': len(unique_dates)
     }
+
 
 def detect_ghost_periods(df: pd.DataFrame) -> dict:
     if df.empty: return {}
