@@ -11,8 +11,9 @@ RUN pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir -r requirements.txt \
     && pip install --no-cache-dir gunicorn
 
+COPY run.py .
 COPY api ./api
 
 EXPOSE 5328
 
-CMD ["gunicorn", "--workers", "2", "--bind", "0.0.0.0:5328", "api.app:create_app()"]
+CMD ["gunicorn", "--workers", "2", "--bind", "0.0.0.0:5328", "run:app"]
