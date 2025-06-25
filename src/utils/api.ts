@@ -1,7 +1,7 @@
 import { FilterConfig, TaskStatus, SearchResult, KeywordCountResult, Message, FilteredData } from '@/types';
 import { AnalysisResult } from '@/types/analysis';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://worrying-iolande-aupp-5e910212.koyeb.app/';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://worrying-iolande-aupp-5e910212.koyeb.app';
 
 class ApiError extends Error {
     constructor(public status: number, message: string) {
