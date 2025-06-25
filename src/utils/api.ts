@@ -1,7 +1,7 @@
 import { FilterConfig, TaskStatus, SearchResult, KeywordCountResult, Message, FilteredData } from '@/types';
 import { AnalysisResult } from '@/types/analysis';
 
-const API_BASE = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:5001';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
 
 class ApiError extends Error {
     constructor(public status: number, message: string) {
