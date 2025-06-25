@@ -1,15 +1,13 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
-import { ResponsiveContainer, BarChart, CartesianGrid, XAxis, YAxis, Tooltip as RechartsTooltip, Legend, Bar } from 'recharts';
+import React, { useState } from 'react';
+import { ResponsiveContainer } from 'recharts';
 import { AnalysisResult } from '@/types/analysis';
 import { formatDate } from '@/utils/formatDate';
 import { ContributionsCalendar } from "@/components/Dashboard/shared/ContributionsCalendar";
-import { CustomTooltip } from "@/components/Dashboard/shared/CustomTooltip";
 import { StatCard } from '../layout/StatCard';
 import { Card } from '../layout/Card';
 import { InfoPopup } from '../layout/InfoPopup';
-// MODIFIED: Import Info icon and the new modal
 import { Info } from 'lucide-react';
 import { ProfileBreakdownModal } from '../shared/ProfileBreakdownModal';
 import {Treemap} from "@/components/Dashboard/shared/Treemap";

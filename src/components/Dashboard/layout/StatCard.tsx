@@ -1,15 +1,14 @@
 import React, { ReactNode } from 'react';
 import { Card } from './Card';
 
-// Define a more robust interface for the component's props
 interface StatCardProps {
     title: string;
     value: ReactNode;
     subValue?: ReactNode;
     icon?: ReactNode;
     className?: string;
-    isMini?: boolean;     // NEW: For a more compact version
-    info?: ReactNode;       // NEW: To display an info button or icon
+    isMini?: boolean;
+    info?: ReactNode;
 }
 
 export const StatCard: React.FC<StatCardProps> = ({
@@ -18,10 +17,9 @@ export const StatCard: React.FC<StatCardProps> = ({
                                                       subValue,
                                                       icon,
                                                       className,
-                                                      isMini = false, // Default isMini to false
+                                                      isMini = false,
                                                       info
                                                   }) => {
-    // Dynamically adjust styles based on the 'isMini' prop
     const cardPadding = isMini ? 'p-3' : 'p-4';
     const titleSize = isMini ? 'text-xs' : 'text-sm';
     const valueSize = isMini ? 'text-xl' : 'text-2xl md:text-2xl';
@@ -37,10 +35,8 @@ export const StatCard: React.FC<StatCardProps> = ({
                     </div>
                 )}
                 <div className="flex-1 min-w-0">
-                    {/* MODIFIED: Wrapper to align title and info icon */}
                     <div className="flex justify-between items-center gap-2">
                         <p className={`${titleSize} text-gray-400 truncate`}>{title}</p>
-                        {/* Renders the info element if provided */}
                         {info}
                     </div>
                     <div className={`${valueSize} font-bold text-white break-words whitespace-normal`}>

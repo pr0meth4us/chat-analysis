@@ -13,7 +13,6 @@ interface EmotionLandscapeTabProps {
     processedData: any;
 }
 
-// EmotionRadar component remains the same
 const EmotionRadar = ({ data, title }: { data: any[], title: string }) => (
     <Card>
         <h3 className="text-lg font-semibold mb-4 text-gray-200 text-center">{title}</h3>
@@ -29,7 +28,6 @@ const EmotionRadar = ({ data, title }: { data: any[], title: string }) => (
     </Card>
 );
 
-// EmotionMessages component remains the same
 const EmotionMessages = ({ emotion, messages }: { emotion: string, messages: { message: string, sender: string, score: number, datetime: string }[] }) => (
     <div>
         <h4 className="font-bold text-xl capitalize text-center mb-4 text-blue-300">{emotion}</h4>
@@ -49,8 +47,6 @@ const EmotionMessages = ({ emotion, messages }: { emotion: string, messages: { m
 
 export const EmotionLandscapeTab: React.FC<EmotionLandscapeTabProps> = ({ result, processedData }) => {
     const { user1Name, user2Name, emotionSummary, user1Emotion, user2Emotion } = processedData;
-
-    // --- CHANGED: Prepare the list of emotions to display dynamically ---
     const topEmotionsData = result.emotion_analysis?.top_messages_per_emotion || {};
     const emotionsToShow = Object.keys(topEmotionsData);
 
@@ -69,7 +65,6 @@ export const EmotionLandscapeTab: React.FC<EmotionLandscapeTabProps> = ({ result
             </Card>
             <Card>
                 <h3 className="text-lg font-semibold mb-4 text-gray-200">Top Messages by Emotion</h3>
-                {/* --- CHANGED: Dynamically render EmotionMessages for each emotion --- */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     {emotionsToShow.map((emotion) => (
                         <EmotionMessages

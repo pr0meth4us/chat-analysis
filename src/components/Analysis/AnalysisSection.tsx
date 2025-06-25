@@ -12,9 +12,24 @@ import Link from 'next/link';
 
 export default function AnalysisSection() {
     const { state, actions } = useAppContext();
+
+    // Set initial state based on modules marked as 'enabled' in the config.
     const [selectedModules, setSelectedModules] = useState<string[]>(
-        ANALYSIS_MODULES.filter(m => m.enabled).map(m => m.key)
+        () => {
+            const recommended = ANALYSIS_MODULES
+                .filter(m => m.enabled)
+                .map(m => m.key);
+
+            // Automatically include dependencies for recommended modules.
+            const fullSelection = new Set(recommended);
+            recommended.forEach(key => {
+                const module = ANALYSIS_MODULES.find(m => m.key === key);
+                module?.deps?.forEach(dep => fullSelection.add(dep));
+            });
+            return Array.from(fullSelection);
+        }
     );
+
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isNavigating, setIsNavigating] = useState(false);
 
@@ -26,12 +41,28 @@ export default function AnalysisSection() {
         );
     }, [state.tasks]);
 
+    // MODIFIED: Enhanced toggle logic to handle dependencies.
     const toggleModule = (moduleKey: string) => {
-        setSelectedModules(prev =>
-            prev.includes(moduleKey)
-                ? prev.filter(k => k !== moduleKey)
-                : [...prev, moduleKey]
-        );
+        setSelectedModules(prev => {
+            const newSelected = new Set(prev);
+            const isAdding = !newSelected.has(moduleKey);
+
+            if (isAdding) {
+                // Add the module and its dependencies.
+                const moduleToAdd = ANALYSIS_MODULES.find(m => m.key === moduleKey);
+                newSelected.add(moduleKey);
+                moduleToAdd?.deps?.forEach(dep => newSelected.add(dep));
+            } else {
+                // Remove the module and any modules that depend on it.
+                newSelected.delete(moduleKey);
+                ANALYSIS_MODULES.forEach(mod => {
+                    if (mod.deps?.includes(moduleKey) && newSelected.has(mod.key)) {
+                        newSelected.delete(mod.key);
+                    }
+                });
+            }
+            return Array.from(newSelected);
+        });
     };
 
     const handleStartAnalysis = async () => {
@@ -47,9 +78,7 @@ export default function AnalysisSection() {
 
     const downloadReport = () => {
         if (state.analysisResult) {
-            const blob = new Blob([JSON.stringify(state.analysisResult, null, 2)], {
-                type: 'application/json',
-            });
+            const blob = new Blob([JSON.stringify(state.analysisResult, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
@@ -61,12 +90,8 @@ export default function AnalysisSection() {
         }
     };
 
-    // --- FIX IS HERE ---
-    // MODIFIED: Derive the message list from the correct state property.
-    // This safely handles cases where filteredData might be null.
     const filteredMessages = state.filteredData?.messages || [];
 
-    // MODIFIED: Use the derived list for the check.
     if (filteredMessages.length === 0) {
         return (
             <div className="text-center py-12">
@@ -91,7 +116,6 @@ export default function AnalysisSection() {
                                 {selectedModules.length}/{ANALYSIS_MODULES.length}
                             </Badge>
                         </CardTitle>
-                        {/* MODIFIED: Use the derived list's length for the count. */}
                         <p className="text-sm text-muted-foreground pt-1">
                             Select modules to run on your {filteredMessages.length.toLocaleString()} filtered messages.
                         </p>
@@ -100,17 +124,25 @@ export default function AnalysisSection() {
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                             {ANALYSIS_MODULES.map((module) => {
                                 const isSelected = selectedModules.includes(module.key);
+                                // Check if all dependencies are met for this module.
+                                const dependencies = module.deps || [];
+                                const areDepsMet = dependencies.every(dep => selectedModules.includes(dep));
+                                const isDisabled = !areDepsMet;
+
                                 return (
                                     <motion.div
                                         key={module.key}
-                                        whileHover={{ scale: 1.02 }}
-                                        whileTap={{ scale: 0.98 }}
-                                        onClick={() => toggleModule(module.key)}
-                                        className={`p-4 rounded-lg border cursor-pointer transition-all duration-200 ${
-                                            isSelected
-                                                ? 'border-primary bg-primary/5'
-                                                : 'border-border hover:border-primary/50'
+                                        whileHover={{ scale: isDisabled ? 1 : 1.02 }}
+                                        whileTap={{ scale: isDisabled ? 1 : 0.98 }}
+                                        onClick={() => !isDisabled && toggleModule(module.key)}
+                                        className={`p-4 rounded-lg border transition-all duration-200 ${
+                                            isSelected ? 'border-primary bg-primary/5' : 'border-border'
+                                        } ${
+                                            isDisabled
+                                                ? 'opacity-60 cursor-not-allowed bg-muted/30 hover:border-border'
+                                                : 'cursor-pointer hover:border-primary/50'
                                         }`}
+                                        title={isDisabled ? `Requires: ${dependencies.join(', ')}` : module.description}
                                     >
                                         <div className="flex items-start justify-between mb-2">
                                             <div className="flex items-center space-x-2">
@@ -119,7 +151,14 @@ export default function AnalysisSection() {
                                             </div>
                                             {module.enabled && <Badge variant="outline" className="text-xs">Recommended</Badge>}
                                         </div>
-                                        <p className="text-xs text-muted-foreground">{module.description}</p>
+                                        <p className="text-xs text-muted-foreground">
+                                            {module.description}
+                                            {isDisabled && (
+                                                <span className="block font-semibold text-amber-500 mt-1">
+                                                    Requires '{ANALYSIS_MODULES.find(m => m.key === dependencies[0])?.name || dependencies[0]}'
+                                                </span>
+                                            )}
+                                        </p>
                                     </motion.div>
                                 );
                             })}
@@ -151,8 +190,7 @@ export default function AnalysisSection() {
                                     Report Generated!
                                 </h4>
                                 <p className="text-sm text-muted-foreground mb-4">
-                                    {/* This part correctly uses analysisResult, so it's fine. */}
-                                    A report with {Object.keys(state.analysisResult?.analysis_results || state.analysisResult || {}).length} modules has been created.
+                                    A report with {Object.keys(state.analysisResult || {}).length} modules has been created.
                                 </p>
                                 <div className="flex justify-center items-center gap-4">
                                     <Button icon={Download} variant="outline" onClick={downloadReport}>Download Report</Button>

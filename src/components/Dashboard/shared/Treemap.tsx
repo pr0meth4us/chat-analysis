@@ -2,7 +2,6 @@
 
 import React, { useState, useMemo, MouseEvent } from 'react';
 
-// Clean colors with some variation
 const COLORS = [
     '#3b82f6', '#10b981', '#f59e0b', '#ef4444',
     '#8b5cf6', '#06b6d4', '#84cc16', '#f97316'
@@ -123,7 +122,6 @@ export const Treemap: React.FC<{ data: DataItem[]; width: number; height: number
                                     </div>
                                 </foreignObject>
                             )}
-                            {/* Small rectangles get initials */}
                             {node.width <= 60 && node.height > 15 && (
                                 <text
                                     x={node.x + node.width / 2}

@@ -2,10 +2,9 @@
 
 import React, { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Users, Facebook, Instagram, Send, MessageCircle, Rss, HelpCircle } from 'lucide-react';
-import { Card } from '../layout/Card'; // Assuming path
+import { X, Users } from 'lucide-react';
+import { Card } from '../layout/Card';
 
-// Helper to get initials for avatars
 const getInitials = (name: string) => {
     const words = name.split(' ');
     if (words.length > 1) {
@@ -64,7 +63,7 @@ export const ProfileBreakdownModal: React.FC<ProfileBreakdownModalProps> = ({ is
                 const [platform, countStr] = (details as string).split(', ');
                 return { name, platform, count: parseInt(countStr) || 0 };
             })
-            .sort((a, b) => b.count - a.count); // Sort descending
+            .sort((a, b) => b.count - a.count);
     }, [participants]);
 
     if (!isOpen) return null;

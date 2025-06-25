@@ -9,7 +9,6 @@ import {
     FileUp,
     Filter,
     BarChart3,
-    Search,
     BrainCircuit,
     Clock,
     MessageCircle,
@@ -26,7 +25,6 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 
-// --- Final Working FeatureCard (Accordion) ---
 const FeatureCard: React.FC<{
     title: string;
     description: string;
@@ -36,7 +34,6 @@ const FeatureCard: React.FC<{
     details: string[];
 }> = ({ title, description, icon: Icon, isExpanded, onToggle, details }) => (
     <Card className="glass overflow-hidden hover:shadow-lg transition-all duration-300">
-        {/* THE FIX: The onClick handler is placed on the CardHeader, which is designed to be clickable. */}
         <CardHeader
             className="cursor-pointer bg-slate-900/20 hover:bg-slate-900/30 transition-colors"
             onClick={onToggle}
@@ -46,7 +43,6 @@ const FeatureCard: React.FC<{
                     <Icon className="h-6 w-6 text-primary" />
                     <span>{title}</span>
                 </div>
-                {/* We use the original chevron logic, which is perfectly fine. */}
                 {isExpanded ? (
                     <ChevronUp className="h-5 w-5 text-muted-foreground" />
                 ) : (
@@ -56,10 +52,8 @@ const FeatureCard: React.FC<{
         </CardHeader>
 
         <CardContent className="pt-4">
-            {/* The description is always visible */}
             <p className="text-muted-foreground mb-3">{description}</p>
 
-            {/* AnimatePresence handles the smooth expand/collapse of the details */}
             <AnimatePresence initial={false}>
                 {isExpanded && (
                     <motion.section
@@ -72,7 +66,7 @@ const FeatureCard: React.FC<{
                             collapsed: { opacity: 0, height: 0 }
                         }}
                         transition={{ duration: 0.3, ease: 'easeInOut' }}
-                        className="overflow-hidden" // Prevents content spillover during animation
+                        className="overflow-hidden"
                     >
                         <div className="pt-4 mt-4 border-t border-slate-700/50">
                             <ul className="space-y-2 text-sm text-slate-300">
@@ -92,7 +86,6 @@ const FeatureCard: React.FC<{
 );
 
 
-// --- The rest of your page components (unchanged) ---
 const WorkflowStep: React.FC<{
     step: number;
     title: string;
@@ -121,7 +114,6 @@ const WorkflowStep: React.FC<{
 
 export default function GuidePage() {
     const [isNavigating, setIsNavigating] = useState(false);
-    // State is back to managing the expanded state of each card for the accordion
     const [expandedFeatures, setExpandedFeatures] = useState<Record<string, boolean>>({});
 
     const toggleFeature = (featureKey: string) => {

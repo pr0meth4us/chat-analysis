@@ -203,7 +203,7 @@ export interface UserBehavior {
         avg_message_length_words: number;
     };
     activity_patterns: {
-        hourly_distribution: Record<string, number>; // Corrected: was missing
+        hourly_distribution: Record<string, number>;
         peak_hours_of_day: Record<string, number>;
         active_days_of_week: Record<string, number>;
     };
@@ -229,7 +229,6 @@ export interface ToneAnalysis {
             top_words_used: [string, number][];
         };
     };
-    // Dynamic intensity properties
     argument_intensity_percent?: number;
     sadness_intensity_percent?: number;
     romance_intensity_percent?: number;
@@ -270,6 +269,15 @@ export interface EmotionAnalysis {
     error?: string;
 }
 
+export interface InfoSharingStats {
+    total_messages: number;
+    info_sharing_messages: number;
+    personal_messages: number;
+    info_sharing_percentage: number;
+    info_sharing_by_category: Record<string, number>;
+    confidence_threshold_used: number;
+}
+
 export interface AnalysisResult {
     dataset_overview?: DatasetOverview;
     first_last_messages?: FirstLastMessages;
@@ -287,7 +295,7 @@ export interface AnalysisResult {
     question_analysis?: QuestionAnalysis;
     link_analysis?: LinkAnalysis;
     sentiment_analysis?: SentimentAnalysis;
-    topic_modeling?: TopicModeling;
+    topic_modeling?: TopicModeling | { error: string };
     user_behavior?: Record<string, UserBehavior>;
     argument_analysis?: ToneAnalysis;
     sad_tone_analysis?: ToneAnalysis;
@@ -298,4 +306,8 @@ export interface AnalysisResult {
     emotion_analysis?: EmotionAnalysis;
     rapid_fire_analysis?: any;
     reaction_analysis?: any;
+    attachment_analysis?: any;
+    info_sharing_stats?: InfoSharingStats;
+    metadata?: Record<string, any>;
+    filter_settings?: Record<string, any>;
 }

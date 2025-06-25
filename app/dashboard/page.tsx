@@ -8,7 +8,6 @@ import { ResultsDashboard } from '@/components/Dashboard/ResultsDashboard';
 import { Card } from '@/components/ui/custom/Card';
 import { Button } from '@/components/ui/custom/Button';
 import { AppHeader } from '@/components/layout/AppHeader';
-import { Footer } from '@/components/layout/Footer';
 import Link from 'next/link';
 
 export default function DashboardPage() {

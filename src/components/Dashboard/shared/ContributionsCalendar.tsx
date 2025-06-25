@@ -13,7 +13,6 @@ interface ContributionsCalendarProps {
 const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 export const ContributionsCalendar: React.FC<ContributionsCalendarProps> = ({ data, initialYear }) => {
-    // ---- CORRECTED LOGIC: Dynamically get years from data ----
     const availableYears = useMemo(() => {
         const yearsSet = new Set(data.map(item => new Date(item.date + 'T00:00:00Z').getUTCFullYear().toString()));
         return Array.from(yearsSet).sort((a, b) => parseInt(b) - parseInt(a)); // Sort descending
