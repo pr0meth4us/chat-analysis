@@ -2,11 +2,21 @@ import pandas as pd
 import re
 from transformers import pipeline
 
-emotion_classifier = pipeline(
-    "text-classification",
-    model="j-hartmann/emotion-english-distilroberta-base",
-    return_all_scores=True
-)
+emotion_classifier = None
+
+
+def get_emotion_classifier():
+    global emotion_classifier
+    if emotion_classifier is None:
+        print("Initializing emotion classification model for the first time...")
+        emotion_classifier = pipeline(
+            "text-classification",
+            model="j-hartmann/emotion-english-distilroberta-base",
+            return_all_scores=True
+        )
+        print("Emotion model initialized successfully.")
+    return emotion_classifier
+
 
 def analyze_sentiment(df: pd.DataFrame, word_pattern: re.Pattern, positive_words: set, negative_words: set) -> dict:
     if df.empty or 'text_content' not in df.columns: return {}
@@ -26,12 +36,14 @@ def analyze_sentiment(df: pd.DataFrame, word_pattern: re.Pattern, positive_words
     analysis_df['sentiment_norm'] = [s['norm'] for s in sent_scores]
 
     user_sentiment = analysis_df.groupby('sender', observed=False)['sentiment_norm'].agg(['mean', 'std']).fillna(0)
-    sentiment_timeline = analysis_df[analysis_df['text_content'] != ''].resample('D', on='datetime')['sentiment_norm'].mean().dropna()
+    sentiment_timeline = analysis_df[analysis_df['text_content'] != ''].resample('D', on='datetime')[
+        'sentiment_norm'].mean().dropna()
 
     return {
         'overall_average_sentiment': analysis_df[analysis_df['text_content'] != '']['sentiment_norm'].mean(),
         'sentiment_timeline': {k.strftime('%Y-%m-%d'): v for k, v in sentiment_timeline.to_dict().items()},
-        'user_average_sentiment': { u: {'mean': d['mean'], 'std_dev': d['std']} for u, d in user_sentiment.iterrows() },
+        'user_average_sentiment': {str(u): {'mean': d['mean'], 'std_dev': d['std']} for u, d in
+                                   user_sentiment.iterrows()},
         'positive_message_count': int((analysis_df['sentiment_raw'] > 0).sum()),
         'negative_message_count': int((analysis_df['sentiment_raw'] < 0).sum()),
         'neutral_message_count': int((analysis_df[analysis_df['text_content'] != '']['sentiment_raw'] == 0).sum())
@@ -43,6 +55,11 @@ def analyze_emotions_ml(df: pd.DataFrame, sample_size: int = 1000) -> dict:
     if analysis_df.empty:
         return {"error": "No text content available for emotion analysis."}
 
+    # 2. Get the classifier using our lazy-loading function.
+    classifier = get_emotion_classifier()
+    if classifier is None:
+        return {"error": "Emotion classifier could not be loaded."}
+
     total_docs = len(analysis_df)
     model_name = "j-hartmann/emotion-english-distilroberta-base"
     note = f"Analysis performed on {total_docs} messages using the '{model_name}' model."
@@ -52,13 +69,15 @@ def analyze_emotions_ml(df: pd.DataFrame, sample_size: int = 1000) -> dict:
 
     docs = analysis_df['text_content'].tolist()
     try:
-        results = emotion_classifier(docs, batch_size=8, truncation=True)
+        # 3. Use the loaded classifier.
+        results = classifier(docs, batch_size=8, truncation=True)
     except Exception as e:
         return {"error": f"Failed during model prediction: {e}"}
 
     for i, res_list in enumerate(results):
-        for emotion in res_list:
-            analysis_df.loc[analysis_df.index[i], f"emotion_{emotion['label']}"] = emotion['score']
+        if res_list:
+            for emotion in res_list:
+                analysis_df.loc[analysis_df.index[i], f"emotion_{emotion['label']}"] = emotion['score']
 
     emotion_columns = [f"emotion_{label}" for label in ['anger', 'disgust', 'fear', 'joy', 'sadness', 'surprise']]
     overall_avg_scores = {
@@ -72,7 +91,8 @@ def analyze_emotions_ml(df: pd.DataFrame, sample_size: int = 1000) -> dict:
         if col_name in analysis_df.columns:
             top_5_df = analysis_df.nlargest(5, col_name)
             top_messages_per_emotion[emotion] = [
-                {"message": row['message'], "sender": row['sender'], "datetime": row['datetime'].isoformat(), "score": round(row[col_name], 4)}
+                {"message": row['message'], "sender": str(row['sender']), "datetime": row['datetime'].isoformat(),
+                 "score": round(row[col_name], 4)}
                 for _, row in top_5_df.iterrows()
             ]
 
@@ -80,7 +100,7 @@ def analyze_emotions_ml(df: pd.DataFrame, sample_size: int = 1000) -> dict:
     for sender, group in analysis_df.groupby('sender', observed=False):
         user_avg_scores = {
             col.replace('emotion_', ''): group[col].mean()
-            for col in [f"emotion_{l}" for l in ['anger', 'disgust', 'fear', 'joy', 'neutral', 'sadness', 'surprise']] if col in group.columns
+            for col in emotion_columns if col in group.columns
         }
         if user_avg_scores:
             dominant_emotion = max(user_avg_scores, key=user_avg_scores.get)
@@ -97,3 +117,4 @@ def analyze_emotions_ml(df: pd.DataFrame, sample_size: int = 1000) -> dict:
         "top_messages_per_emotion": top_messages_per_emotion,
         "note": note
     }
+
