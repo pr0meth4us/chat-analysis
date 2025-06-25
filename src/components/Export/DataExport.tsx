@@ -34,26 +34,28 @@ export default function DataExport() {
     };
 
     const handleDownloadHtml = () => {
-        // MODIFIED: Get the message list from the correct state object.
         const messages = state.filteredData?.messages || [];
+        const participants = Object.keys(state.filteredData?.metadata?.participants || {});
+        const user1 = participants[0] || 'User 1';
+        const user2 = participants[1] || 'User 2';
+
         if (messages.length === 0) return;
+
         setError(null);
         setProgress(0);
         startTransition(async () => {
             try {
-                // The API call correctly receives the message list.
-                const htmlBlob = await api.downloadChatAsHtml(messages, (p) => setProgress(p));
+                const htmlBlob = await api.downloadChatAsHtml(messages, user1, user2, (p) => setProgress(p));
                 downloadFile(htmlBlob, `filtered_messages.html`);
             } catch (err: unknown) {
-                setError('Failed to render HTML. Please try again.');
+                const errorMessage = err instanceof Error ? err.message : String(err);
+                setError(`Failed to render HTML: ${errorMessage}`);
                 console.error(err);
             }
         });
     };
 
     const handleDownloadJson = () => {
-        // MODIFIED: Pass the entire filteredData object to the download function.
-        // This ensures the downloaded JSON includes the messages, metadata, and settings.
         downloadDataAsJson(state.filteredData, 'filtered_messages');
     };
 
@@ -85,7 +87,6 @@ export default function DataExport() {
         </div>
     );
 
-    // This derived state is correct, but was not being used everywhere.
     const filteredMessages = state.filteredData?.messages || [];
 
     return (
@@ -93,7 +94,6 @@ export default function DataExport() {
             <CardHeader className="p-0 mb-4">
                 <div className="flex justify-between items-center">
                     <CardTitle>Data Export</CardTitle>
-                    {/* This UI part is correct. */}
                     {filteredMessages.length > 0 && (
                         <div className="text-sm font-semibold text-primary">
                             Total Messages: {filteredMessages.length.toLocaleString()}
@@ -130,7 +130,6 @@ export default function DataExport() {
                                 variant="outline"
                                 icon={Download}
                                 onClick={handleDownloadJson}
-                                // This check is also correct now.
                                 disabled={!state.filteredData || isPending}
                                 className="flex-shrink-0 w-full sm:w-auto"
                             >
