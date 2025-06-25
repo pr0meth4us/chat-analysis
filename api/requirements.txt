@@ -1,15 +1,7 @@
-# Basic essentials
 pandas
 matplotlib
-textblob
-
-# Extras for more advanced analysis
 numpy
-seaborn
 scikit-learn
-wordcloud
-nltk
-vaderSentiment
 
 uvicorn
 asgiref
