@@ -16,3 +16,4 @@ emoji
 lxml
 redis
 python-dotenv
+redis
