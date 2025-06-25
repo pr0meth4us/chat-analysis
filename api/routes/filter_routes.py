@@ -1,6 +1,7 @@
 from ..helpers.response_helpers import make_json_response
 from flask import request
 from flask import Blueprint, jsonify
+from datetime import datetime
 
 filter_bp = Blueprint('filter_routes', __name__)
 
@@ -83,7 +84,7 @@ def filter_messages_endpoint():
             'unassigned_label': unassigned_label,
             'removed_senders': list(remove_list)
         },
-        'timestamp': session_manager._get_current_timestamp(),
+        'timestamp': datetime.now().isoformat(),
         'count': len(filtered_messages)
     }
 
