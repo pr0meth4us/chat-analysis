@@ -4,13 +4,18 @@ import os
 from api.config import Config
 from api.utils import ensure_dir
 
+
 def create_app():
     app = Flask(__name__)
 
-    # CORS configuration
-    CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}},
+    allowed_origins = [
+        "http://localhost:3000",
+        "https://chat-analysis-beryl.vercel.app"
+    ]
+
+    CORS(app, resources={r"/*": {"origins": allowed_origins}},
          supports_credentials=True, max_age=3600)
-    # App configuration
+
     app.config.update(
         SESSION_COOKIE_SAMESITE="None",
         SESSION_COOKIE_SECURE=True,
@@ -22,7 +27,6 @@ def create_app():
 
     ensure_dir(Config.UPLOAD_FOLDER)
 
-    # Register blueprints
     from api.routes.analysis_routes import analysis_bp
     from api.routes.data_routes import data_bp
     from api.routes.filter_routes import filter_bp
@@ -37,7 +41,6 @@ def create_app():
     app.register_blueprint(tasks_bp, url_prefix='/tasks')
     app.register_blueprint(search_bp, url_prefix='/search')
 
-    # Register error handlers
     from api.error_handlers import register_error_handlers
     register_error_handlers(app)
 
