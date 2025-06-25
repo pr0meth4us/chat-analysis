@@ -14,3 +14,5 @@ bertopic
 thefuzz
 emoji
 lxml
+redis
+python-dotenv
