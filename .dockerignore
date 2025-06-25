@@ -1,7 +1,37 @@
-__pycache__/
+# Git and Docker configuration
+.git
+.gitignore
+.dockerignore
+Dockerfile
+
+# Python virtual environments
+.venv
+venv
+env
+/env/
+
+# Python cache
+__pycache__
 *.pyc
-*
-!api/requirements.txt
-!api/
-!Dockerfile
-!api/wheels/strhub-1.2.0-py3-none-any.whl
+*.pyo
+*.pyd
+
+# IDE and editor configuration folders
+.idea/
+.vscode/
+
+# Build and distribution artifacts
+/dist
+/build
+*.egg-info
+*.egg
+
+# Local data and testing files
+*.db
+*.sqlite3
+/tests
+/test-data
+
+# Operating System files
+.DS_Store
+Thumbs.db
