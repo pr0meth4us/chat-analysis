@@ -1,8 +1,7 @@
 from flask import Blueprint, jsonify, request
-from api.session_manager import session_manager
-from api.helpers.response_helpers import make_json_response
-from utils import log
-from collections import Counter
+from ..session_manager import session_manager
+from ..helpers.response_helpers import make_json_response
+from ..utils import log
 
 data_bp = Blueprint('data', __name__)
 

@@ -2,8 +2,8 @@ import hashlib
 import json
 from datetime import datetime
 from bs4 import BeautifulSoup
-from api.utils import log
-from api.config import Config
+from ..utils import log
+from ..config import Config
 from .date_parser import parse_datetime_comprehensive
 from .html_parser import (
     extract_json_from_html, extract_telegram, extract_facebook,

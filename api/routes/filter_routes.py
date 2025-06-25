@@ -1,4 +1,4 @@
-from api.helpers.response_helpers import make_json_response
+from ..helpers.response_helpers import make_json_response
 from flask import request
 from flask import Blueprint, jsonify
 
@@ -6,7 +6,7 @@ filter_bp = Blueprint('filter_routes', __name__)
 
 @filter_bp.route('/filter', methods=['POST'])
 def filter_messages_endpoint():
-    from api.session_manager import session_manager
+    from ..session_manager import session_manager
 
     data = request.get_json() or {}
     session_id = session_manager.get_session_id()

@@ -1,6 +1,6 @@
 import re
 from datetime import datetime
-from api.utils import log
+from ..utils import log
 
 def clean_timestamp(ts):
     """Clean timestamp by removing read receipts and other extra info"""

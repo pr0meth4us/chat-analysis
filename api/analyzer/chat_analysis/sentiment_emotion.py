@@ -2,23 +2,21 @@ import pandas as pd
 import re
 from transformers import pipeline
 
-emotion_classifier = None
-
-
-def get_emotion_classifier():
-    global emotion_classifier
-    if emotion_classifier is None:
-        print("Initializing emotion classification model for the first time...")
-        emotion_classifier = pipeline(
-            "text-classification",
-            model="j-hartmann/emotion-english-distilroberta-base",
-            return_all_scores=True
-        )
-        print("Emotion model initialized successfully.")
-    return emotion_classifier
+print("Initializing emotion classification model at startup...")
+try:
+    emotion_classifier = pipeline(
+        "text-classification",
+        model="j-hartmann/emotion-english-distilroberta-base",
+        return_all_scores=True
+    )
+    print("Emotion model initialized successfully.")
+except Exception as e:
+    print(f"FATAL: Could not load emotion model. Error: {e}")
+    emotion_classifier = None
 
 
 def analyze_sentiment(df: pd.DataFrame, word_pattern: re.Pattern, positive_words: set, negative_words: set) -> dict:
+    # This function remains unchanged
     if df.empty or 'text_content' not in df.columns: return {}
     analysis_df = df.copy()
 
@@ -36,14 +34,12 @@ def analyze_sentiment(df: pd.DataFrame, word_pattern: re.Pattern, positive_words
     analysis_df['sentiment_norm'] = [s['norm'] for s in sent_scores]
 
     user_sentiment = analysis_df.groupby('sender', observed=False)['sentiment_norm'].agg(['mean', 'std']).fillna(0)
-    sentiment_timeline = analysis_df[analysis_df['text_content'] != ''].resample('D', on='datetime')[
-        'sentiment_norm'].mean().dropna()
+    sentiment_timeline = analysis_df[analysis_df['text_content'] != ''].resample('D', on='datetime')['sentiment_norm'].mean().dropna()
 
     return {
         'overall_average_sentiment': analysis_df[analysis_df['text_content'] != '']['sentiment_norm'].mean(),
         'sentiment_timeline': {k.strftime('%Y-%m-%d'): v for k, v in sentiment_timeline.to_dict().items()},
-        'user_average_sentiment': {str(u): {'mean': d['mean'], 'std_dev': d['std']} for u, d in
-                                   user_sentiment.iterrows()},
+        'user_average_sentiment': {str(u): {'mean': d['mean'], 'std_dev': d['std']} for u, d in user_sentiment.iterrows()},
         'positive_message_count': int((analysis_df['sentiment_raw'] > 0).sum()),
         'negative_message_count': int((analysis_df['sentiment_raw'] < 0).sum()),
         'neutral_message_count': int((analysis_df[analysis_df['text_content'] != '']['sentiment_raw'] == 0).sum())
@@ -55,10 +51,9 @@ def analyze_emotions_ml(df: pd.DataFrame, sample_size: int = 1000) -> dict:
     if analysis_df.empty:
         return {"error": "No text content available for emotion analysis."}
 
-    # 2. Get the classifier using our lazy-loading function.
-    classifier = get_emotion_classifier()
-    if classifier is None:
-        return {"error": "Emotion classifier could not be loaded."}
+    # --- MODIFICATION: Use the globally loaded classifier directly ---
+    if emotion_classifier is None:
+        return {"error": "Emotion classifier could not be loaded at startup."}
 
     total_docs = len(analysis_df)
     model_name = "j-hartmann/emotion-english-distilroberta-base"
@@ -69,8 +64,7 @@ def analyze_emotions_ml(df: pd.DataFrame, sample_size: int = 1000) -> dict:
 
     docs = analysis_df['text_content'].tolist()
     try:
-        # 3. Use the loaded classifier.
-        results = classifier(docs, batch_size=8, truncation=True)
+        results = emotion_classifier(docs, batch_size=8, truncation=True)
     except Exception as e:
         return {"error": f"Failed during model prediction: {e}"}
 
@@ -117,4 +111,3 @@ def analyze_emotions_ml(df: pd.DataFrame, sample_size: int = 1000) -> dict:
         "top_messages_per_emotion": top_messages_per_emotion,
         "note": note
     }
-

@@ -200,7 +200,7 @@ class ChatAnalyzer:
             'emoji_analysis': {'func': af.emoji_analysis, 'deps': [], 'args': {}},
             'question_analysis': {'func': af.analyze_questions, 'deps': [],
                                   'args': {'sentence_pattern': self.message_parser.sentence_pattern}},
-            'link_analysis': {'func': af.analyze_shared_links, 'deps': [], 'args': {}},
+            'link_analysis': {'func': af.analyze_shared_links, 'deps': [], 'args': {'url_pattern': self.message_parser.url_pattern}},
             'attachment_analysis': {'func': af.analyze_attachments, 'deps': [], 'args': {}},
             'relationship_metrics': {'func': af.calculate_relationship_metrics,
                                      'deps': ['response_metrics'], 'args': {}},

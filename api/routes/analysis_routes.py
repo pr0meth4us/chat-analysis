@@ -1,8 +1,8 @@
-from api.workers import run_analysis_worker
 from flask import Blueprint, request, jsonify
-from api.session_manager import session_manager
-from utils import log
-from api.background_task_manager import task_manager
+from ..workers import run_analysis_worker
+from ..session_manager import session_manager
+from ..utils import log
+from ..background_task_manager import get_task_manager
 
 analysis_bp = Blueprint('analysis', __name__)
 
@@ -13,17 +13,13 @@ def analyze_data_endpoint():
     modules_to_run = payload.get('modules_to_run')
 
     session_id = session_manager.get_session_id()
-    messages = session_manager.get_filtered_messages(session_id)
 
-    if not messages:
-        messages = session_manager.get_processed_messages(session_id)
-        if not messages:
-            return jsonify({"error": "No messages found to analyze."}), 400
-        log("Warning: Analyzing unfiltered data.")
+    if not session_manager.get_filtered_messages(session_id) and not session_manager.get_processed_messages(session_id):
+        return jsonify({"error": "No processed or filtered messages found to analyze."}), 400
 
-    log(f"Starting analysis for session {session_id} with {len(messages)} messages.")
+    log(f"Submitting analysis task for session {session_id}.")
 
-    # Fixed: Remove the redundant messages parameter and session_id duplication
+    task_manager = get_task_manager()
     task_id = task_manager.submit_task(
         session_id, run_analysis_worker, session_id, modules_to_run=modules_to_run
     )

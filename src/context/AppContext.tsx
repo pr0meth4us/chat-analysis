@@ -36,7 +36,6 @@ type AppAction =
 
 const initialState: AppState = {
     processedMessages: [],
-    // MODIFIED: Replace 'filteredMessages' with 'filteredData' and set its initial value to null.
     filteredData: null,
     senders: [],
     tasks: [],

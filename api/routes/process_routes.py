@@ -1,12 +1,11 @@
 import os
 import uuid
 import tempfile
-
 from flask import Blueprint, request, jsonify
-from api.session_manager import session_manager
-from utils import log
-from api.background_task_manager import task_manager
-from api.workers import process_file_worker
+from ..session_manager import session_manager
+from ..utils import log
+from ..workers import process_file_worker
+from ..background_task_manager import get_task_manager
 
 process_bp = Blueprint('process', __name__)
 
@@ -24,9 +23,7 @@ def process_data_endpoint():
 
     try:
         for uploaded_file in uploaded_files:
-            if uploaded_file.filename == '':
-                continue
-
+            if uploaded_file.filename == '': continue
             temp_filename = f"upload_{uuid.uuid4().hex}_{uploaded_file.filename}"
             temp_path = os.path.join(temp_dir, temp_filename)
             uploaded_file.save(temp_path)
@@ -44,6 +41,7 @@ def process_data_endpoint():
                 os.remove(path)
         return jsonify({"error": "Could not save uploaded file(s) for processing."}), 500
 
+    task_manager = get_task_manager()
     session_id = session_manager.get_session_id()
     task_id = task_manager.submit_task(session_id, process_file_worker, session_id, temp_paths)
 
