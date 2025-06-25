@@ -103,7 +103,7 @@ export const BehaviorContentTab: React.FC<BehaviorContentTabProps> = ({ result, 
                     <ResponsiveContainer width="100%" height={300}>
                         <PieChart>
                             <Pie data={processedData.sentimentDistribution} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={60} outerRadius={85} paddingAngle={5} label>
-                                {processedData.sentimentDistribution.map((entry: { name: string }, index: number) => (
+                                {(processedData.sentimentDistribution ?? []).map((entry: { name: string }, index: number) => (
                                     <Cell key={`cell-${index}`} fill={sentimentColorMap[entry.name as keyof typeof sentimentColorMap]} />
                                 ))}
                             </Pie>

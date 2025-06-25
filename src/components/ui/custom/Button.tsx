@@ -3,7 +3,7 @@ import { motion, HTMLMotionProps } from 'framer-motion';
 import { LucideIcon } from 'lucide-react';
 
 interface ButtonProps extends Omit<HTMLMotionProps<"button">, "children" | "ref"> {
-    variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'link';
+    variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'link' | 'destructive';
     size?: 'sm' | 'md' | 'lg' | 'icon';
     icon?: LucideIcon;
     loading?: boolean;
@@ -11,15 +11,15 @@ interface ButtonProps extends Omit<HTMLMotionProps<"button">, "children" | "ref"
 }
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(({
-    variant = 'primary',
-    size = 'md',
-    icon: Icon,
-    loading = false,
-    children,
-    className = '',
-    disabled,
-    ...props
-}, ref) => {
+                                                                            variant = 'primary',
+                                                                            size = 'md',
+                                                                            icon: Icon,
+                                                                            loading = false,
+                                                                            children,
+                                                                            className = '',
+                                                                            disabled,
+                                                                            ...props
+                                                                        }, ref) => {
     const baseClasses = 'inline-flex items-center justify-center rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-background/50';
 
     const variants = {
@@ -27,8 +27,8 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(({
         secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
         outline: 'border border-border bg-transparent hover:bg-accent hover:text-accent-foreground',
         ghost: 'hover:bg-accent hover:text-accent-foreground',
-        // NEW: Added styling for the 'link' variant.
         link: 'text-primary underline-offset-4 hover:underline',
+        destructive: 'bg-red-600 text-destructive-foreground hover:bg-red-600/90 shadow-lg shadow-red-600/25',
     };
 
     const sizes = {

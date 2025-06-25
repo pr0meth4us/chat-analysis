@@ -10,7 +10,7 @@ import { Card } from '../layout/Card';
 import { InfoPopup } from '../layout/InfoPopup';
 import { Info } from 'lucide-react';
 import { ProfileBreakdownModal } from '../shared/ProfileBreakdownModal';
-import {Treemap} from "@/components/Dashboard/shared/Treemap";
+import { Treemap } from "@/components/Dashboard/shared/Treemap";
 
 interface OverviewTabProps {
     result: AnalysisResult;
@@ -23,7 +23,6 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ result, processedData 
     const totalFilteredMessages = metadata.filtered_messages || result.dataset_overview?.total_messages || 0;
     const initialYear = processedData?.contributionData?.length > 0 ? new Date(processedData.contributionData[0].date + 'T00:00:00Z').getUTCFullYear().toString() : new Date().getFullYear().toString();
 
-    // NEW: State to control the modal's visibility
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     return (
@@ -43,8 +42,8 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ result, processedData 
             <StatCard
                 className="col-span-1"
                 title="Chatting For"
-                value={`${result.dataset_overview?.date_range.total_days || 0} Days`}
-                subValue={`Since ${formatDate(result.dataset_overview?.date_range.start_date)}`}
+                value={`${result.dataset_overview?.date_range?.total_days || 0} Days`}
+                subValue={`Since ${formatDate(result.dataset_overview?.date_range?.start_date)}`}
                 icon="🗓️"
             />
             <StatCard
@@ -62,11 +61,9 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ result, processedData 
                 icon="❤️‍🔥"
             />
 
-
             <div className="col-span-full">
                 <ContributionsCalendar data={processedData.contributionData || []} initialYear={initialYear} />
             </div>
-
 
             <div className="col-span-full grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <Card>

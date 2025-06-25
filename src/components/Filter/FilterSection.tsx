@@ -2,8 +2,7 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-// --- MODIFICATION: Imported the UserCircle icon ---
-import { Users, Trash2, X, Filter, RefreshCw, CheckCircle, UserPlus, UserCheck, UserX, UserCircle } from 'lucide-react';
+import { Users, Trash2, Filter, RefreshCw, CheckCircle, UserPlus, UserCheck, UserX, UserCircle } from 'lucide-react';
 import { useAppContext } from '@/context/AppContext';
 import { Button } from '@/components/ui/custom/Button';
 import { Card } from '@/components/ui/custom/Card';
@@ -12,9 +11,7 @@ import { Input } from '@/components/ui/custom/Input';
 
 type Assignment = 'group1' | 'group2' | 'remove' | 'unassigned';
 
-// A single row in our new list-based UI
 function SenderRow({ name, assignment, onAssign, groupNames }: { name: string; assignment: Assignment; onAssign: (newAssignment: Assignment) => void; groupNames: { group1: string; group2: string; }}) {
-
     const badge_map: Record<Assignment, React.ReactNode> = {
         group1: <Badge variant="success">Assigned to: {groupNames.group1}</Badge>,
         group2: <Badge variant="info">Assigned to: {groupNames.group2}</Badge>,
@@ -46,7 +43,6 @@ function SenderRow({ name, assignment, onAssign, groupNames }: { name: string; a
         </motion.div>
     );
 }
-
 
 export default function FilterSection() {
     const { state, actions } = useAppContext();
@@ -84,7 +80,6 @@ export default function FilterSection() {
         });
     };
 
-
     const hasFilteredMessages = !!state.filteredData && state.filteredData.messages.length > 0;
     const isFilterTaskActive = state.tasks.some(task => task.name?.toLowerCase().includes('filter') && (task.status === 'pending' || task.status === 'running'));
 
@@ -96,8 +91,9 @@ export default function FilterSection() {
                         <CheckCircle className="h-12 w-12 text-green-500" />
                         <div>
                             <h3 className="text-xl font-bold text-green-700 dark:text-green-300">Filtering Complete</h3>
-                            {/* MODIFIED: Get the message count from the new state object. */}
-                            <p className="text-muted-foreground mt-2">{state.filteredData.messages.length.toLocaleString()} messages remain after filtering.</p>
+                            <p className="text-muted-foreground mt-2">
+                                {(state.filteredData?.messages?.length ?? 0).toLocaleString()} messages remain after filtering.
+                            </p>
                         </div>
                         <Button variant="destructive" className="mt-4" icon={RefreshCw} onClick={actions.clearFiltered} loading={state.isLoading}>Clear Filter & Re-Filter</Button>
                     </div>
@@ -105,6 +101,7 @@ export default function FilterSection() {
             </div>
         );
     }
+
     return (
         <div className="space-y-8">
             <div className="text-center">
@@ -112,7 +109,6 @@ export default function FilterSection() {
                 <p className="text-muted-foreground">Assign each sender to a group or mark them for removal.</p>
             </div>
 
-            {/* --- MODIFICATION: Added colored icons to the group name cards --- */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Card className="p-4">
                     <div className="flex items-center space-x-2 mb-1">

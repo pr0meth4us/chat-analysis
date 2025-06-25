@@ -1,4 +1,4 @@
-import { FilterConfig, TaskStatus, SearchResult, KeywordCountResult, Message } from '@/types';
+import { FilterConfig, TaskStatus, SearchResult, KeywordCountResult, Message, FilteredData } from '@/types';
 import { AnalysisResult } from '@/types/analysis';
 
 const API_BASE = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:5001';
@@ -226,6 +226,8 @@ export const api = {
 
     async downloadChatAsHtml(
         messages: Message[],
+        user1: string,
+        user2: string,
         onProgress: (progress: number) => void
     ): Promise<Blob> {
         return new Promise((resolve, reject) => {
@@ -252,7 +254,7 @@ export const api = {
         </head>
         <body>
             <div class="chat-container">
-                <div class="chat-header">Chat Log</div>
+                <div class="chat-header">Chat Log (${user1} & ${user2})</div>
                 <div class="chat-body">
       `;
             const totalMessages = messages.length;
@@ -267,12 +269,16 @@ export const api = {
                 const batchEnd = Math.min(processedCount + batchSize, totalMessages);
                 for (let i = processedCount; i < batchEnd; i++) {
                     const msg = messages[i];
-                    const senderClass = msg.sender === 'me' ? 'me' : 'other';
-                    const senderName = msg.sender === 'me' ? 'Me' : msg.sender || 'Other';
+
+                    const senderClass = msg.sender === user1 ? 'me' : 'other';
+
+                    const senderName = msg.sender || 'Unknown';
+
                     const sanitizedMessage = msg.message
                         ? String(msg.message).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;")
                         : '';
                     const sourceText = msg.source || 'Unknown';
+
                     renderedHtml += `
             <div class="message ${senderClass}">
               <div class="sender">${senderName}</div>
@@ -301,5 +307,4 @@ export const api = {
             };
             processBatch();
         });
-    },
-};
+    }};

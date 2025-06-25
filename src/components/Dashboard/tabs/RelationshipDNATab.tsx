@@ -13,11 +13,22 @@ interface RelationshipDNATabProps {
     processedData: any;
 }
 
+// Define specific types for the data structures to avoid using 'any'
+interface ResponseMetric {
+    subject: string;
+    [key: string]: string | number;
+}
+
+interface RelationshipScore {
+    name: string;
+    value: number;
+    fill: string;
+}
+
 export const RelationshipDNATab: React.FC<RelationshipDNATabProps> = ({ result, processedData }) => {
     const { user1Name, user2Name, responseMetrics, relationshipScores } = processedData;
 
-    // Filter out Std Dev for better chart readability
-    const filteredResponseMetrics = responseMetrics.filter(metric => metric.subject !== 'Std Dev (m)');
+    const filteredResponseMetrics = responseMetrics.filter((metric: ResponseMetric) => metric.subject !== 'Std Dev (m)');
 
     const ToneCard = ({ title, icon, data, color }: { title: string, icon: string, data?: ToneAnalysis, color: string }) => {
         if(!data || data.total_matching_messages === 0) return null;
@@ -70,10 +81,11 @@ export const RelationshipDNATab: React.FC<RelationshipDNATabProps> = ({ result, 
                         <InfoPopup text="A composite score based on communication balance, consistency, responsiveness, and engagement." />
                     </div>
                     <ResponsiveContainer width="100%" height={300}>
+                        {/* FIX: Removed the non-existent 'clockwise' prop */}
                         <RadialBarChart cx="50%" cy="50%" innerRadius="20%" outerRadius="90%" barSize={12} data={relationshipScores} startAngle={90} endAngle={-270}>
-                            <PolarGrid gridType="polygons" polarRadius={[20, 40, 60, 80]} stroke="rgba(255,255,255,0.1)" />
-                            <RadialBar minAngle={15} background clockWise dataKey="value" cornerRadius={10}>
-                                {relationshipScores.map((entry: any, index: number) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
+                            <PolarGrid gridType="polygon" polarRadius={[20, 40, 60, 80]} stroke="rgba(255,255,255,0.1)" />
+                            <RadialBar background dataKey="value" cornerRadius={10}>
+                                {relationshipScores.map((entry: RelationshipScore, index: number) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
                             </RadialBar>
                             <Legend iconSize={10} layout="vertical" verticalAlign="middle" align="right" wrapperStyle={{ fontSize: '14px' }} />
                             <Tooltip contentStyle={{ backgroundColor: '#1f2937', border: 'none' }} />
@@ -85,7 +97,6 @@ export const RelationshipDNATab: React.FC<RelationshipDNATabProps> = ({ result, 
                         <h3 className="text-lg font-semibold text-gray-200">Response Dynamics</h3>
                         <InfoPopup text="Compares key response time metrics between users, measured in minutes. Lower is faster." />
                     </div>
-                    {/* --- REPLACED RADAR CHART WITH A BAR CHART --- */}
                     <ResponsiveContainer width="100%" height={300}>
                         <BarChart data={filteredResponseMetrics}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#4a5568"/>
@@ -105,15 +116,14 @@ export const RelationshipDNATab: React.FC<RelationshipDNATabProps> = ({ result, 
                     <h2 className="text-xl font-bold text-gray-100">Keyword-Based Tone Analysis</h2>
                     <InfoPopup text="This analysis identifies messages containing specific keywords related to each tone. It provides a high-level overview but may not capture all nuanced expressions." />
                 </div>
-                {/* --- RESTRUCTURED TONE CARD LAYOUT --- */}
                 <div className="space-y-6">
                     <div className="flex flex-col md:flex-row gap-6">
                         <ToneCard title="Happy" icon="😊" data={result.happy_tone_analysis} color="#facc15" />
                         <ToneCard title="Romantic" icon="💖" data={result.romance_tone_analysis} color="#f472b6" />
                     </div>
                     <div className="flex flex-col md:flex-row gap-6">
-                         <ToneCard title="Argument" icon="⚖️" data={result.argument_analysis} color="#fb923c" />
-                         <ToneCard title="Sad" icon="💧" data={result.sad_tone_analysis} color="#60a5fa" />
+                        <ToneCard title="Argument" icon="⚖️" data={result.argument_analysis} color="#fb923c" />
+                        <ToneCard title="Sad" icon="💧" data={result.sad_tone_analysis} color="#60a5fa" />
                     </div>
                 </div>
             </Card>

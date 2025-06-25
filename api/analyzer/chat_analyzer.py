@@ -133,17 +133,28 @@ class ChatAnalyzer:
             if module_name not in run_queue: run_queue.append(module_name)
 
         total_modules, start_progress, progress_range = len(run_queue), 75, 25
+
+        # --- THIS IS THE NEW, STANDARDIZED LOOP ---
         for i, module_name in enumerate(run_queue):
             current_progress = start_progress + (i / total_modules) * progress_range
             self._update_progress(current_progress, f"Running {module_name}")
             try:
                 module_info = ANALYSIS_REGISTRY[module_name]
-                kwargs = module_info['args'].copy()
-                if module_name == 'relationship_metrics':
-                    kwargs['conversation_patterns_data'] = self.report.get('conversation_patterns', {})
-                    kwargs['response_metrics_data'] = self.report.get('response_metrics', {})
+
+                # Start with static arguments
+                kwargs = module_info.get('args', {}).copy()
+
+                # Automatically inject data from dependencies based on our convention
+                for dependency_key in module_info.get('deps', []):
+                    # Construct the parameter name (e.g., "response_metrics" -> "response_metrics_data")
+                    arg_name = f"{dependency_key}_data"
+                    # Fetch the result from the dependency and add it to kwargs
+                    kwargs[arg_name] = self.report.get(dependency_key, {})
+
+                # The function call is now completely generic
                 result = module_info['func'](analysis_df, **kwargs)
                 self.report[module_name] = result
+
             except Exception as e:
                 error_msg = f"Error in module '{module_name}': {type(e).__name__} - {e}"
                 print(error_msg)

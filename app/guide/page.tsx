@@ -21,18 +21,21 @@ import {
     ChevronUp,
     FileText,
     Zap,
-    Target
+    Target,
+    Download
 } from 'lucide-react';
 import Link from 'next/link';
+import { FaFacebook, FaTelegram, FaDiscord } from 'react-icons/fa';
+import { JsonCodeBlock } from '@/components/ui/custom/JsonCodeBlock';
 
 const FeatureCard: React.FC<{
     title: string;
     description: string;
-    icon: React.ElementType;
+    icon: React.ReactNode;
     isExpanded: boolean;
     onToggle: () => void;
     details: string[];
-}> = ({ title, description, icon: Icon, isExpanded, onToggle, details }) => (
+}> = ({ title, description, icon, isExpanded, onToggle, details }) => (
     <Card className="glass overflow-hidden hover:shadow-lg transition-all duration-300">
         <CardHeader
             className="cursor-pointer bg-slate-900/20 hover:bg-slate-900/30 transition-colors"
@@ -40,20 +43,14 @@ const FeatureCard: React.FC<{
         >
             <CardTitle className="flex items-center justify-between text-lg">
                 <div className="flex items-center gap-3">
-                    <Icon className="h-6 w-6 text-primary" />
+                    {icon}
                     <span>{title}</span>
                 </div>
-                {isExpanded ? (
-                    <ChevronUp className="h-5 w-5 text-muted-foreground" />
-                ) : (
-                    <ChevronDown className="h-5 w-5 text-muted-foreground" />
-                )}
+                {isExpanded ? <ChevronUp className="h-5 w-5 text-muted-foreground" /> : <ChevronDown className="h-5 w-5 text-muted-foreground" />}
             </CardTitle>
         </CardHeader>
-
         <CardContent className="pt-4">
             <p className="text-muted-foreground mb-3">{description}</p>
-
             <AnimatePresence initial={false}>
                 {isExpanded && (
                     <motion.section
@@ -61,10 +58,7 @@ const FeatureCard: React.FC<{
                         initial="collapsed"
                         animate="open"
                         exit="collapsed"
-                        variants={{
-                            open: { opacity: 1, height: 'auto' },
-                            collapsed: { opacity: 0, height: 0 }
-                        }}
+                        variants={{ open: { opacity: 1, height: 'auto' }, collapsed: { opacity: 0, height: 0 } }}
                         transition={{ duration: 0.3, ease: 'easeInOut' }}
                         className="overflow-hidden"
                     >
@@ -73,7 +67,7 @@ const FeatureCard: React.FC<{
                                 {details.map((detail, index) => (
                                     <li key={index} className="flex items-start gap-2">
                                         <div className="w-1.5 h-1.5 bg-primary rounded-full mt-2 flex-shrink-0" />
-                                        {detail}
+                                        <div dangerouslySetInnerHTML={{ __html: detail }} />
                                     </li>
                                 ))}
                             </ul>
@@ -84,7 +78,6 @@ const FeatureCard: React.FC<{
         </CardContent>
     </Card>
 );
-
 
 const WorkflowStep: React.FC<{
     step: number;
@@ -104,9 +97,7 @@ const WorkflowStep: React.FC<{
             <Icon className="h-6 w-6 text-primary" />
         </div>
         <div className="flex-1">
-            <h3 className="text-lg font-semibold mb-2 text-foreground">
-                {step}. {title}
-            </h3>
+            <h3 className="text-lg font-semibold mb-2 text-foreground">{step}. {title}</h3>
             <p className="text-muted-foreground">{description}</p>
         </div>
     </motion.div>
@@ -114,28 +105,56 @@ const WorkflowStep: React.FC<{
 
 export default function GuidePage() {
     const [isNavigating, setIsNavigating] = useState(false);
-    const [expandedFeatures, setExpandedFeatures] = useState<Record<string, boolean>>({});
+    const [expandedState, setExpandedState] = useState<Record<string, boolean>>({});
 
-    const toggleFeature = (featureKey: string) => {
-        setExpandedFeatures(prev => ({
+    const toggleExpansion = (key: string) => {
+        setExpandedState(prev => ({
             ...prev,
-            [featureKey]: !prev[featureKey]
+            [key]: !prev[key]
         }));
     };
 
     const analysisFeatures = [
-        { key: 'temporal', title: 'Temporal Analysis', description: 'Understand when and how often you communicate', icon: Clock, details: ['Daily and hourly messaging patterns with interactive heatmaps', 'Conversation streaks and consistency tracking', 'Ghost periods - identify long silences in your conversations', 'Peak activity hours and communication rhythms'] },
-        { key: 'content', title: 'Content & Language', description: 'Dive deep into what you actually talk about', icon: MessageCircle, details: ['Word frequency analysis and common phrases (n-grams)', 'Emoji usage patterns and emotional expressions', 'Link sharing habits and external content references', 'Question patterns - who asks what and how often'] },
-        { key: 'sentiment', title: 'Sentiment & Emotion', description: 'Discover the emotional tone of your conversations', icon: Heart, details: ['Lexicon-based sentiment scoring (positive/negative)', 'Advanced ML emotion detection (joy, anger, sadness, fear, surprise)', 'Emotional trajectory over time', 'Sentiment balance between participants'] },
-        { key: 'interaction', title: 'Interaction Patterns', description: 'Analyze how you communicate with each other', icon: Users, details: ['Conversation starter analysis - who initiates discussions', 'Response time patterns and communication dynamics', 'Rapid-fire exchange detection', 'Turn-taking balance and conversation flow'] },
-        { key: 'thematic', title: 'Thematic Analysis', description: 'Identify recurring themes and conversation topics', icon: Lightbulb, details: ['Argument detection and conflict patterns', 'Romance and affection indicators', 'Happiness and celebration moments', 'Custom keyword-based theme detection'] },
-        { key: 'relationship', title: 'Relationship Score', description: 'Get a comprehensive view of your communication health', icon: TrendingUp, details: ['Overall relationship score (0-100) based on multiple factors', 'Conversation balance and mutual engagement', 'Consistency and reliability metrics', 'Responsiveness and attention indicators'] }
+        { key: 'temporal', title: 'Temporal Analysis', description: 'Understand when and how often you communicate.', icon: <Clock className="h-6 w-6 text-primary" />, details: ['Daily and hourly messaging patterns with interactive heatmaps.', 'Conversation streaks and consistency tracking.', 'Ghost periods to identify long silences in your conversations.', 'Peak activity hours and communication rhythms.'] },
+        { key: 'content', title: 'Content & Language', description: 'Dive deep into what you actually talk about.', icon: <MessageCircle className="h-6 w-6 text-primary" />, details: ['Word frequency analysis and common phrases (n-grams).', 'Emoji usage patterns and emotional expressions.', 'Question patterns - who asks what and how often.', 'Attachment analysis to see what files are shared.'] },
+        { key: 'sentiment', title: 'Sentiment & Emotion', description: 'Discover the emotional tone of your conversations.', icon: <Heart className="h-6 w-6 text-primary" />, details: ['Lexicon-based sentiment scoring (positive/negative).', 'Advanced ML emotion detection (joy, anger, sadness, etc.).', 'Emotional trajectory over time to see how moods change.', 'Sentiment balance between participants.'] },
+        { key: 'interaction', title: 'Interaction Patterns', description: 'Analyze how you communicate with each other.', icon: <Users className="h-6 w-6 text-primary" />, details: ['Conversation starter analysis - who initiates discussions.', 'Response time patterns and communication dynamics.', 'Rapid-fire exchange detection for quick back-and-forths.', 'Turn-taking balance and conversation flow.'] },
+        { key: 'thematic', title: 'Thematic Analysis', description: 'Identify recurring themes and conversation topics.', icon: <Lightbulb className="h-6 w-6 text-primary" />, details: ['Argument detection and conflict patterns.', 'Romance and affection indicators.', 'Happiness and celebration moments.', 'Automated topic modeling to discover hidden themes.'] },
+        { key: 'overview', title: 'Dataset Overview', description: 'Get a high-level statistical summary of your data.', icon: <FileText className="h-6 w-6 text-primary" />, details: ['Total message and reaction counts.', 'Date range and total days of communication.', 'Breakdown of messages by chat platform.', 'Key milestones like the very first and last messages.'] },
+        { key: 'relationship', title: 'Relationship Score', description: 'Get a comprehensive view of your communication health.', icon: <TrendingUp className="h-6 w-6 text-primary" />, details: ['Overall relationship score (0-100) based on multiple factors.', 'Communication balance and mutual engagement.', 'Consistency and reliability metrics.', 'Responsiveness and attention indicators.'] }
     ];
 
-    const jsonSample = `[
-  { "sender": "Alex", "message": "Hey, are we still on for tonight?", "timestamp": "2024-10-26 18:30:00" },
-  { "sender": "Ben", "message": "Yeah, absolutely! Looking forward to it.", "timestamp": "2024-10-26 18:31:15", "source": "WhatsApp" }
-]`;
+    const exportInstructions = [
+        {
+            key: 'meta',
+            title: 'Facebook & Instagram',
+            // @ts-ignore
+            icon: <FaFacebook className="h-6 w-6 text-primary" />,
+            description: "Meta allows you to download your information, including messages, from a central hub.",
+            details: ["Go to the Meta 'Download Your Information' page: <a href='https://www.facebook.com/dyi' target='_blank' rel='noopener noreferrer' class='text-blue-400 hover:underline'>facebook.com/dyi</a>.", "Select a date range and ensure the format is set to <strong>JSON</strong> and media quality is set to low for a smaller file size.", "Deselect all categories except for <strong>'Messages'</strong>.", "Submit your request. Meta will notify you when your file is ready to download."]
+        },
+        {
+            key: 'telegram',
+            title: 'Telegram',
+            // @ts-ignore
+            icon: <FaTelegram className="h-6 w-6 text-primary" />,
+            description: "Telegram chat history can be exported using their official Desktop application.",
+            details: ["Download and install the <strong>Telegram Desktop</strong> app for your PC or Mac.", "Open the specific chat you want to export.", "Click the three dots (<strong>...</strong>) in the top-right corner, then select <strong>'Export chat history'</strong>.", "Choose the data types you want (photos, videos, etc.), ensure the format is <strong>HTML ('Machine-readable')</strong>, and start the export."]
+        },
+        {
+            key: 'discord',
+            title: 'Discord',
+            // @ts-ignore
+            icon: <FaDiscord className="h-6 w-6 text-primary" />,
+            description: "Discord allows you to request a copy of all your data, including messages.",
+            details: ["Go to User Settings > <strong>Privacy & Safety</strong>.", "Scroll to the bottom and click the <strong>'Request all of my data'</strong> button.", "You will receive an email with a link to download your data package within 30 days.", "Your messages will be located in the `messages` folder inside the downloaded ZIP file."]
+        },
+    ];
+
+    const jsonSample = [
+        { "sender": "Alex", "message": "Hey, are we still on for tonight?", "timestamp": "2024-10-26 18:30:00" },
+        { "sender": "Ben", "message": "Yeah, absolutely! Looking forward to it.", "timestamp": "2024-10-26 18:31:15", "source": "WhatsApp" }
+    ];
 
     return (
         <div className="min-h-screen flex flex-col">
@@ -164,17 +183,35 @@ export default function GuidePage() {
                     </motion.div>
 
                     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="mb-16">
-                        <div className="text-center mb-8"><h2 className="text-3xl font-bold mb-4">Analysis Features</h2><p className="text-muted-foreground max-w-2xl mx-auto">Explore the powerful analysis capabilities that transform your raw chat data into actionable insights.</p></div>
-                        <div className="grid gap-6 md:grid-cols-2">
-                            {analysisFeatures.map((feature, index) => (
+                        <div className="text-center mb-8"><h2 className="text-3xl font-bold mb-4">How to Export Your Chat Data</h2><p className="text-muted-foreground max-w-2xl mx-auto">Follow these guides to download your chat history from popular platforms.</p></div>
+                        <div className="grid gap-6">
+                            {exportInstructions.map((feature, index) => (
                                 <motion.div key={feature.key} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 + index * 0.1 }}>
                                     <FeatureCard
                                         title={feature.title}
                                         description={feature.description}
                                         icon={feature.icon}
                                         details={feature.details}
-                                        isExpanded={!!expandedFeatures[feature.key]}
-                                        onToggle={() => toggleFeature(feature.key)}
+                                        isExpanded={!!expandedState[feature.key]}
+                                        onToggle={() => toggleExpansion(feature.key)}
+                                    />
+                                </motion.div>
+                            ))}
+                        </div>
+                    </motion.div>
+
+                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="mb-16">
+                        <div className="text-center mb-8"><h2 className="text-3xl font-bold mb-4">Analysis Features</h2><p className="text-muted-foreground max-w-2xl mx-auto">Explore the powerful analysis capabilities that transform your raw chat data into actionable insights.</p></div>
+                        <div className="grid gap-6 md:grid-cols-2">
+                            {analysisFeatures.map((feature, index) => (
+                                <motion.div key={feature.key} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 + index * 0.1 }}>
+                                    <FeatureCard
+                                        title={feature.title}
+                                        description={feature.description}
+                                        icon={feature.icon}
+                                        details={feature.details}
+                                        isExpanded={!!expandedState[feature.key]}
+                                        onToggle={() => toggleExpansion(feature.key)}
                                     />
                                 </motion.div>
                             ))}
@@ -182,7 +219,38 @@ export default function GuidePage() {
                     </motion.div>
 
                     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="mb-16">
-                        <Card className="glass overflow-hidden"><CardHeader className="bg-slate-900/20"><CardTitle className="flex items-center gap-3 text-2xl"><FileText className="h-7 w-7 text-primary" />Supported Data Formats</CardTitle></CardHeader><CardContent className="pt-6"><div className="grid gap-6 md:grid-cols-2"><div><h3 className="text-lg font-semibold mb-3 text-primary">Standard JSON Format</h3><p className="text-muted-foreground mb-4">For best results, provide a JSON array with message objects containing sender, message, and timestamp fields.</p><div className="bg-slate-900/50 rounded-lg p-4 border border-slate-700"><pre className="text-sm text-slate-300 overflow-x-auto"><code>{jsonSample}</code></pre></div></div><div><h3 className="text-lg font-semibold mb-3 text-primary">Other Supported Formats</h3><div className="space-y-4"><div className="p-4 bg-slate-900/30 rounded-lg border border-slate-700"><h4 className="font-semibold mb-2">HTML Exports</h4><p className="text-sm text-muted-foreground">Official exports from Telegram, Instagram, Facebook Messenger, and other platforms.</p></div><div className="p-4 bg-slate-900/30 rounded-lg border border-slate-700"><h4 className="font-semibold mb-2">ZIP Archives</h4><p className="text-sm text-muted-foreground">Upload multiple files at once - we'll extract and process everything automatically.</p></div><div className="p-4 bg-slate-900/30 rounded-lg border border-slate-700"><h4 className="font-semibold mb-2">Flexible Timestamps</h4><p className="text-sm text-muted-foreground">Our parser handles dozens of timestamp formats automatically.</p></div></div></div></div></CardContent></Card>
+                        <Card className="glass overflow-hidden">
+                            <CardHeader className="bg-slate-900/20"><CardTitle className="flex items-center gap-3 text-2xl"><FileText className="h-7 w-7 text-primary" />Supported Data Formats</CardTitle></CardHeader>
+                            <CardContent className="pt-6">
+                                <div className="grid gap-8 md:grid-cols-2">
+                                    <div>
+                                        <h3 className="text-lg font-semibold mb-3 text-primary">Standard JSON Format</h3>
+                                        <p className="text-muted-foreground mb-4">For best results, provide a JSON array with message objects containing sender, message, and timestamp fields.</p>
+                                        <div className="bg-slate-900/50 rounded-lg border border-slate-700">
+                                            <JsonCodeBlock data={jsonSample} />
+                                        </div>
+                                        <div className="mt-6">
+                                            <p className="text-muted-foreground mb-3">
+                                                Want to try the app without uploading your own data? Download our sample file to get started right away.
+                                            </p>
+                                            <a href="/sample-data/processed_messages.json" download="processed_messages.json">
+                                                <Button variant="outline" icon={Download}>
+                                                    Download Sample JSON
+                                                </Button>
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h3 className="text-lg font-semibold mb-3 text-primary">Other Supported Formats</h3>
+                                        <div className="space-y-4">
+                                            <div className="p-4 bg-slate-900/30 rounded-lg border border-slate-700"><h4 className="font-semibold mb-2">HTML Exports</h4><p className="text-sm text-muted-foreground">Official exports from Telegram, Instagram, Facebook Messenger, and other platforms.</p></div>
+                                            <div className="p-4 bg-slate-900/30 rounded-lg border border-slate-700"><h4 className="font-semibold mb-2">ZIP Archives</h4><p className="text-sm text-muted-foreground">Upload multiple files at once - we'll extract and process everything automatically.</p></div>
+                                            <div className="p-4 bg-slate-900/30 rounded-lg border border-slate-700"><h4 className="font-semibold mb-2">Flexible Timestamps</h4><p className="text-sm text-muted-foreground">Our parser handles dozens of timestamp formats automatically.</p></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
                     </motion.div>
 
                     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="mb-8">

@@ -1,6 +1,5 @@
 import { AnalysisResult } from './analysis';
 
-// Base interface for a single message.
 export interface Message {
     sender: string;
     message: string;
@@ -8,14 +7,12 @@ export interface Message {
     source?: string;
 }
 
-// Configuration for filtering messages.
 export interface FilterConfig {
-    group_mappings: Record<string, string[]>; // e.g., { "Adam": ["sender1"], "Eve": ["sender2"] }
+    group_mappings: Record<string, string[]>;
     unassigned_label: string;
     remove: string[];
 }
 
-// A robust type for the data object after filtering is applied.
 export interface FilteredData {
     messages: Message[];
     metadata: {
@@ -26,10 +23,9 @@ export interface FilteredData {
     settings_used: FilterConfig;
 }
 
-// Status of a backend processing task.
 export interface TaskStatus {
     task_id: string;
-    status: 'pending' | 'running' | 'completed' | 'failed' | 'cancelled'; // Added cancelled
+    status: 'pending' | 'running' | 'completed' | 'failed' | 'cancelled';
     progress: number;
     message?: string;
     result?: AnalysisResult | Message[] | unknown;
@@ -40,10 +36,8 @@ export interface TaskStatus {
     stage?: string;
 }
 
-// Main state for the entire application context.
 export interface AppState {
     processedMessages: Message[];
-    // MODIFIED: Uses the new FilteredData type for clarity and type safety.
     filteredData: FilteredData | null;
     senders: string[];
     tasks: TaskStatus[];
@@ -52,7 +46,6 @@ export interface AppState {
     error: string | null;
 }
 
-// Result of a fuzzy search operation.
 export interface SearchResult {
     matches: Message[];
     match_count: number;
@@ -61,23 +54,20 @@ export interface SearchResult {
     similarity_cutoff?: number;
 }
 
-// Result of a keyword count operation.
 export interface KeywordCountResult {
     counts: Record<string, number>;
     total_matches: number;
     message_count: number;
 }
 
-// MODIFIED: Describes a single analysis module, now including its dependencies.
 export interface AnalysisModule {
     key: string;
     name: string;
     description: string;
     enabled: boolean;
-    deps?: string[]; // Optional array of keys for modules this module depends on.
+    deps?: string[];
 }
 
-// MODIFIED: List of all available analysis modules, updated with dependency information.
 export const ANALYSIS_MODULES: AnalysisModule[] = [
     { key: 'dataset_overview', name: 'Dataset Overview', description: 'General statistics about your messages', enabled: true, deps: [] },
     { key: 'first_last_messages', name: 'First & Last Messages', description: 'Timeline boundaries of conversations', enabled: true, deps: [] },

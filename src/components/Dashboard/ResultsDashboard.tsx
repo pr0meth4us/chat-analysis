@@ -35,7 +35,8 @@ export const ResultsDashboard: FC<ResultsDashboardProps> = ({ result }) => {
             { subject: 'Std Dev (m)', [user1Name]: validResponseMetrics?.[user1Name]?.[user2Name]?.response_time_std_dev || 0, [user2Name]: validResponseMetrics?.[user2Name]?.[user1Name]?.response_time_std_dev || 0 },
         ];
 
-        const relationshipScores = result.relationship_metrics?.score_components
+        // This handles a case where relationship_metrics module could have an error string
+        const relationshipScores = (result.relationship_metrics && 'score_components' in result.relationship_metrics)
             ? Object.entries(result.relationship_metrics.score_components).map(([name, value]) => ({
                 name: name.replace(/_score/g, '').replace(/_/g, ' ').replace(/^\w/, c => c.toUpperCase()),
                 value: value,
@@ -63,7 +64,7 @@ export const ResultsDashboard: FC<ResultsDashboardProps> = ({ result }) => {
 
         const totalHourlyData = Array.from({ length: 24 }, (_, i) => {
             const hourKey = i.toString();
-            const total = result.temporal_patterns?.hourly_distribution[hourKey] || 0;
+            const total = result.temporal_patterns?.hourly_distribution?.[hourKey] ?? 0;
             return {
                 hour: `${hourKey.padStart(2, '0')}:00`,
                 'Total Messages': total,
@@ -74,8 +75,8 @@ export const ResultsDashboard: FC<ResultsDashboardProps> = ({ result }) => {
             const hourKey = i.toString();
             return {
                 hour: `${hourKey.padStart(2, '0')}:00`,
-                [user1Name]: result.user_behavior?.[user1Name]?.activity_patterns.hourly_distribution[hourKey] || 0,
-                [user2Name]: result.user_behavior?.[user2Name]?.activity_patterns.hourly_distribution[hourKey] || 0,
+                [user1Name]: result.user_behavior?.[user1Name]?.activity_patterns?.hourly_distribution?.[hourKey] ?? 0,
+                [user2Name]: result.user_behavior?.[user2Name]?.activity_patterns?.hourly_distribution?.[hourKey] ?? 0,
             };
         });
 
@@ -91,24 +92,27 @@ export const ResultsDashboard: FC<ResultsDashboardProps> = ({ result }) => {
             ? Object.entries(result.dataset_overview.chat_platforms_distribution).map(([name, value]) => ({ name, value }))
             : [];
 
-        const topTopics = result.topic_modeling?.discovered_topics?.map(topic => ({
-            words: topic.top_words.join(', '),
-            percentage: topic.message_percentage
-        })) || [];
+        // FIX: Add a type guard to safely handle the topic_modeling union type.
+        const topTopics = (result.topic_modeling && 'discovered_topics' in result.topic_modeling)
+            ? result.topic_modeling.discovered_topics.map(topic => ({
+                words: topic.top_words.join(', '),
+                percentage: topic.message_percentage
+            }))
+            : [];
 
-        const emotionSummary = result.emotion_analysis?.summary.overall_average_scores
+        const emotionSummary = result.emotion_analysis?.summary?.overall_average_scores
             ? Object.entries(result.emotion_analysis.summary.overall_average_scores).map(([name, score]) => ({
                 emotion: name.charAt(0).toUpperCase() + name.slice(1),
                 score: parseFloat(score.toFixed(3))
             })) : [];
 
-        const user1Emotion = result.emotion_analysis?.summary.user_dominant_emotions[user1Name]?.average_scores
+        const user1Emotion = result.emotion_analysis?.summary?.user_dominant_emotions?.[user1Name]?.average_scores
             ? Object.entries(result.emotion_analysis.summary.user_dominant_emotions[user1Name].average_scores).map(([name, score]) => ({
                 emotion: name.charAt(0).toUpperCase() + name.slice(1),
                 score: parseFloat(score.toFixed(3))
             })) : [];
 
-        const user2Emotion = result.emotion_analysis?.summary.user_dominant_emotions[user2Name]?.average_scores
+        const user2Emotion = result.emotion_analysis?.summary?.user_dominant_emotions?.[user2Name]?.average_scores
             ? Object.entries(result.emotion_analysis.summary.user_dominant_emotions[user2Name].average_scores).map(([name, score]) => ({
                 emotion: name.charAt(0).toUpperCase() + name.slice(1),
                 score: parseFloat(score.toFixed(3))

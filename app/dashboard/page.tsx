@@ -20,10 +20,8 @@ export default function DashboardPage() {
         <div className="min-h-screen flex flex-col">
             <main className="flex-grow">
                 <div className="max-w-7xl mx-auto p-4 sm:p-6 md:p-8">
-                    {/* Use the consistent AppHeader component */}
                     <AppHeader statusText={result ? 'Viewing full analysis report.' : 'No analysis data available.'} />
 
-                    {/* Add a prominent "Back" button */}
                     <motion.div
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}

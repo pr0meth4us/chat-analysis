@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useReducer, useEffect, useState, useRef, useCallback } from 'react';
-import { AppState, TaskStatus, Message, FilterConfig } from '@/types';
+import { AppState, TaskStatus, Message, FilterConfig, FilteredData } from '@/types';
 import { api } from '@/utils/api';
 
 interface AppContextType {
