@@ -8,12 +8,10 @@ def create_app():
     app = Flask(__name__)
 
     # CORS configuration
-    CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}},
+    CORS(app, resources={r"/*": {"origins": "*"}},
          supports_credentials=True, max_age=3600)
     # App configuration
     app.config.update(
-        SESSION_COOKIE_SAMESITE="None",
-        SESSION_COOKIE_SECURE=True,
         MAX_CONTENT_LENGTH=Config.MAX_CONTENT_LENGTH,
         UPLOAD_FOLDER=Config.UPLOAD_FOLDER,
         SECRET_KEY=os.urandom(24),
