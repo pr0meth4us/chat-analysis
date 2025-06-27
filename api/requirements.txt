@@ -16,3 +16,4 @@ emoji
 lxml
 python-dotenv
 psycopg2-binary
+selectolax
