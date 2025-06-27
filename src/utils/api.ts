@@ -224,12 +224,25 @@ export const api = {
         return handleResponse<{ message: string }>(response);
     },
 
+    // utils/api.ts (or wherever downloadChatAsHtml is located)
+
     async downloadChatAsHtml(
         messages: Message[],
-        user1: string,
-        user2: string,
+        // Removed user1, user2 as fixed roles.
+        // Added displayAsMeUser to explicitly state who gets 'me' styling.
+        displayAsMeUser: string,
         onProgress: (progress: number) => void
     ): Promise<Blob> {
+        // You might still want user1 and user2 for the header,
+        // but their roles for styling are now dynamic.
+        // For the header, you could potentially grab the first two unique senders from messages
+        // or pass them in separately if they are already defined elsewhere.
+        // For simplicity in this example, I'll derive them for the header.
+        const uniqueSenders = Array.from(new Set(messages.map(m => m.sender)));
+        const headerUser1 = uniqueSenders[0] || 'Participant A';
+        const headerUser2 = uniqueSenders[1] || 'Participant B';
+
+
         return new Promise((resolve, reject) => {
             let renderedHtml = `
         <!DOCTYPE html>
@@ -254,7 +267,7 @@ export const api = {
         </head>
         <body>
             <div class="chat-container">
-                <div class="chat-header">Chat Log (${user1} & ${user2})</div>
+                <div class="chat-header">Chat Log (${headerUser1} & ${headerUser2})</div>
                 <div class="chat-body">
       `;
             const totalMessages = messages.length;
@@ -270,7 +283,8 @@ export const api = {
                 for (let i = processedCount; i < batchEnd; i++) {
                     const msg = messages[i];
 
-                    const senderClass = msg.sender === user1 ? 'me' : 'other';
+                    // Dynamic assignment: if msg.sender matches displayAsMeUser, it's 'me', otherwise 'other'
+                    const senderClass = msg.sender === displayAsMeUser ? 'me' : 'other';
 
                     const senderName = msg.sender || 'Unknown';
 
@@ -307,4 +321,5 @@ export const api = {
             };
             processBatch();
         });
-    }};
+    }
+};
