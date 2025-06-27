@@ -159,13 +159,6 @@ export default function TaskProgress() {
                                                 </div>
                                             )}
 
-                                            {task.status === 'running' && typeof progressValue !== 'number' && (
-                                                <div className="flex justify-end text-xs text-muted-foreground mt-1">
-                                                    <span className="animate-pulse">Processing...</span>
-                                                </div>
-                                            )}
-
-
                                             {task.error && (
                                                 <p className="text-xs text-red-500 mt-1 font-medium">
                                                     Error: {task.error}
