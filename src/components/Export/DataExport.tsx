@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useTransition, useEffect } from 'react'; // Added useEffect
+import React, { useState, useTransition, useEffect } from 'react';
 import { Download } from 'lucide-react';
 import { useAppContext } from '@/context/AppContext';
 import { Button } from '@/components/ui/custom/Button';
@@ -27,12 +27,12 @@ export default function DataExport() {
 
 
     useEffect(() => {
-        if (groupNames.length > 0) {
+        if (groupNames.length > 0 && !htmlMeUser) {
             setHtmlMeUser(groupNames[0]);
-        } else {
-            setHtmlMeUser(''); // Clear if no group mappings
+        } else if (groupNames.length === 0) {
+            setHtmlMeUser('');
         }
-    }, [groupNames]);
+    }, [groupNames, htmlMeUser]);
 
 
     const downloadFile = (blob: Blob, filename: string) => {

@@ -10,7 +10,7 @@ export interface Message {
 export interface FilterConfig {
     group_mappings: Record<string, string[]>;
     unassigned_label: string;
-    remove: string[];
+    removed_senders: string[];
 }
 
 export interface FilteredData {
@@ -20,7 +20,7 @@ export interface FilteredData {
         participants: Record<string, string[]>;
         removed_senders: string[];
     };
-    settings_used: FilterConfig;
+    filter_settings: FilterConfig;
 }
 
 export interface TaskStatus {

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useState, useMemo } from 'react';
+import React, {useCallback, useState, useMemo, useEffect} from 'react';
 import { useDropzone } from 'react-dropzone';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Upload, FileText, AlertCircle, Trash2, X, Send, CheckCircle, RefreshCw } from 'lucide-react';
@@ -16,12 +16,24 @@ export default function UploadSection() {
 
     const hasProcessedFiles = useMemo(() => state.processedMessages.length > 0, [state.processedMessages]);
 
-    const isUploadTaskActive = useMemo(() => {
-        return state.tasks.some(
+    const [isUploadTaskActive, setIsUploadTaskActive] = useState(false);
+
+    useEffect(() => {
+        const hasActiveTask = state.tasks.some(
             (task) =>
                 task.name?.toLowerCase().includes('process file') &&
                 (task.status === 'pending' || task.status === 'running')
         );
+
+        if (hasActiveTask) {
+            setIsUploadTaskActive(true);
+        } else {
+            const timer = setTimeout(() => {
+                setIsUploadTaskActive(false);
+            }, 3000);
+
+            return () => clearTimeout(timer);
+        }
     }, [state.tasks]);
 
     const onDrop = useCallback((acceptedFiles: File[]) => {
@@ -49,9 +61,6 @@ export default function UploadSection() {
         setSelectedFiles([]);
     };
 
-    // --- MODIFICATION START ---
-    // This function now calls the new `uploadFiles` action with the entire array
-    // of selected files, resulting in a single, efficient API request.
     const handleProcessFiles = async () => {
         if (selectedFiles.length === 0) return;
         setIsSubmitting(true);
@@ -65,7 +74,6 @@ export default function UploadSection() {
             setIsSubmitting(false);
         }
     };
-    // --- MODIFICATION END ---
 
     const isLoading = isUploadTaskActive || isSubmitting;
 
