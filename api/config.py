@@ -8,3 +8,4 @@ class Config:
     SESSION_COOKIE_SECURE = False
     TARGET_FORMAT = '%Y-%m-%d %H:%M:%S'
     REDIS_URL = os.getenv('REDIS_URL')
+    DATABASE_URL = os.getenv('DATABASE_URL')

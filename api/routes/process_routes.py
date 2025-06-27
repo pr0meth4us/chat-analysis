@@ -1,51 +1,42 @@
-import os
-import uuid
-import tempfile
+# chat_analysis/routes/process_routes.py
 from flask import Blueprint, request, jsonify
 from ..session_manager import session_manager
 from ..utils import log
-from ..workers import process_file_worker
 from ..background_task_manager import get_task_manager
+from ..workers import process_file_worker
 
 process_bp = Blueprint('process', __name__)
 
-
 @process_bp.route('/process', methods=['POST'])
 def process_data_endpoint():
-    uploaded_files = request.files.getlist('file')
+    if 'file' not in request.files:
+        return jsonify({"error": "No file part in the request"}), 400
 
-    if not uploaded_files or all(f.filename == '' for f in uploaded_files):
-        return jsonify({"error": "No selected files"}), 400
-
-    temp_paths = []
-    uploaded_filenames = []
-    temp_dir = tempfile.gettempdir()
+    uploaded_file = request.files['file']
+    if uploaded_file.filename == '':
+        return jsonify({"error": "No selected file"}), 400
 
     try:
-        for uploaded_file in uploaded_files:
-            if uploaded_file.filename == '': continue
-            temp_filename = f"upload_{uuid.uuid4().hex}_{uploaded_file.filename}"
-            temp_path = os.path.join(temp_dir, temp_filename)
-            uploaded_file.save(temp_path)
-            temp_paths.append(temp_path)
-            uploaded_filenames.append(uploaded_file.filename)
-            log(f"File saved temporarily to: {temp_path}")
+        file_content = uploaded_file.read()
+        filename = uploaded_file.filename
 
-        if not temp_paths:
-            return jsonify({"error": "No processable files were uploaded."}), 400
+        task_manager = get_task_manager()
+        session_id = session_manager.get_session_id()
+
+        # Submit the task to the background task manager
+        task_id = task_manager.submit_task(
+            session_id,
+            process_file_worker, # Use the directly integrated worker
+            session_id,
+            file_content,
+            filename
+        )
+
+        log(f"Started file processing task {task_id} for file '{filename}'.")
+
+        initial_status = task_manager.get_task_status(task_id)
+        return jsonify(initial_status), 202
 
     except Exception as e:
-        log(f"ERROR: Failed to save temporary file(s): {str(e)}")
-        for path in temp_paths:
-            if os.path.exists(path):
-                os.remove(path)
-        return jsonify({"error": "Could not save uploaded file(s) for processing."}), 500
-
-    task_manager = get_task_manager()
-    session_id = session_manager.get_session_id()
-    task_id = task_manager.submit_task(session_id, process_file_worker, session_id, temp_paths)
-
-    log(f"Started processing task {task_id} for files: {', '.join(uploaded_filenames)}")
-
-    initial_task_status = task_manager.get_task_status(task_id)
-    return jsonify(initial_task_status), 202
+        log(f"ERROR: An unexpected error occurred in the /process endpoint: {e}")
+        return jsonify({"error": "An internal server error occurred.", "details": str(e)}), 500

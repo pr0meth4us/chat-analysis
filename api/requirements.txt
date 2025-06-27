@@ -14,6 +14,5 @@ bertopic
 thefuzz
 emoji
 lxml
-redis
 python-dotenv
-redis
+psycopg2-binary
