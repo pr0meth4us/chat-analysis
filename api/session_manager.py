@@ -1,337 +1,337 @@
 import uuid
 import json
-import os
+import psycopg2
+from psycopg2 import pool
+from contextlib import contextmanager
 from flask import session
-from threading import Lock
-from datetime import datetime, timedelta
+from datetime import datetime
+from .config import Config
 
 
-class SessionManager:
-    def __init__(self, storage_dir='session_data'):
-        self.storage_dir = storage_dir
-        self.processed_messages_store = {}
-        self.filtered_messages_store = {}
-        self.processing_status_store = {}
-        self.analysis_status_store = {}
-        self.analysis_result_store = {}
-        self.lock = Lock()
+class PostgresSessionManager:
+    def __init__(self, dsn):
+        try:
+            # Use a separate pool for the gateway app to avoid conflicts
+            self.pool = pool.SimpleConnectionPool(minconn=1, maxconn=5, dsn=dsn)
+            print("Gateway successfully created PostgreSQL connection pool.")
+            self._setup_database()
+            # Clear old data on startup to prevent session confusion
+            self._cleanup_old_data()
+        except (Exception, psycopg2.DatabaseError) as error:
+            print("Gateway error while creating PostgreSQL pool", error)
+            raise
 
-        # Ensure storage directory exists
-        os.makedirs(storage_dir, exist_ok=True)
+    @contextmanager
+    def _get_connection(self):
+        conn = None
+        try:
+            conn = self.pool.getconn()
+            yield conn
+        finally:
+            if conn:
+                self.pool.putconn(conn)
 
-        # Clean up old sessions on startup
-        self._cleanup_old_sessions()
+    def _setup_database(self):
+        """
+        Creates tables for session data in the gateway.
+        We'll use a naming convention to keep them separate from the parser's tables.
+        """
+        commands = [
+            """
+            CREATE TABLE IF NOT EXISTS gateway_session_data
+            (
+                id
+                SERIAL
+                PRIMARY
+                KEY,
+                session_id
+                UUID
+                NOT
+                NULL,
+                data_type
+                VARCHAR
+            (
+                50
+            ) NOT NULL,
+                data_content JSONB,
+                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW
+            (
+            ),
+                UNIQUE
+            (
+                session_id,
+                data_type
+            )
+                );
+            """,
+            """
+            CREATE INDEX IF NOT EXISTS session_id_type_idx ON gateway_session_data (session_id, data_type);
+            """,
+            """
+            CREATE INDEX IF NOT EXISTS created_at_idx ON gateway_session_data (created_at);
+            """,
+            """
+            CREATE
+            OR REPLACE FUNCTION delete_old_gateway_data() RETURNS void AS $$
+            BEGIN
+            DELETE
+            FROM gateway_session_data
+            WHERE created_at < NOW() - INTERVAL '24 hours';
+            END;
+            $$
+            LANGUAGE plpgsql;
+            """
+        ]
+        try:
+            with self._get_connection() as conn:
+                with conn.cursor() as cur:
+                    for command in commands:
+                        cur.execute(command)
+                    conn.commit()
+            print("Gateway database tables ensured.")
+        except (Exception, psycopg2.DatabaseError) as error:
+            print("Gateway DB setup error", error)
+
+    def _cleanup_old_data(self):
+        """Clean up old session data on startup to prevent confusion"""
+        try:
+            with self._get_connection() as conn:
+                with conn.cursor() as cur:
+                    # Remove data older than 24 hours
+                    cur.execute("SELECT delete_old_gateway_data();")
+
+                    # Get count of remaining sessions for logging
+                    cur.execute("SELECT COUNT(DISTINCT session_id) FROM gateway_session_data;")
+                    remaining_sessions = cur.fetchone()[0]
+
+                    conn.commit()
+                    print(f"Cleaned up old session data. {remaining_sessions} active sessions remaining.")
+        except (Exception, psycopg2.DatabaseError) as error:
+            print("Error during startup cleanup:", error)
 
     @staticmethod
     def get_session_id():
-        """Get or create session ID"""
+        """
+        Gets a unique session ID from the Flask session object.
+        Each browser/client gets their own unique session ID.
+        """
         if 'session_id' not in session:
             session['session_id'] = str(uuid.uuid4())
+            session.permanent = True  # Make session persistent across browser sessions
+            print(f"Created new session ID: {session['session_id']}")
         return session['session_id']
 
     @staticmethod
-    def _get_current_timestamp():
+    def clear_flask_session():
+        """Force clear the Flask session to generate a new session ID"""
+        session.clear()
+        new_session_id = PostgresSessionManager.get_session_id()
+        print(f"Cleared Flask session, new session ID: {new_session_id}")
+        return new_session_id
+
+    def _update_session_data(self, session_id: str, data_type: str, data: dict):
+        """Update session data for a specific session ID and data type"""
+        sql = """
+              INSERT INTO gateway_session_data (session_id, data_type, data_content)
+              VALUES (%(session_id)s, %(data_type)s, %(data)s) ON CONFLICT (session_id, data_type) 
+            DO \
+              UPDATE SET
+                  data_content = EXCLUDED.data_content, \
+                  created_at = NOW(); \
+              """
+        try:
+            with self._get_connection() as conn:
+                with conn.cursor() as cur:
+                    cur.execute(sql, {
+                        'session_id': session_id,
+                        'data_type': data_type,
+                        'data': json.dumps(data)
+                    })
+                    conn.commit()
+                    print(f"Updated {data_type} data for session {session_id}")
+        except (Exception, psycopg2.DatabaseError) as error:
+            print(f"Error updating session data: {error}")
+            raise
+
+    def _get_session_data(self, session_id: str, data_type: str):
+        """Get session data for a specific session ID and data type"""
+        sql = "SELECT data_content FROM gateway_session_data WHERE session_id = %s AND data_type = %s;"
+        try:
+            with self._get_connection() as conn:
+                with conn.cursor() as cur:
+                    cur.execute(sql, (session_id, data_type))
+                    row = cur.fetchone()
+                    return row[0] if row else None
+        except (Exception, psycopg2.DatabaseError) as error:
+            print(f"Error getting session data: {error}")
+            return None
+
+    def _clear_session_data_by_type(self, session_id: str, data_type: str):
+        """Clear specific type of session data for a session ID"""
+        sql = "DELETE FROM gateway_session_data WHERE session_id = %s AND data_type = %s;"
+        try:
+            with self._get_connection() as conn:
+                with conn.cursor() as cur:
+                    cur.execute(sql, (session_id, data_type))
+                    rows_affected = cur.rowcount
+                    conn.commit()
+                    print(f"Cleared {data_type} data for session {session_id} ({rows_affected} rows)")
+        except (Exception, psycopg2.DatabaseError) as error:
+            print(f"Error clearing session data: {error}")
+            raise
+
+    def _get_current_timestamp(self):
         """Get current timestamp in ISO format"""
         return datetime.now().isoformat()
 
-    def _get_file_path(self, session_id, data_type):
-        """Get file path for session data"""
-        return os.path.join(self.storage_dir, f"{session_id}_{data_type}.json")
-
-    def store_processed_messages(self, session_id, messages):
-        """Store processed messages for a session (messages only, no participants)"""
-        with self.lock:
-            self.processed_messages_store[session_id] = messages
-
-            file_path = self._get_file_path(session_id, 'processed')
-            try:
-                with open(file_path, 'w', encoding='utf-8') as f:
-                    json.dump({
-                        'messages': messages,
-                        'timestamp': self._get_current_timestamp(),
-                        'count': len(messages)
-                    }, f, ensure_ascii=False, indent=2)
-            except Exception as e:
-                print(f"Error saving processed messages to file: {e}")
-
-    def get_processed_messages(self, session_id):
-        """Retrieve processed messages for a session"""
-        # Try memory first
-        if session_id in self.processed_messages_store:
-            return self.processed_messages_store[session_id]
-
-        file_path = self._get_file_path(session_id, 'processed')
-        if os.path.exists(file_path):
-            try:
-                with open(file_path, 'r', encoding='utf-8') as f:
-                    data = json.load(f)
-                    messages = data.get('messages', [])
-                    # Cache in memory
-                    self.processed_messages_store[session_id] = messages
-                    return messages
-            except Exception as e:
-                print(f"Error loading processed messages from file: {e}")
-                return None
-        return None
-
-    def store_filtered_messages(self, session_id, filtered_data):
-        """Store filtered messages with metadata for a session"""
-        with self.lock:
-            self.filtered_messages_store[session_id] = filtered_data
-
-            file_path = self._get_file_path(session_id, 'filtered')
-            try:
-                with open(file_path, 'w', encoding='utf-8') as f:
-                    json.dump(filtered_data, f, ensure_ascii=False, indent=2)
-            except Exception as e:
-                print(f"Error saving filtered messages to file: {e}")
-
-    def get_filtered_messages(self, session_id):
-        """Retrieve filtered messages for a session"""
-        if session_id in self.filtered_messages_store:
-            return self.filtered_messages_store[session_id]
-
-        file_path = self._get_file_path(session_id, 'filtered')
-        if os.path.exists(file_path):
-            try:
-                with open(file_path, 'r', encoding='utf-8') as f:
-                    filtered_data = json.load(f)
-                    self.filtered_messages_store[session_id] = filtered_data
-                    return filtered_data
-            except Exception as e:
-                print(f"Error loading filtered messages from file: {e}")
-
-        return None
-
-    def get_filtered_messages_only(self, session_id):
-        """Get just the messages array from filtered data (for analysis)"""
-        filtered_data = self.get_filtered_messages(session_id)
-        if filtered_data:
-            if isinstance(filtered_data, dict) and 'messages' in filtered_data:
-                return filtered_data['messages']
-            elif isinstance(filtered_data, list):
-                # Handle legacy format
-                return filtered_data
-        return None
-
-    def get_participants_metadata(self, session_id):
-        """Get participants metadata from filtered data"""
-        filtered_data = self.get_filtered_messages(session_id)
-        if filtered_data and isinstance(filtered_data, dict):
-            return filtered_data.get('participants_metadata', {})
-        return {}
-
-    def store_analysis_status(self, session_id, status):
-        """Store analysis status for a session"""
-        with self.lock:
-            self.analysis_status_store[session_id] = status
-
-        # Also store to file
-        file_path = self._get_file_path(session_id, 'analysis_status')
-        try:
-            with open(file_path, 'w', encoding='utf-8') as f:
-                json.dump(status, f, ensure_ascii=False, indent=2)
-        except Exception as e:
-            print(f"Error saving analysis status to file: {e}")
-
-    def get_analysis_status(self, session_id):
-        """Retrieve analysis status for a session"""
-        # Try memory first
-        if session_id in self.analysis_status_store:
-            return self.analysis_status_store[session_id]
-
-        # Try loading from file
-        file_path = self._get_file_path(session_id, 'analysis_status')
-        if os.path.exists(file_path):
-            try:
-                with open(file_path, 'r', encoding='utf-8') as f:
-                    status = json.load(f)
-                    # Cache in memory
-                    self.analysis_status_store[session_id] = status
-                    return status
-            except Exception as e:
-                print(f"Error loading analysis status from file: {e}")
-
-        return None
-
-    def store_analysis_result(self, session_id, result):
-        """Store analysis result for a session"""
-        with self.lock:
-            self.analysis_result_store[session_id] = result
-
-        # Also store to file
-        file_path = self._get_file_path(session_id, 'analysis_result')
-        try:
-            with open(file_path, 'w', encoding='utf-8') as f:
-                json.dump({
-                    'result': result,
-                    'timestamp': self._get_current_timestamp()
-                }, f, ensure_ascii=False, indent=2)
-        except Exception as e:
-            print(f"Error saving analysis result to file: {e}")
-
-    def get_analysis_result(self, session_id):
-        """Retrieve analysis result for a session"""
-        # Try memory first
-        if session_id in self.analysis_result_store:
-            return self.analysis_result_store[session_id]
-
-        # Try loading from file
-        file_path = self._get_file_path(session_id, 'analysis_result')
-        if os.path.exists(file_path):
-            try:
-                with open(file_path, 'r', encoding='utf-8') as f:
-                    data = json.load(f)
-                    result = data.get('result')
-                    # Cache in memory
-                    if result:
-                        self.analysis_result_store[session_id] = result
-                    return result
-            except Exception as e:
-                print(f"Error loading analysis result from file: {e}")
-
-        return None
-
-    def store_processing_status(self, session_id, status):
-        """Store processing status for a session"""
-        with self.lock:
-            self.processing_status_store[session_id] = status
-
-        # Also store to file
-        file_path = self._get_file_path(session_id, 'status')
-        try:
-            with open(file_path, 'w', encoding='utf-8') as f:
-                json.dump(status, f, ensure_ascii=False, indent=2)
-        except Exception as e:
-            print(f"Error saving processing status to file: {e}")
-
-    def get_processing_status(self, session_id):
-        """Retrieve processing status for a session"""
-        # Try memory first
-        if session_id in self.processing_status_store:
-            return self.processing_status_store[session_id]
-
-        # Try loading from file
-        file_path = self._get_file_path(session_id, 'status')
-        if os.path.exists(file_path):
-            try:
-                with open(file_path, 'r', encoding='utf-8') as f:
-                    status = json.load(f)
-                    # Cache in memory
-                    self.processing_status_store[session_id] = status
-                    return status
-            except Exception as e:
-                print(f"Error loading processing status from file: {e}")
-
-        return None
-
-    def clear_processed_messages(self, session_id):
-        """Clears only the processed messages for a session from memory and disk."""
-        with self.lock:
-            self.processed_messages_store.pop(session_id, None)
-            file_path = self._get_file_path(session_id, 'processed')
-            try:
-                if os.path.exists(file_path):
-                    os.remove(file_path)
-            except Exception as e:
-                print(f"Error removing file {file_path}: {e}")
-
-    def clear_filtered_messages(self, session_id):
-        """Clears only the filtered messages for a session from memory and disk."""
-        with self.lock:
-            self.filtered_messages_store.pop(session_id, None)
-            file_path = self._get_file_path(session_id, 'filtered')
-            try:
-                if os.path.exists(file_path):
-                    os.remove(file_path)
-            except Exception as e:
-                print(f"Error removing file {file_path}: {e}")
-
-    def clear_analysis_result(self, session_id):
-        """Clears only the analysis result for a session from memory and disk."""
-        with self.lock:
-            self.analysis_result_store.pop(session_id, None)
-            file_path = self._get_file_path(session_id, 'analysis_result')
-            try:
-                if os.path.exists(file_path):
-                    os.remove(file_path)
-            except Exception as e:
-                print(f"Error removing file {file_path}: {e}")
-
-    def clear_session_data(self, session_id):
-        """Clear all data for a session"""
-        with self.lock:
-            # Clear from memory
-            self.processed_messages_store.pop(session_id, None)
-            self.filtered_messages_store.pop(session_id, None)
-            self.processing_status_store.pop(session_id, None)
-            self.analysis_status_store.pop(session_id, None)
-            self.analysis_result_store.pop(session_id, None)
-
-        # Clear files
-        for data_type in ['processed', 'filtered', 'status', 'analysis_status', 'analysis_result']:
-            file_path = self._get_file_path(session_id, data_type)
-            try:
-                if os.path.exists(file_path):
-                    os.remove(file_path)
-            except Exception as e:
-                print(f"Error removing file {file_path}: {e}")
-
-    def _cleanup_old_sessions(self, max_age_days=7):
-        """Clean up old session files"""
-        if not os.path.exists(self.storage_dir):
-            return
-
-        cutoff_time = datetime.now() - timedelta(days=max_age_days)
-
-        for filename in os.listdir(self.storage_dir):
-            file_path = os.path.join(self.storage_dir, filename)
-            try:
-                # Check file modification time
-                file_time = datetime.fromtimestamp(os.path.getmtime(file_path))
-                if file_time < cutoff_time:
-                    os.remove(file_path)
-                    print(f"Removed old session file: {filename}")
-            except Exception as e:
-                print(f"Error cleaning up file {filename}: {e}")
-
-    def get_session_stats(self, session_id):
-        """Get statistics for a session"""
-        processed = self.get_processed_messages(session_id)
-        filtered_data = self.get_filtered_messages(session_id)
-        status = self.get_processing_status(session_id)
-        analysis_status = self.get_analysis_status(session_id)
-        analysis_result = self.get_analysis_result(session_id)
-
-        stats = {
-            'session_id': session_id,
-            'has_processed': processed is not None,
-            'has_filtered': filtered_data is not None,
-            'has_status': status is not None,
-            'has_analysis_status': analysis_status is not None,
-            'has_analysis_result': analysis_result is not None
+    # ===== PROCESSED MESSAGES =====
+    def store_processed_messages(self, session_id: str, messages: list):
+        """Store processed messages for a session"""
+        data = {
+            'messages': messages,
+            'count': len(messages),
+            'timestamp': self._get_current_timestamp()
         }
+        self._update_session_data(session_id, 'processed', data)
 
-        if processed:
-            stats['processed_count'] = len(processed)
-            stats['unique_senders'] = len(set(m.get('sender') for m in processed if m.get('sender')))
+    def get_processed_messages(self, session_id: str):
+        """Get processed messages for a session"""
+        data = self._get_session_data(session_id, 'processed')
+        return data.get('messages') if data else None
 
-        if filtered_data:
-            if isinstance(filtered_data, dict) and 'messages' in filtered_data:
-                stats['filtered_count'] = len(filtered_data['messages'])
-                stats['participants_count'] = len(filtered_data.get('participants_metadata', {}))
-            elif isinstance(filtered_data, list):
-                stats['filtered_count'] = len(filtered_data)
+    def clear_processed_messages(self, session_id: str):
+        """Clear processed messages for a session"""
+        self._clear_session_data_by_type(session_id, 'processed')
 
-        if status:
-            stats['processing_status'] = status.get('status')
+    # ===== FILTERED MESSAGES =====
+    def store_filtered_messages(self, session_id: str, filtered_data: dict):
+        """Store filtered messages data for a session"""
+        # Ensure we have timestamp and count
+        if 'timestamp' not in filtered_data:
+            filtered_data['timestamp'] = self._get_current_timestamp()
+        if 'count' not in filtered_data and 'messages' in filtered_data:
+            filtered_data['count'] = len(filtered_data['messages'])
 
-        if analysis_status:
-            stats['analysis_status'] = analysis_status.get('status')
-            stats['analysis_progress'] = analysis_status.get('progress', 0)
+        self._update_session_data(session_id, 'filtered', filtered_data)
 
-        return stats
+    def get_filtered_messages(self, session_id: str):
+        """Get filtered messages data for a session"""
+        return self._get_session_data(session_id, 'filtered')
+
+    def clear_filtered_messages(self, session_id: str):
+        """Clear filtered messages for a session"""
+        self._clear_session_data_by_type(session_id, 'filtered')
+
+    # ===== ANALYSIS RESULTS =====
+    def store_analysis_result(self, session_id: str, result: dict):
+        """Store analysis result for a session"""
+        if 'timestamp' not in result:
+            result['timestamp'] = self._get_current_timestamp()
+
+        self._update_session_data(session_id, 'analysis', result)
+
+    def get_analysis_result(self, session_id: str):
+        """Get analysis result for a session"""
+        return self._get_session_data(session_id, 'analysis')
+
+    def clear_analysis_result(self, session_id: str):
+        """Clear analysis result for a session"""
+        self._clear_session_data_by_type(session_id, 'analysis')
+
+    # ===== SESSION MANAGEMENT =====
+    def clear_session_data(self, session_id: str):
+        """Delete all data associated with a session_id"""
+        sql = "DELETE FROM gateway_session_data WHERE session_id = %s;"
+        try:
+            with self._get_connection() as conn:
+                with conn.cursor() as cur:
+                    cur.execute(sql, (session_id,))
+                    rows_affected = cur.rowcount
+                    conn.commit()
+                    print(f"Cleared all PostgreSQL session data for session_id: {session_id} ({rows_affected} rows)")
+        except (Exception, psycopg2.DatabaseError) as error:
+            print(f"Error clearing session data: {error}")
+            raise
+
+    def get_session_info(self, session_id: str):
+        """Get information about what data exists for a session"""
+        sql = """
+              SELECT data_type, \
+                     created_at,
+                     CASE
+                         WHEN data_content ? 'count' THEN (data_content ->>'count')::int
+                       WHEN data_content ? 'messages' THEN jsonb_array_length(data_content->'messages')
+                       ELSE 1
+              END \
+              as item_count
+            FROM gateway_session_data 
+            WHERE session_id = \
+              %s
+              ORDER \
+              BY \
+              created_at \
+              DESC; \
+              """
+        try:
+            with self._get_connection() as conn:
+                with conn.cursor() as cur:
+                    cur.execute(sql, (session_id,))
+                    rows = cur.fetchall()
+                    return [
+                        {
+                            'data_type': row[0],
+                            'created_at': row[1].isoformat() if row[1] else None,
+                            'item_count': row[2] or 0
+                        }
+                        for row in rows
+                    ]
+        except (Exception, psycopg2.DatabaseError) as error:
+            print(f"Error getting session info: {error}")
+            return []
+
+    def session_exists(self, session_id: str):
+        """Check if a session has any data"""
+        sql = "SELECT COUNT(*) FROM gateway_session_data WHERE session_id = %s;"
+        try:
+            with self._get_connection() as conn:
+                with conn.cursor() as cur:
+                    cur.execute(sql, (session_id,))
+                    count = cur.fetchone()[0]
+                    return count > 0
+        except (Exception, psycopg2.DatabaseError) as error:
+            print(f"Error checking session existence: {error}")
+            return False
+
+    # ===== ADMIN/DEBUG METHODS =====
+    def get_all_sessions(self):
+        """Get info about all active sessions (for debugging/admin)"""
+        sql = """
+              SELECT session_id,
+                     COUNT(*)        as data_types,
+                     MIN(created_at) as first_activity,
+                     MAX(created_at) as last_activity
+              FROM gateway_session_data
+              GROUP BY session_id
+              ORDER BY last_activity DESC; \
+              """
+        try:
+            with self._get_connection() as conn:
+                with conn.cursor() as cur:
+                    cur.execute(sql)
+                    rows = cur.fetchall()
+                    return [
+                        {
+                            'session_id': str(row[0]),
+                            'data_types': row[1],
+                            'first_activity': row[2].isoformat() if row[2] else None,
+                            'last_activity': row[3].isoformat() if row[3] else None
+                        }
+                        for row in rows
+                    ]
+        except (Exception, psycopg2.DatabaseError) as error:
+            print(f"Error getting all sessions: {error}")
+            return []
 
 
-# Global instance
-session_manager = SessionManager()
+# Initialize the session manager
+session_manager = PostgresSessionManager(dsn=Config.DATABASE_URL)

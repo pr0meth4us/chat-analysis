@@ -1,7 +1,7 @@
 import { FilterConfig, TaskStatus, SearchResult, KeywordCountResult, Message, FilteredData } from '@/types';
 import { AnalysisResult } from '@/types/analysis';
 
-const API_BASE = process.env.NODE_ENV === 'production' ? 'http://localhost:5001' : 'http://localhost:5001';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://apparent-nadeen-aupp-54d2fac0.koyeb.app';
 
 class ApiError extends Error {
     constructor(public status: number, message: string) {

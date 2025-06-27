@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useReducer, useEffect, useState, useRef, useCallback } from 'react';
 import { AppState, TaskStatus, Message, FilterConfig, FilteredData } from '@/types';
-import { api } from '@/utils/api';
+import { api } from '@/utils/api'; // Assuming api.ts handles actual local database operations
 
 interface AppContextType {
     state: AppState;
@@ -36,16 +36,14 @@ type AppAction =
 
 const initialState: AppState = {
     processedMessages: [],
-    // MODIFIED: Replace 'filteredMessages' with 'filteredData' and set its initial value to null.
     filteredData: null,
     senders: [],
-    tasks: [],
+    tasks: [], // Tasks will now primarily track upload and analysis, not filter
     analysisResult: null,
     isLoading: false,
     error: null,
 };
 
-// Your reducer is already correct, as it uses 'SET_FILTERED_DATA'.
 function appReducer(state: AppState, action: AppAction): AppState {
     switch (action.type) {
         case 'SET_LOADING':
@@ -54,7 +52,6 @@ function appReducer(state: AppState, action: AppAction): AppState {
             return { ...state, error: action.payload, isLoading: false };
         case 'SET_PROCESSED_MESSAGES':
             return { ...state, processedMessages: action.payload };
-        // This case now correctly updates the 'filteredData' property defined in initialState.
         case 'SET_FILTERED_DATA':
             return { ...state, filteredData: action.payload };
         case 'SET_SENDERS':
@@ -62,7 +59,6 @@ function appReducer(state: AppState, action: AppAction): AppState {
         case 'SET_ANALYSIS_RESULT':
             return { ...state, analysisResult: action.payload, isLoading: false };
         case 'RESET_STATE':
-            // This now correctly resets the new state property as well
             return { ...initialState };
         case 'UPDATE_TASK': {
             const newTasks = [...state.tasks];
@@ -108,6 +104,7 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
                 })(),
                 (async () => {
                     try {
+                        // This will now always correctly fetch the *latest* filtered data
                         const filteredData = await api.getFilteredMessages();
                         dispatch({ type: 'SET_FILTERED_DATA', payload: filteredData });
                     } catch (error) {
@@ -118,7 +115,8 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
                     try {
                         const analysis = await api.getAnalysisReport();
                         dispatch({ type: 'SET_ANALYSIS_RESULT', payload: analysis });
-                    } catch (error) {
+                    }
+                    catch (error) {
                         dispatch({ type: 'SET_ANALYSIS_RESULT', payload: null });
                     }
                 })(),
@@ -136,7 +134,10 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
             const tasksArray = Array.isArray(response.tasks)
                 ? response.tasks
                 : Object.values(response.tasks || {});
-            dispatch({ type: 'SET_TASKS', payload: tasksArray });
+            // Only include tasks that are actually pending or running,
+            // filtering out any "filter" tasks if they were incorrectly added before.
+            const activeTasks = tasksArray.filter(task => task.status === 'pending' || task.status === 'running');
+            dispatch({ type: 'SET_TASKS', payload: activeTasks });
         } catch (error) {
             console.error('Failed to get tasks:', error);
         }
@@ -169,7 +170,9 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
                     return statusTransition || newAndCompleted;
                 });
 
-                dispatch({ type: 'SET_TASKS', payload: newTasksArray });
+                // Only set active tasks for polling, preventing completed tasks from keeping polling alive
+                const activeTasks = newTasksArray.filter(task => task.status === 'pending' || task.status === 'running');
+                dispatch({ type: 'SET_TASKS', payload: activeTasks });
 
                 if (justCompletedTasks.length > 0) {
                     await refreshData();
@@ -188,24 +191,18 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     const handleClearAction = async (clearFunction: () => Promise<any>, stageName: string) => {
         dispatch({ type: 'SET_LOADING', payload: true });
         try {
-            // Call the backend API to delete the file
             await clearFunction();
 
-            // --- FIXED LOGIC ---
-            // Instead of a full, risky refresh, just update the specific part of the state.
             if (stageName === 'analysis') {
                 dispatch({ type: 'SET_ANALYSIS_RESULT', payload: null });
             } else if (stageName === 'filtered') {
                 dispatch({ type: 'SET_FILTERED_DATA', payload: null });
-                // You might also want to clear the analysis result here too, since it depends on filtered data
-                dispatch({ type: 'SET_ANALYSIS_RESULT', payload: null });
+                dispatch({ type: 'SET_ANALYSIS_RESULT', payload: null }); // Clear analysis too as it depends on filtered data
             } else if (stageName === 'processed') {
                 dispatch({ type: 'SET_PROCESSED_MESSAGES', payload: [] });
                 dispatch({ type: 'SET_FILTERED_DATA', payload: null });
                 dispatch({ type: 'SET_ANALYSIS_RESULT', payload: null });
             }
-            // --- END FIXED LOGIC ---
-
         } catch (error: any) {
             dispatch({ type: 'SET_ERROR', payload: `Could not clear ${stageName} data.` });
         } finally {
@@ -229,33 +226,24 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
 
     const actions = {
         uploadFiles: async (files: File[]) => {
-            if (!files || files.length === 0) {
-                return;
-            }
+            if (!files || files.length === 0) return;
             dispatch({ type: 'SET_LOADING', payload: true });
             try {
                 const task = await api.uploadFiles(files);
-                await refreshTasks();
+                await refreshTasks(); // Refresh tasks to see this new task
                 dispatch({ type: 'UPDATE_TASK', payload: task });
             } catch (error: unknown) {
                 dispatch({ type: 'SET_ERROR', payload: String(error) });
                 dispatch({ type: 'SET_LOADING', payload: false });
             }
         },
-        // CORRECTED: Uses a robust FilterConfig type that matches the backend API.
         filterMessages: async (config: FilterConfig) => {
             dispatch({ type: 'SET_LOADING', payload: true });
             try {
-                // api.filterMessages should be updated to send this config object directly.
-                const result = await api.filterMessages(config);
-
-                // The filter endpoint is synchronous, so we check for a task_id
-                // just in case, but expect to fall into the else block.
-                if ('task_id' in result) {
-                    dispatch({ type: 'UPDATE_TASK', payload: result });
-                } else {
-                    await refreshData();
-                }
+                // Since this is synchronous, no task_id is returned or polled.
+                await api.filterMessages(config);
+                // Immediately refresh data to get the updated filtered messages
+                await refreshData();
             } catch (error: unknown) {
                 dispatch({ type: 'SET_ERROR', payload: String(error) });
             } finally {
@@ -266,7 +254,7 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
             dispatch({ type: 'SET_LOADING', payload: true });
             try {
                 const task = await api.startAnalysis(modules);
-                await refreshTasks();
+                await refreshTasks(); // Refresh tasks to see this new analysis task
                 dispatch({ type: 'UPDATE_TASK', payload: task });
             } catch (error: unknown) {
                 dispatch({ type: 'SET_ERROR', payload: String(error) });

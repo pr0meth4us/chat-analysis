@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
-from api.session_manager import session_manager
-from utils import log
+from ..session_manager import session_manager
+from ..utils import log
 import re
 from collections import Counter
 from thefuzz import fuzz

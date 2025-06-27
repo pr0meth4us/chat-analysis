@@ -5,8 +5,6 @@ from typing import Dict, Any, List, Optional
 class DfParser:
     def __init__(self, participants: List[str]):
         self.participants = participants
-
-        # --- STATIC REGEX PATTERNS ---
         self.url_pattern = re.compile(r'((?:https?://|www\.)[a-zA-Z0-9./\?=\-_%&@#~;,\+]+[a-zA-Z0-9/])')
         self.attachment_pattern = re.compile(r'^sent\s+an\s+attachment\.', re.IGNORECASE)
         self.word_pattern = re.compile(r'\b\w+\b')

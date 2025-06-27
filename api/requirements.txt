@@ -1,15 +1,7 @@
-# Basic essentials
 pandas
 matplotlib
-textblob
-
-# Extras for more advanced analysis
 numpy
-seaborn
 scikit-learn
-wordcloud
-nltk
-vaderSentiment
 
 uvicorn
 asgiref
@@ -22,3 +14,6 @@ bertopic
 thefuzz
 emoji
 lxml
+python-dotenv
+psycopg2-binary
+selectolax

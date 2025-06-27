@@ -1,9 +1,8 @@
-// src/components/layout/Footer.tsx
 'use client';
 
 import React from 'react';
 import Link from 'next/link';
-import { Github } from 'lucide-react';
+import { Github, Link as LinkIcon } from 'lucide-react';
 
 export const Footer: React.FC = () => {
     return (
@@ -13,10 +12,10 @@ export const Footer: React.FC = () => {
                     <div className="space-y-2">
                         <h3 className="text-lg font-semibold text-foreground">Message Analyzer</h3>
                         <p className="text-sm">
-                            A personal project by Nick S. designed for insightful, private, and ephemeral analysis of chat data.
+                            A personal project by pr0meth4us designed for insightful, private, and ephemeral analysis of chat data.
                         </p>
                         <p className="text-xs pt-2">
-                            © 2025 Nick S. All Rights Reserved.
+                            © 2025 pr0meth4us. All Rights Reserved.
                         </p>
                     </div>
 
@@ -29,19 +28,29 @@ export const Footer: React.FC = () => {
                         </ul>
                     </div>
 
-                    {/* Right Section: Connect */}
                     <div className="space-y-2">
                         <h4 className="font-semibold text-foreground">Connect</h4>
                         <ul className="space-y-1 text-sm">
                             <li>
                                 <a
-                                    href="https://github.com/nicksng"
+                                    href="https://github.com/pr0meth4us"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="flex items-center gap-2 hover:text-primary transition-colors"
                                 >
                                     <Github className="h-4 w-4" />
                                     GitHub
+                                </a>
+                            </li>
+                            <li>
+                                <a
+                                    href="https://pr0meth4us.github.io/"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-2 hover:text-primary transition-colors"
+                                >
+                                    <LinkIcon className="h-4 w-4" />
+                                    Portfolio
                                 </a>
                             </li>
                         </ul>
