@@ -81,7 +81,8 @@ export default function FilterSection() {
     };
 
     const hasFilteredMessages = !!state.filteredData && state.filteredData.messages.length > 0;
-    const isFilterTaskActive = state.tasks.some(task => task.name?.toLowerCase().includes('filter') && (task.status === 'pending' || task.status === 'running'));
+    // Updated: Now relies on state.isLoading for the filter button's loading state.
+    const isFilterRunning = state.isLoading;
 
     if (hasFilteredMessages) {
         return (
@@ -183,8 +184,8 @@ export default function FilterSection() {
             </Card>
 
             <div className="flex justify-center pt-4">
-                <Button onClick={handleApplyFilter} size="lg" icon={Filter} loading={isFilterTaskActive} disabled={isFilterTaskActive || state.senders.length === 0}>
-                    {isFilterTaskActive ? "Filtering..." : "Apply Filter & Continue"}
+                <Button onClick={handleApplyFilter} size="lg" icon={Filter} loading={isFilterRunning} disabled={isFilterRunning || state.senders.length === 0}>
+                    {isFilterRunning ? "Filtering..." : "Apply Filter & Continue"}
                 </Button>
             </div>
         </div>
