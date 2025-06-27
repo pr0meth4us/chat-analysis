@@ -44,7 +44,8 @@ class TaskResult:
 
 
 class BackgroundTaskManager:
-    def __init__(self, max_workers: int = 2, task_timeout: int = 360):
+    def __init__(self, max_workers: int = 1,
+                 task_timeout: int = 360):  # Defaulting to 1 worker for resource constraints
         self.max_workers = max_workers
         self.task_timeout = timedelta(seconds=task_timeout)
         self.tasks: Dict[str, TaskResult] = {}
@@ -74,6 +75,15 @@ class BackgroundTaskManager:
         log(f"Task {task_id} ({task_name}) submitted for session {session_id}")
         return task_id
 
+    def clear_session_tasks(self, session_id: str):
+        """Removes all task references for a given session."""
+        with self.tasks_lock:
+            if session_id in self.session_tasks:
+                task_ids_to_remove = self.session_tasks.pop(session_id, set())
+                for task_id in task_ids_to_remove:
+                    self.tasks.pop(task_id, None)
+                log(f"Cleared {len(task_ids_to_remove)} task references for session {session_id}")
+
     def _worker(self):
         while self.running:
             try:
@@ -94,7 +104,6 @@ class BackgroundTaskManager:
             log(f"Worker {threading.current_thread().name} is processing task {task_id}.")
 
             try:
-                # This part remains the same
                 def progress_callback(progress=None, stage=None, **kwargs):
                     with self.tasks_lock:
                         if self.tasks[task_id].status == TaskStatus.CANCELLED:
@@ -104,7 +113,7 @@ class BackgroundTaskManager:
                 if 'progress_callback' in inspect.signature(func).parameters:
                     kwargs['progress_callback'] = progress_callback
 
-                result = func(*args, **kwargs)  # Simplified execution
+                result = func(*args, **kwargs)
 
                 with self.tasks_lock:
                     task = self.tasks[task_id]
@@ -126,7 +135,6 @@ class BackgroundTaskManager:
             finally:
                 self.task_queue.task_done()
 
-    # The rest of the methods (get_task_status, cancel_task, etc.) are correct and do not need changes.
     def get_task_status(self, task_id: str) -> Optional[Dict]:
         with self.tasks_lock:
             task = self.tasks.get(task_id)
@@ -157,7 +165,7 @@ class BackgroundTaskManager:
 
     def _cleanup_old_tasks(self):
         while self.running:
-            time.sleep(3600)  # Check every hour
+            time.sleep(3600)
             cutoff = datetime.now() - timedelta(hours=24)
             with self.tasks_lock:
                 task_ids_to_remove = [tid for tid, task in self.tasks.items() if
@@ -172,17 +180,11 @@ class BackgroundTaskManager:
                     log(f"Cleaned up {len(task_ids_to_remove)} old tasks.")
 
 
-# --- FIX: Singleton implementation to ensure one instance per worker ---
 _task_manager_instance = None
 _lock = threading.Lock()
 
 
 def get_task_manager():
-    """
-    Returns a singleton instance of the BackgroundTaskManager.
-    This ensures that the manager and its threads are created only once
-    per Gunicorn worker process, not in the master process.
-    """
     global _task_manager_instance
     if _task_manager_instance is None:
         with _lock:
