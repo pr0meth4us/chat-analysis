@@ -20,7 +20,7 @@ const getTaskIcon = (status: string) => {
         case 'completed':
             return <CheckCircle className="h-4 w-4 text-green-500" />;
         case 'failed':
-        case 'cancelled': // Handle cancelled status
+        case 'cancelled':
             return <XCircle className="h-4 w-4 text-red-500" />;
         default:
             return <Clock className="h-4 w-4 text-gray-400" />;
@@ -33,51 +33,38 @@ const getStatusVariant = (status: string) => {
         case 'running': return 'default';
         case 'completed': return 'success';
         case 'failed': return 'destructive';
-        case 'cancelled': return 'secondary'; // Handle cancelled status
+        case 'cancelled': return 'secondary';
         default: return 'secondary';
     }
 };
 
-/**
- * Gets a user-friendly display name for a task.
- * Prioritizes the specific 'stage' for running tasks.
- */
 const getTaskDisplayName = (task: TaskStatus): string => {
-    // For running tasks, the `stage` gives the most specific, real-time update.
     if (task.status === 'running' && task.stage) {
-        // e.g., "Running emotion_analysis" becomes "Running emotion analysis"
         return task.stage.replace(/_/g, ' ');
     }
-
-    // For other tasks, or if a running task has no stage, the name is best.
     if (task.name) {
-        // e.g., "Process File Worker" becomes "Process file"
         const cleanedName = task.name.replace(/ worker/i, '').trim();
         return cleanedName.charAt(0).toUpperCase() + cleanedName.slice(1);
     }
-
-    // Fallback to stage if name is missing
     if (task.stage) {
         return task.stage;
     }
-
-    // Fallback to a slice of the task_id
     if (task.task_id) {
         return `Task: ${task.task_id.slice(0, 8)}...`;
     }
-
     return 'Initializing Task...';
 };
 
 
-const getTaskProgress = (task: TaskStatus): number => {
-    if (typeof task.progress === 'number') {
+const getTaskProgress = (task: TaskStatus): number | null => {
+    if (typeof task.progress === 'number' && task.progress > 0) {
         if (task.progress <= 1) {
             return task.progress * 100;
         }
         return Math.min(task.progress, 100);
     }
 
+    // Fallback for parsing progress from a message string.
     if (task.message) {
         const progressMatch = task.message.match(/(\d+)\s*\/\s*(\d+)/);
         if (progressMatch) {
@@ -89,25 +76,11 @@ const getTaskProgress = (task: TaskStatus): number => {
         }
     }
 
-    switch (task.status) {
-        case 'pending':
-            return 0;
-        case 'running':
-            return 25;
-        case 'completed':
-            return 100;
-        case 'failed':
-        case 'cancelled':
-            return 0;
-        default:
-            return 0;
-    }
+    return null;
 };
 
 export default function TaskProgress() {
-    // Destructure actions to get access to cancelTask
     const { state, actions } = useAppContext();
-
     const validTasks = state.tasks.filter(task => task && task.task_id);
 
     if (validTasks.length === 0) {
@@ -153,7 +126,6 @@ export default function TaskProgress() {
                                                     <Badge variant={getStatusVariant(task.status)}>
                                                         {task.status}
                                                     </Badge>
-                                                    {/* --- CANCEL BUTTON IMPLEMENTATION --- */}
                                                     {isCancellable && (
                                                         <Button
                                                             variant="ghost"
@@ -174,8 +146,7 @@ export default function TaskProgress() {
                                                 </p>
                                             )}
 
-                                            {/* Logic combined for clarity */}
-                                            {task.status !== 'completed' && task.status !== 'failed' && task.status !== 'cancelled' && (
+                                            {typeof progressValue === 'number' && (
                                                 <div className="mb-2">
                                                     <Progress
                                                         value={progressValue}
@@ -184,12 +155,16 @@ export default function TaskProgress() {
                                                     />
                                                     <div className="flex justify-between text-xs text-muted-foreground mt-1">
                                                         <span>{Math.round(progressValue)}%</span>
-                                                        {task.status === 'running' && (
-                                                            <span className="animate-pulse">Processing...</span>
-                                                        )}
                                                     </div>
                                                 </div>
                                             )}
+
+                                            {task.status === 'running' && typeof progressValue !== 'number' && (
+                                                <div className="flex justify-end text-xs text-muted-foreground mt-1">
+                                                    <span className="animate-pulse">Processing...</span>
+                                                </div>
+                                            )}
+
 
                                             {task.error && (
                                                 <p className="text-xs text-red-500 mt-1 font-medium">
