@@ -75,7 +75,7 @@ export default function FilterSection() {
                 [groupNames.group1]: group1,
                 [groupNames.group2]: group2,
             },
-            remove: remove,
+            removed_senders: remove,
             unassigned_label: 'Other',
         });
     };
