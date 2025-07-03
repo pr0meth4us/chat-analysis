@@ -1,12 +1,8 @@
-import type {
-    FilterConfig,
-    TaskStatus,
-    SearchResult,
-    KeywordCountResult,
-    Message,
-    FilteredData,
-} from '@/types';
-import type { AnalysisResult } from '@/types/analysis';
+import { FilterConfig, TaskStatus, SearchResult, KeywordCountResult, Message, FilteredData } from '@/types';
+import { AnalysisResult } from '@/types/analysis';
+
+// Remove the API_BASE constant - we'll use relative URLs
+// const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://apparent-nadeen-aupp-54d2fac0.koyeb.app';
 
 class ApiError extends Error {
     constructor(public status: number, message: string) {
@@ -15,15 +11,11 @@ class ApiError extends Error {
     }
 }
 
-async function handleFileDownload(
-    response: Response,
-    defaultFilename: string
-): Promise<void> {
+async function handleFileDownload(response: Response, defaultFilename: string): Promise<void> {
     if (!response.ok) {
         const errorText = await response.text();
         throw new ApiError(response.status, errorText || `HTTP ${response.status}`);
     }
-
     const blob = await response.blob();
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -40,30 +32,30 @@ async function handleResponse<T>(response: Response): Promise<T> {
         const errorText = await response.text();
         throw new ApiError(response.status, errorText || `HTTP ${response.status}`);
     }
-
-    const contentType = response.headers.get('content-type') || '';
-    if (contentType.includes('application/json')) {
+    const contentType = response.headers.get('content-type');
+    if (contentType?.includes('application/json')) {
         return response.json() as Promise<T>;
     }
-
     return response.text() as unknown as Promise<T>;
 }
 
 export const api = {
     async uploadFiles(files: File[]): Promise<TaskStatus> {
+        const formData = new FormData();
+
         if (!files || files.length === 0) {
-            throw new Error('No files selected to upload.');
+            throw new Error("No files selected to upload.");
         }
 
-        const formData = new FormData();
-        files.forEach((file) => formData.append('file', file));
+        files.forEach(file => {
+            formData.append('file', file);
+        });
 
         const response = await fetch('/process', {
             method: 'POST',
             body: formData,
             credentials: 'include',
         });
-
         return handleResponse<TaskStatus>(response);
     },
 
@@ -74,14 +66,11 @@ export const api = {
         return handleResponse<TaskStatus>(response);
     },
 
-    async getSessionTasks(): Promise<{ session_id: string; tasks: Record<string, TaskStatus> }> {
+    async getSessionTasks(): Promise<{ session_id: string; tasks: { [taskId: string]: TaskStatus } }> {
         const response = await fetch('/tasks/session', {
             credentials: 'include',
         });
-
-        return handleResponse<{ session_id: string; tasks: Record<string, TaskStatus> }>(
-            response
-        );
+        return handleResponse<{ session_id: string; tasks: { [taskId: string]: TaskStatus } }>(response);
     },
 
     async clearSession(): Promise<{ message: string }> {
@@ -89,7 +78,6 @@ export const api = {
             method: 'POST',
             credentials: 'include',
         });
-
         return handleResponse<{ message: string }>(response);
     },
 
@@ -114,42 +102,33 @@ export const api = {
         return handleResponse<AnalysisResult>(response);
     },
 
-    async insertProcessedMessages(
-        messages: Message[]
-    ): Promise<{ message: string; count: number }> {
+    async insertProcessedMessages(messages: Message[]): Promise<{ message: string; count: number }> {
         const response = await fetch('/data/insert/processed', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(messages),
             credentials: 'include',
         });
-
         return handleResponse<{ message: string; count: number }>(response);
     },
 
-    async insertFilteredMessages(
-        messages: Message[]
-    ): Promise<{ message: string; count: number }> {
+    async insertFilteredMessages(messages: Message[]): Promise<{ message: string; count: number }> {
         const response = await fetch('/data/insert/filtered', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ messages }),
+            body: JSON.stringify(messages),
             credentials: 'include',
         });
-
         return handleResponse<{ message: string; count: number }>(response);
     },
 
-    async insertAnalysisReport(
-        report: AnalysisResult
-    ): Promise<{ message: string }> {
+    async insertAnalysisReport(report: AnalysisResult): Promise<{ message: string }> {
         const response = await fetch('/data/insert/report', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(report),
             credentials: 'include',
         });
-
         return handleResponse<{ message: string }>(response);
     },
 
@@ -158,7 +137,6 @@ export const api = {
             method: 'POST',
             credentials: 'include',
         });
-
         return handleResponse<{ message: string }>(response);
     },
 
@@ -167,7 +145,6 @@ export const api = {
             method: 'POST',
             credentials: 'include',
         });
-
         return handleResponse<{ message: string }>(response);
     },
 
@@ -176,13 +153,10 @@ export const api = {
             method: 'POST',
             credentials: 'include',
         });
-
         return handleResponse<{ message: string }>(response);
     },
 
-    async filterMessages(
-        config: FilterConfig
-    ): Promise<TaskStatus | { message: string }> {
+    async filterMessages(config: FilterConfig): Promise<TaskStatus | Message[]> {
         const response = await fetch('/filter', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -190,46 +164,42 @@ export const api = {
             credentials: 'include',
         });
 
-        return handleResponse<TaskStatus | { message: string }>(response);
+        if (response.status === 202) {
+            return handleResponse<TaskStatus>(response);
+        } else if (response.status === 200) {
+            return handleResponse<Message[]>(response);
+        } else {
+            return handleResponse<TaskStatus>(response);
+        }
     },
 
-    async startAnalysis(
-        modulesToRun?: string[]
-    ): Promise<TaskStatus> {
+    async startAnalysis(modulesToRun?: string[]): Promise<TaskStatus> {
         const response = await fetch('/analyze', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ modules_to_run: modulesToRun }),
             credentials: 'include',
         });
-
         return handleResponse<TaskStatus>(response);
     },
 
-    async countKeyword(
-        keyword: string
-    ): Promise<KeywordCountResult> {
+    async countKeyword(keyword: string): Promise<KeywordCountResult> {
         const response = await fetch('/search/count_keyword', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ keyword }),
             credentials: 'include',
         });
-
         return handleResponse<KeywordCountResult>(response);
     },
 
-    async fuzzySearch(
-        query: string,
-        cutoff: number = 75
-    ): Promise<SearchResult> {
+    async fuzzySearch(query: string, cutoff: number = 75): Promise<SearchResult> {
         const response = await fetch('/search/fuzzy', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ query, cutoff }),
             credentials: 'include',
         });
-
         return handleResponse<SearchResult>(response);
     },
 
@@ -237,7 +207,6 @@ export const api = {
         const response = await fetch('/data/processed', {
             credentials: 'include',
         });
-
         await handleFileDownload(response, 'processed_messages.json');
     },
 
@@ -245,18 +214,101 @@ export const api = {
         const response = await fetch('/data/filtered', {
             credentials: 'include',
         });
-
         await handleFileDownload(response, 'filtered_messages.json');
     },
 
-    async cancelTask(
-        taskId: string
-    ): Promise<{ message: string }> {
+    async cancelTask(taskId: string): Promise<{ message: string }> {
         const response = await fetch(`/tasks/cancel/${taskId}`, {
             method: 'POST',
             credentials: 'include',
         });
-
         return handleResponse<{ message: string }>(response);
     },
+
+    async downloadChatAsHtml(
+        messages: Message[],
+        displayAsMeUser: string,
+        onProgress: (progress: number) => void
+    ): Promise<Blob> {
+        const uniqueSenders = Array.from(new Set(messages.map(m => m.sender)));
+        const headerUser1 = uniqueSenders[0] || 'Participant A';
+        const headerUser2 = uniqueSenders[1] || 'Participant B';
+
+        return new Promise((resolve, reject) => {
+            let renderedHtml = `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Chat Log</title>
+            <style>
+                body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f0f2f5; color: #050505; margin: 0; padding: 20px; display: flex; justify-content: center; }
+                .chat-container { width: 100%; max-width: 800px; background-color: #ffffff; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24); display: flex; flex-direction: column; }
+                .chat-header { padding: 16px; background-color: #007aff; color: white; text-align: center; font-size: 1.25rem; font-weight: 600; border-top-left-radius: 8px; border-top-right-radius: 8px; }
+                .chat-body { padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+                .message { display: flex; flex-direction: column; max-width: 75%; padding: 10px 15px; border-radius: 18px; line-height: 1.4; word-wrap: break-word; }
+                .message.me { background-color: #007aff; color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+                .message.other { background-color: #e5e5ea; color: #050505; align-self: flex-start; border-bottom-left-radius: 4px; }
+                .sender { font-weight: 600; margin-bottom: 4px; font-size: 0.8rem; opacity: 0.8; }
+                .meta-info { display: flex; justify-content: space-between; align-items: center; font-size: 0.7rem; color: #8e8e93; margin-top: 5px; }
+                .message.me .meta-info { color: #f0f0f0; opacity: 0.9; }
+                .source { font-style: italic; }
+            </style>
+        </head>
+        <body>
+            <div class="chat-container">
+                <div class="chat-header">Chat Log (${headerUser1} & ${headerUser2})</div>
+                <div class="chat-body">
+      `;
+            const totalMessages = messages.length;
+            if (totalMessages === 0) {
+                renderedHtml += '</div></div></body></html>';
+                resolve(new Blob([renderedHtml], { type: 'text/html' }));
+                return;
+            }
+            let processedCount = 0;
+            const processBatch = () => {
+                const batchSize = 50;
+                const batchEnd = Math.min(processedCount + batchSize, totalMessages);
+                for (let i = processedCount; i < batchEnd; i++) {
+                    const msg = messages[i];
+
+                    const senderClass = msg.sender === displayAsMeUser ? 'me' : 'other';
+                    const senderName = msg.sender || 'Unknown';
+
+                    const sanitizedMessage = msg.message
+                        ? String(msg.message).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;")
+                        : '';
+                    const sourceText = msg.source || 'Unknown';
+
+                    renderedHtml += `
+            <div class="message ${senderClass}">
+              <div class="sender">${senderName}</div>
+              <div>${sanitizedMessage}</div>
+              <div class="meta-info">
+                <span class="source">${sourceText}</span>
+                <span class="timestamp">${new Date(msg.timestamp).toLocaleString()}</span>
+              </div>
+            </div>
+          `;
+                }
+                processedCount = batchEnd;
+                const currentProgress = Math.round((processedCount / totalMessages) * 100);
+                onProgress(currentProgress);
+                if (processedCount < totalMessages) {
+                    setTimeout(processBatch, 20);
+                } else {
+                    renderedHtml += `
+                </div>
+            </div>
+        </body>
+        </html>
+        `;
+                    resolve(new Blob([renderedHtml], { type: 'text/html' }));
+                }
+            };
+            processBatch();
+        });
+    }
 };
