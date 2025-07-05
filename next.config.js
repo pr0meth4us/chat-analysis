@@ -1,21 +1,27 @@
-// next.config.js
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  async rewrites() {
-    return process.env.NODE_ENV === 'development'
-      ? [
-          {
-            source: '/api/:path*',
-            destination: 'http://127.0.0.1:5328/api/:path*',
-          },
-        ]
-      : [
-          {
-            source: '/api/:path*',
-            destination: 'https://apparent-nadeen-aupp-54d2fac0.koyeb.app/api/:path*',
-          },
-        ];
-  },
+    async rewrites() {
+        if (process.env.NODE_ENV === 'development') {
+            return [
+                { source: '/analyze',       destination: 'http://13.55.48.245:5328/analyze' },
+                { source: '/filter',        destination: 'http://13.55.48.245:5328/filter' },
+                { source: '/data/:path*',   destination: 'http://13.55.48.245:5328/data/:path*' },
+                { source: '/process',       destination: 'http://13.55.48.245:5328/process' },
+                { source: '/search/:path*', destination: 'http://13.55.48.245:5328/search/:path*' },
+                { source: '/tasks/:path*',  destination: 'http://13.55.48.245:5328/tasks/:path*' },
+            ];
+        } else {
+            // Production also uses the same backend
+            return [
+                { source: '/analyze',       destination: 'http://13.55.48.245:5328/analyze' },
+                { source: '/filter',        destination: 'http://13.55.48.245:5328/filter' },
+                { source: '/data/:path*',   destination: 'http://13.55.48.245:5328/data/:path*' },
+                { source: '/process',       destination: 'http://13.55.48.245:5328/process' },
+                { source: '/search/:path*', destination: 'http://13.55.48.245:5328/search/:path*' },
+                { source: '/tasks/:path*',  destination: 'http://13.55.48.245:5328/tasks/:path*' },
+            ];
+        }
+    },
 };
 
 module.exports = nextConfig;
