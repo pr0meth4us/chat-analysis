@@ -1,26 +1,16 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     async rewrites() {
-        if (process.env.NODE_ENV === 'development') {
-            return [
-                { source: '/analyze',       destination: 'http://13.55.48.245:5328/analyze' },
-                { source: '/filter',        destination: 'http://13.55.48.245:5328/filter' },
-                { source: '/data/:path*',   destination: 'http://13.55.48.245:5328/data/:path*' },
-                { source: '/process',       destination: 'http://13.55.48.245:5328/process' },
-                { source: '/search/:path*', destination: 'http://13.55.48.245:5328/search/:path*' },
-                { source: '/tasks/:path*',  destination: 'http://13.55.48.245:5328/tasks/:path*' },
-            ];
-        } else {
-            // Production also uses the same backend
-            return [
-                { source: '/analyze',       destination: 'http://13.55.48.245:5328/analyze' },
-                { source: '/filter',        destination: 'http://13.55.48.245:5328/filter' },
-                { source: '/data/:path*',   destination: 'http://13.55.48.245:5328/data/:path*' },
-                { source: '/process',       destination: 'http://13.55.48.245:5328/process' },
-                { source: '/search/:path*', destination: 'http://13.55.48.245:5328/search/:path*' },
-                { source: '/tasks/:path*',  destination: 'http://13.55.48.245:5328/tasks/:path*' },
-            ];
-        }
+        const backendUrl = 'https://chatanalysis.webhop.me';
+
+        return [
+            { source: '/analyze',       destination: `${backendUrl}/analyze` },
+            { source: '/filter',        destination: `${backendUrl}/filter` },
+            { source: '/data/:path*',   destination: `${backendUrl}/data/:path*` },
+            { source: '/process',       destination: `${backendUrl}/process` },
+            { source: '/search/:path*', destination: `${backendUrl}/search/:path*` },
+            { source: '/tasks/:path*',  destination: `${backendUrl}/tasks/:path*` },
+        ];
     },
 };
 
