@@ -22,7 +22,9 @@ import {
     FileText,
     Zap,
     Target,
-    Download
+    Download,
+    Play,
+    Eye
 } from 'lucide-react';
 import Link from 'next/link';
 import { FaFacebook, FaTelegram, FaDiscord } from 'react-icons/fa';
@@ -160,33 +162,60 @@ export default function GuidePage() {
         <div className="min-h-screen flex flex-col">
             <main className="flex-grow">
                 <div className="max-w-6xl mx-auto p-4 sm:p-6 md:p-8">
-                    <AppHeader statusText="Learn how to unlock insights from your conversations" />
+                    <AppHeader statusText="Learn how to unlock insights from your conversations"/>
 
-                    <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
+                    <motion.div initial={{opacity: 0, y: -10}} animate={{opacity: 1, y: 0}} className="mb-8">
                         <Link href="/" passHref>
-                            <Button variant="outline" icon={ArrowLeft} loading={isNavigating} onClick={() => setIsNavigating(true)}>
+                            <Button variant="outline" icon={ArrowLeft} loading={isNavigating}
+                                    onClick={() => setIsNavigating(true)}>
                                 {isNavigating ? 'Loading...' : 'Back to Analyzer'}
                             </Button>
                         </Link>
                     </motion.div>
 
-                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-12">
-                        <h1 className="text-4xl md:text-5xl font-bold mb-4"><span className="bg-gradient-to-r from-primary to-blue-400 bg-clip-text text-transparent">Chat Analyzer Guide</span></h1>
-                        <p className="text-xl text-muted-foreground max-w-3xl mx-auto">Transform your conversations into meaningful insights. Discover patterns, emotions, and relationships hidden in your chat history.</p>
+                    <motion.div initial={{opacity: 0, y: 20}} animate={{opacity: 1, y: 0}}
+                                className="text-center mb-12">
+                        <h1 className="text-4xl md:text-5xl font-bold mb-4"><span
+                            className="bg-gradient-to-r from-primary to-blue-400 bg-clip-text text-transparent">Chat Analyzer Guide</span>
+                        </h1>
+                        <p className="text-xl text-muted-foreground max-w-3xl mx-auto">Transform your conversations into
+                            meaningful insights. Discover patterns, emotions, and relationships hidden in your chat
+                            history.</p>
                     </motion.div>
 
-                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="mb-16">
+                    <motion.div initial={{opacity: 0, y: 20}} animate={{opacity: 1, y: 0}} transition={{delay: 0.1}}
+                                className="mb-16">
                         <Card className="glass overflow-hidden">
-                            <CardHeader className="bg-gradient-to-r from-primary/10 to-blue-400/10"><CardTitle className="flex items-center gap-3 text-2xl"><Zap className="h-7 w-7 text-primary" />Quick Start Guide</CardTitle></CardHeader>
-                            <CardContent className="pt-8"><div className="grid gap-8 md:gap-12"><WorkflowStep step={1} title="Upload Your Data" description="Start by uploading your chat history files directly into your browser. Chat Analyzer supports JSON, HTML exports, and ZIP archives from popular platforms." icon={FileUp} delay={0} /><WorkflowStep step={2} title="Filter Participants" description="Group participants into 'Me' and 'Other' categories, or remove bots and unwanted senders for cleaner analysis." icon={Filter} delay={0.1} /><WorkflowStep step={3} title="Run Analysis" description="Select your desired analysis modules and let Chat Analyzer's AI process your conversations to extract meaningful insights." icon={BrainCircuit} delay={0.2} /><WorkflowStep step={4} title="Explore Results" description="Dive into your interactive dashboard, search for keywords, and discover the stories your conversations tell." icon={BarChart3} delay={0.3} /></div></CardContent>
+                            <CardHeader className="bg-gradient-to-r from-primary/10 to-blue-400/10"><CardTitle
+                                className="flex items-center gap-3 text-2xl"><Zap className="h-7 w-7 text-primary"/>Quick
+                                Start Guide</CardTitle></CardHeader>
+                            <CardContent className="pt-8">
+                                <div className="grid gap-8 md:gap-12"><WorkflowStep step={1} title="Upload Your Data"
+                                                                                    description="Start by uploading your chat history files directly into your browser. Chat Analyzer supports JSON, HTML exports, and ZIP archives from popular platforms."
+                                                                                    icon={FileUp}
+                                                                                    delay={0}/><WorkflowStep step={2}
+                                                                                                             title="Filter Participants"
+                                                                                                             description="Group participants into 'Me' and 'Other' categories, or remove bots and unwanted senders for cleaner analysis."
+                                                                                                             icon={Filter}
+                                                                                                             delay={0.1}/><WorkflowStep
+                                    step={3} title="Run Analysis"
+                                    description="Select your desired analysis modules and let Chat Analyzer's AI process your conversations to extract meaningful insights."
+                                    icon={BrainCircuit} delay={0.2}/><WorkflowStep step={4} title="Explore Results"
+                                                                                   description="Dive into your interactive dashboard, search for keywords, and discover the stories your conversations tell."
+                                                                                   icon={BarChart3} delay={0.3}/></div>
+                            </CardContent>
                         </Card>
                     </motion.div>
 
-                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="mb-16">
-                        <div className="text-center mb-8"><h2 className="text-3xl font-bold mb-4">How to Export Your Chat Data</h2><p className="text-muted-foreground max-w-2xl mx-auto">Follow these guides to download your chat history from popular platforms.</p></div>
+                    <motion.div initial={{opacity: 0, y: 20}} animate={{opacity: 1, y: 0}} transition={{delay: 0.2}}
+                                className="mb-16">
+                        <div className="text-center mb-8"><h2 className="text-3xl font-bold mb-4">How to Export Your
+                            Chat Data</h2><p className="text-muted-foreground max-w-2xl mx-auto">Follow these guides to
+                            download your chat history from popular platforms.</p></div>
                         <div className="grid gap-6">
                             {exportInstructions.map((feature, index) => (
-                                <motion.div key={feature.key} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 + index * 0.1 }}>
+                                <motion.div key={feature.key} initial={{opacity: 0, y: 20}} animate={{opacity: 1, y: 0}}
+                                            transition={{delay: 0.3 + index * 0.1}}>
                                     <FeatureCard
                                         title={feature.title}
                                         description={feature.description}
@@ -200,11 +229,15 @@ export default function GuidePage() {
                         </div>
                     </motion.div>
 
-                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="mb-16">
-                        <div className="text-center mb-8"><h2 className="text-3xl font-bold mb-4">Analysis Features</h2><p className="text-muted-foreground max-w-2xl mx-auto">Explore the powerful analysis capabilities that transform your raw chat data into actionable insights.</p></div>
+                    <motion.div initial={{opacity: 0, y: 20}} animate={{opacity: 1, y: 0}} transition={{delay: 0.3}}
+                                className="mb-16">
+                        <div className="text-center mb-8"><h2 className="text-3xl font-bold mb-4">Analysis Features</h2>
+                            <p className="text-muted-foreground max-w-2xl mx-auto">Explore the powerful analysis
+                                capabilities that transform your raw chat data into actionable insights.</p></div>
                         <div className="grid gap-6 md:grid-cols-2">
                             {analysisFeatures.map((feature, index) => (
-                                <motion.div key={feature.key} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 + index * 0.1 }}>
+                                <motion.div key={feature.key} initial={{opacity: 0, y: 20}} animate={{opacity: 1, y: 0}}
+                                            transition={{delay: 0.4 + index * 0.1}}>
                                     <FeatureCard
                                         title={feature.title}
                                         description={feature.description}
@@ -218,22 +251,29 @@ export default function GuidePage() {
                         </div>
                     </motion.div>
 
-                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="mb-16">
+                    <motion.div initial={{opacity: 0, y: 20}} animate={{opacity: 1, y: 0}} transition={{delay: 0.4}}
+                                className="mb-16">
                         <Card className="glass overflow-hidden">
-                            <CardHeader className="bg-slate-900/20"><CardTitle className="flex items-center gap-3 text-2xl"><FileText className="h-7 w-7 text-primary" />Supported Data Formats</CardTitle></CardHeader>
+                            <CardHeader className="bg-slate-900/20"><CardTitle
+                                className="flex items-center gap-3 text-2xl"><FileText
+                                className="h-7 w-7 text-primary"/>Supported Data Formats</CardTitle></CardHeader>
                             <CardContent className="pt-6">
                                 <div className="grid gap-8 md:grid-cols-2">
                                     <div>
-                                        <h3 className="text-lg font-semibold mb-3 text-primary">Standard JSON Format</h3>
-                                        <p className="text-muted-foreground mb-4">For best results, provide a JSON array with message objects containing sender, message, and timestamp fields.</p>
+                                        <h3 className="text-lg font-semibold mb-3 text-primary">Standard JSON
+                                            Format</h3>
+                                        <p className="text-muted-foreground mb-4">For best results, provide a JSON array
+                                            with message objects containing sender, message, and timestamp fields.</p>
                                         <div className="bg-slate-900/50 rounded-lg border border-slate-700">
-                                            <JsonCodeBlock data={jsonSample} />
+                                            <JsonCodeBlock data={jsonSample}/>
                                         </div>
                                         <div className="mt-6">
                                             <p className="text-muted-foreground mb-3">
-                                                Want to try Chat Analyzer without your own data? Download the sample file to get started right away.
+                                                Want to try Chat Analyzer without your own data? Download the sample
+                                                file to get started right away.
                                             </p>
-                                            <a href="/sample-data/processed_messages.json" download="processed_messages.json">
+                                            <a href="/sample-data/processed_messages.json"
+                                               download="processed_messages.json">
                                                 <Button variant="outline" icon={Download}>
                                                     Download Sample JSON
                                                 </Button>
@@ -241,12 +281,58 @@ export default function GuidePage() {
                                         </div>
                                     </div>
                                     <div>
-                                        <h3 className="text-lg font-semibold mb-3 text-primary">Other Supported Formats</h3>
+                                        <h3 className="text-lg font-semibold mb-3 text-primary">Other Supported
+                                            Formats</h3>
                                         <div className="space-y-4">
-                                            <div className="p-4 bg-slate-900/30 rounded-lg border border-slate-700"><h4 className="font-semibold mb-2">HTML Exports</h4><p className="text-sm text-muted-foreground">Official exports from Telegram, Instagram, Facebook Messenger, and other platforms.</p></div>
-                                            <div className="p-4 bg-slate-900/30 rounded-lg border border-slate-700"><h4 className="font-semibold mb-2">ZIP Archives</h4><p className="text-sm text-muted-foreground">Upload multiple files at once - Chat Analyzer will extract and process everything automatically.</p></div>
-                                            <div className="p-4 bg-slate-900/30 rounded-lg border border-slate-700"><h4 className="font-semibold mb-2">Flexible Timestamps</h4><p className="text-sm text-muted-foreground">Chat Analyzer's parser handles dozens of timestamp formats automatically.</p></div>
+                                            <div className="p-4 bg-slate-900/30 rounded-lg border border-slate-700"><h4
+                                                className="font-semibold mb-2">HTML Exports</h4><p
+                                                className="text-sm text-muted-foreground">Official exports from
+                                                Telegram, Instagram, Facebook Messenger, and other platforms.</p></div>
+                                            <div className="p-4 bg-slate-900/30 rounded-lg border border-slate-700"><h4
+                                                className="font-semibold mb-2">ZIP Archives</h4><p
+                                                className="text-sm text-muted-foreground">Upload multiple files at once
+                                                - Chat Analyzer will extract and process everything automatically.</p>
+                                            </div>
+                                            <div className="p-4 bg-slate-900/30 rounded-lg border border-slate-700"><h4
+                                                className="font-semibold mb-2">Flexible Timestamps</h4><p
+                                                className="text-sm text-muted-foreground">Chat Analyzer's parser handles
+                                                dozens of timestamp formats automatically.</p></div>
                                         </div>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </motion.div>
+                    <motion.div initial={{opacity: 0, y: 20}} animate={{opacity: 1, y: 0}} transition={{delay: 0.05}}
+                                className="mb-16">
+                        <Card
+                            className="glass overflow-hidden border-primary/20 bg-gradient-to-br from-primary/5 to-blue-400/5">
+                            <CardHeader className="bg-gradient-to-r from-primary/10 to-blue-400/10">
+                                <CardTitle className="flex items-center gap-3 text-2xl">
+                                    <Eye className="h-7 w-7 text-primary"/>
+                                    Try the Demo
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="pt-6">
+                                <div className="text-center">
+                                    <p className="text-lg text-muted-foreground mb-6 max-w-2xl mx-auto">
+                                        See Chat Analyzer in action with our interactive demo. Explore a fully populated
+                                        dashboard with synthesized conversation data to understand what insights await
+                                        your own chat history.
+                                    </p>
+                                    <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                                        <Link href="/demo" passHref>
+                                            <Button size="lg" icon={Play} className="w-full sm:w-auto">
+                                                View Interactive Demo
+                                            </Button>
+                                        </Link>
+                                        <a href="/sample-data/mock-analysis-report.json"
+                                           download="mock-analysis-report.json">
+                                            <Button variant="outline" size="lg" icon={Download}
+                                                    className="w-full sm:w-auto">
+                                                Download Mock Data
+                                            </Button>
+                                        </a>
                                     </div>
                                 </div>
                             </CardContent>

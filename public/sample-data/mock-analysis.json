@@ -1,0 +1,4640 @@
+{
+  "metadata": {
+    "participants": {
+      "Amanda E": "iMessage, 4348",
+      "Nick M": "Telegram, 901",
+      "Mandy": "Telegram, 3865",
+      "A.Ehrmantraut": "Discord, 449",
+      "Nicholas": "Telegram, 3400",
+      "amanda_e2024": "TikTok, 2485",
+      "Amanda Ehrmantraut": "Facebook, 57188",
+      "mandyE1995": "Instagram, 1650",
+      "nick.machiavel": "Discord, 430",
+      "nicholas - ណិក": "Instagram, 1",
+      "Jockie Music (1)": "Discord, 69",
+      "nickmachiavel99": "TikTok, 2163",
+      "amanda.ehrmantraut@gmail.com": "iMessage, 5235",
+      "nicholas - នីកូឡាស់": "Instagram, 1423"
+    },
+    "messages_total": 131108,
+    "filtered_messages": 131108
+  },
+  "timestamp": "2025-07-07T14:38:52.929495",
+  "ghost_periods": {
+    "ghost_period_analysis": {
+      "top_ghost_periods": [
+        {
+          "end_time": "2022-05-03T16:08:13",
+          "start_time": "2022-04-05T21:22:12",
+          "duration_hours": 666.77,
+          "who_broke_silence": "Adam",
+          "last_sender_before_ghost": "Eve",
+          "first_message_after_ghost": "Hey",
+          "last_message_before_ghost": "thanks for helping out earlier"
+        },
+        {
+          "end_time": "2022-06-05T15:56:46",
+          "start_time": "2022-05-13T23:13:40",
+          "duration_hours": 544.72,
+          "who_broke_silence": "Adam",
+          "last_sender_before_ghost": "Eve",
+          "first_message_after_ghost": "Yo",
+          "last_message_before_ghost": "Reacted 😆 to your message"
+        },
+        {
+          "end_time": "2022-07-09T10:41:11",
+          "start_time": "2022-06-18T20:13:03",
+          "duration_hours": 494.47,
+          "who_broke_silence": "Eve",
+          "last_sender_before_ghost": "Eve",
+          "first_message_after_ghost": "hey there",
+          "last_message_before_ghost": "see you around"
+        },
+        {
+          "end_time": "2023-04-28T10:32:39",
+          "start_time": "2023-04-08T00:01:03",
+          "duration_hours": 490.53,
+          "who_broke_silence": "Adam",
+          "last_sender_before_ghost": "Adam",
+          "first_message_after_ghost": "now guess what",
+          "last_message_before_ghost": "thanks"
+        },
+        {
+          "end_time": "2023-03-31T23:28:19",
+          "start_time": "2023-03-15T00:46:00",
+          "duration_hours": 406.71,
+          "who_broke_silence": "Adam",
+          "last_sender_before_ghost": "Adam",
+          "first_message_after_ghost": "hey can we talk for a bit",
+          "last_message_before_ghost": "hope things work out"
+        },
+        {
+          "end_time": "2023-02-12T06:21:39",
+          "start_time": "2023-02-03T20:50:32",
+          "duration_hours": 201.52,
+          "who_broke_silence": "Adam",
+          "last_sender_before_ghost": "Eve",
+          "first_message_after_ghost": "https://example.com/funny-video",
+          "last_message_before_ghost": "later"
+        },
+        {
+          "end_time": "2022-06-17T22:50:54",
+          "start_time": "2022-06-11T21:19:44",
+          "duration_hours": 145.52,
+          "who_broke_silence": "Adam",
+          "last_sender_before_ghost": "Eve",
+          "first_message_after_ghost": "Found this interesting article: https://example.com/news-article",
+          "last_message_before_ghost": "Reacted 😆 to your message"
+        },
+        {
+          "end_time": "2023-02-20T23:22:57",
+          "start_time": "2023-02-15T07:33:05",
+          "duration_hours": 135.83,
+          "who_broke_silence": "Adam",
+          "last_sender_before_ghost": "Adam",
+          "first_message_after_ghost": "Hey",
+          "last_message_before_ghost": "A friend sent this funny video 😂"
+        },
+        {
+          "end_time": "2023-05-08T22:48:25",
+          "start_time": "2023-05-03T13:29:51",
+          "duration_hours": 129.31,
+          "who_broke_silence": "Adam",
+          "last_sender_before_ghost": "Adam",
+          "first_message_after_ghost": "hope we can catch up soon",
+          "last_message_before_ghost": "miss our conversations"
+        },
+        {
+          "end_time": "2023-05-03T13:29:51",
+          "start_time": "2023-04-28T10:32:39",
+          "duration_hours": 122.95,
+          "who_broke_silence": "Adam",
+          "last_sender_before_ghost": "Adam",
+          "first_message_after_ghost": "miss our conversations",
+          "last_message_before_ghost": "now guess what"
+        }
+      ],
+      "total_ghost_periods": 53,
+      "who_breaks_silence_most": [
+        {
+          "user": "Adam",
+          "count": 39
+        },
+        {
+          "user": "Eve",
+          "count": 14
+        }
+      ],
+      "longest_ghost_period_hours": 666.77,
+      "average_ghost_duration_hours": 87.05528301886791
+    }
+  },
+  "link_analysis": {
+    "total_urls_shared": 0
+  },
+  "user_behavior": {
+    "Eve": {
+      "engagement": {
+        "platform_usage": {
+          "TikTok": 2485,
+          "Discord": 449,
+          "Facebook": 57187,
+          "Telegram": 3864,
+          "iMessage": 5235,
+          "Instagram": 1650
+        },
+        "conversation_initiation_count": 481
+      },
+      "content_style": {
+        "emoji_usage_rate_percent": 11.857330497873406,
+        "link_sharing_rate_percent": 1.2368651488616462,
+        "question_asking_rate_percent": 4.45803102326745
+      },
+      "message_stats": {
+        "avg_message_length_chars": 16.128956092069053,
+        "avg_message_length_words": 3.739992494370778,
+        "std_message_length_chars": 16.61386681127556
+      },
+      "message_counts": {
+        "total_messages": 63952,
+        "reactions_given": 6918,
+        "total_posts_inc_reactions": 70870
+      },
+      "activity_patterns": {
+        "peak_hours_of_day": {
+          "0": 9123,
+          "22": 7753,
+          "23": 8671
+        },
+        "active_days_of_week": {
+          "Friday": 9106,
+          "Monday": 10263,
+          "Sunday": 9869,
+          "Tuesday": 9632,
+          "Saturday": 9994,
+          "Thursday": 11286,
+          "Wednesday": 10720
+        },
+        "hourly_distribution": {
+          "0": 9123,
+          "1": 7549,
+          "2": 4886,
+          "3": 1905,
+          "4": 664,
+          "5": 343,
+          "6": 489,
+          "7": 473,
+          "8": 572,
+          "9": 609,
+          "10": 1689,
+          "11": 2557,
+          "12": 2643,
+          "13": 1751,
+          "14": 1971,
+          "15": 2085,
+          "16": 2554,
+          "17": 1806,
+          "18": 1458,
+          "19": 1907,
+          "20": 2352,
+          "21": 5060,
+          "22": 7753,
+          "23": 8671
+        }
+      }
+    },
+    "Adam": {
+      "engagement": {
+        "platform_usage": {
+          "TikTok": 2163,
+          "Discord": 430,
+          "Facebook": 47499,
+          "Telegram": 4301,
+          "iMessage": 4348,
+          "Instagram": 1424
+        },
+        "conversation_initiation_count": 548
+      },
+      "content_style": {
+        "emoji_usage_rate_percent": 17.381692458569507,
+        "link_sharing_rate_percent": 0.8011834909659081,
+        "question_asking_rate_percent": 6.479280597064544
+      },
+      "message_stats": {
+        "avg_message_length_chars": 16.58015990425691,
+        "avg_message_length_words": 3.9126344309436347,
+        "std_message_length_chars": 17.301607045706994
+      },
+      "message_counts": {
+        "total_messages": 60161,
+        "reactions_given": 4,
+        "total_posts_inc_reactions": 60165
+      },
+      "activity_patterns": {
+        "peak_hours_of_day": {
+          "0": 7860,
+          "22": 6564,
+          "23": 7279
+        },
+        "active_days_of_week": {
+          "Friday": 7607,
+          "Monday": 9070,
+          "Sunday": 8060,
+          "Tuesday": 8520,
+          "Saturday": 8382,
+          "Thursday": 9290,
+          "Wednesday": 9236
+        },
+        "hourly_distribution": {
+          "0": 7860,
+          "1": 6521,
+          "2": 4241,
+          "3": 1778,
+          "4": 651,
+          "5": 330,
+          "6": 419,
+          "7": 427,
+          "8": 453,
+          "9": 553,
+          "10": 1359,
+          "11": 1969,
+          "12": 2195,
+          "13": 1516,
+          "14": 1718,
+          "15": 1673,
+          "16": 2154,
+          "17": 1467,
+          "18": 1211,
+          "19": 1675,
+          "20": 1990,
+          "21": 4162,
+          "22": 6564,
+          "23": 7279
+        }
+      }
+    },
+    "Other": {
+      "engagement": {
+        "platform_usage": {
+          "Discord": 69
+        },
+        "conversation_initiation_count": 0
+      },
+      "content_style": {
+        "emoji_usage_rate_percent": 0,
+        "link_sharing_rate_percent": 20.28985507246377,
+        "question_asking_rate_percent": 1.4492753623188406
+      },
+      "message_stats": {
+        "avg_message_length_chars": 56.98550724637681,
+        "avg_message_length_words": 8.652173913043478,
+        "std_message_length_chars": 36.44879274754683
+      },
+      "message_counts": {
+        "total_messages": 69,
+        "reactions_given": 0,
+        "total_posts_inc_reactions": 69
+      },
+      "activity_patterns": {
+        "peak_hours_of_day": {
+          "18": 26,
+          "19": 41,
+          "22": 1
+        },
+        "active_days_of_week": {
+          "Friday": 1,
+          "Monday": 67,
+          "Tuesday": 1
+        },
+        "hourly_distribution": {
+          "0": 1,
+          "1": 0,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0,
+          "7": 0,
+          "8": 0,
+          "9": 0,
+          "10": 0,
+          "11": 0,
+          "12": 0,
+          "13": 0,
+          "14": 0,
+          "15": 0,
+          "16": 0,
+          "17": 0,
+          "18": 26,
+          "19": 41,
+          "20": 0,
+          "21": 0,
+          "22": 1,
+          "23": 0
+        }
+      }
+    }
+  },
+  "word_analysis": {
+    "top_20_bigrams": [
+      {
+        "count": 185,
+        "phrase": "cutie pretty"
+      },
+      {
+        "count": 182,
+        "phrase": "pretty kitti"
+      },
+      {
+        "count": 182,
+        "phrase": "kitti baby"
+      },
+      {
+        "count": 162,
+        "phrase": "jol jet"
+      },
+      {
+        "count": 141,
+        "phrase": "hob bay"
+      },
+      {
+        "count": 137,
+        "phrase": "good morning"
+      },
+      {
+        "count": 115,
+        "phrase": "nguy dek"
+      },
+      {
+        "count": 112,
+        "phrase": "sok sok"
+      },
+      {
+        "count": 107,
+        "phrase": "kal mun"
+      },
+      {
+        "count": 101,
+        "phrase": "dek dek"
+      },
+      {
+        "count": 100,
+        "phrase": "baby ឯកស"
+      },
+      {
+        "count": 97,
+        "phrase": "sby jet"
+      },
+      {
+        "count": 93,
+        "phrase": "pel klas"
+      },
+      {
+        "count": 86,
+        "phrase": "orn jet"
+      },
+      {
+        "count": 86,
+        "phrase": "sdab bot"
+      },
+      {
+        "count": 86,
+        "phrase": "kmeng toch"
+      },
+      {
+        "count": 80,
+        "phrase": "pherk terk"
+      },
+      {
+        "count": 76,
+        "phrase": "yub minh"
+      },
+      {
+        "count": 74,
+        "phrase": "click video"
+      },
+      {
+        "count": 73,
+        "phrase": "plex bat"
+      }
+    ],
+    "top_20_trigrams": [
+      {
+        "count": 182,
+        "phrase": "cutie pretty kitti"
+      },
+      {
+        "count": 182,
+        "phrase": "pretty kitti baby"
+      },
+      {
+        "count": 100,
+        "phrase": "kitti baby ឯកស"
+      },
+      {
+        "count": 40,
+        "phrase": "kitti baby changed"
+      },
+      {
+        "count": 40,
+        "phrase": "baby changed theme"
+      },
+      {
+        "count": 23,
+        "phrase": "kitti baby set"
+      },
+      {
+        "count": 23,
+        "phrase": "suly pheng tumhom"
+      },
+      {
+        "count": 23,
+        "phrase": "pheng tumhom sne"
+      },
+      {
+        "count": 23,
+        "phrase": "tumhom sne feat"
+      },
+      {
+        "count": 23,
+        "phrase": "sne feat lyrics"
+      },
+      {
+        "count": 23,
+        "phrase": "feat lyrics video"
+      },
+      {
+        "count": 20,
+        "phrase": "word effects added"
+      },
+      {
+        "count": 19,
+        "phrase": "yub minh sleep"
+      },
+      {
+        "count": 18,
+        "phrase": "yub menh dek"
+      },
+      {
+        "count": 17,
+        "phrase": "baby set nickname"
+      },
+      {
+        "count": 17,
+        "phrase": "skipped started playing"
+      },
+      {
+        "count": 16,
+        "phrase": "sdab bot nis"
+      },
+      {
+        "count": 15,
+        "phrase": "nguy dek dek"
+      },
+      {
+        "count": 13,
+        "phrase": "tim ngerb dek"
+      },
+      {
+        "count": 13,
+        "phrase": "dek moung marn"
+      }
+    ],
+    "user_word_analysis": {
+      "Eve": {
+        "total_words": 242878,
+        "top_20_words": [
+          {
+            "word": "jet",
+            "count": 531
+          },
+          {
+            "word": "dek",
+            "count": 530
+          },
+          {
+            "word": "tah",
+            "count": 484
+          },
+          {
+            "word": "pel",
+            "count": 471
+          },
+          {
+            "word": "tver",
+            "count": 423
+          },
+          {
+            "word": "mouy",
+            "count": 415
+          },
+          {
+            "word": "dak",
+            "count": 403
+          },
+          {
+            "word": "dol",
+            "count": 392
+          },
+          {
+            "word": "jol",
+            "count": 377
+          },
+          {
+            "word": "leng",
+            "count": 357
+          },
+          {
+            "word": "cuz",
+            "count": 354
+          },
+          {
+            "word": "nek",
+            "count": 353
+          },
+          {
+            "word": "tae",
+            "count": 345
+          },
+          {
+            "word": "lerng",
+            "count": 341
+          },
+          {
+            "word": "sleep",
+            "count": 341
+          },
+          {
+            "word": "kon",
+            "count": 334
+          },
+          {
+            "word": "pherk",
+            "count": 327
+          },
+          {
+            "word": "mun",
+            "count": 322
+          },
+          {
+            "word": "khenh",
+            "count": 319
+          },
+          {
+            "word": "alov",
+            "count": 313
+          }
+        ],
+        "unique_words": 12330,
+        "avg_word_length": 3.3689877222309144,
+        "vocabulary_richness": 0.05076622831215672
+      },
+      "Adam": {
+        "total_words": 230681,
+        "top_20_words": [
+          {
+            "word": "dek",
+            "count": 1061
+          },
+          {
+            "word": "muy",
+            "count": 720
+          },
+          {
+            "word": "tov",
+            "count": 697
+          },
+          {
+            "word": "phg",
+            "count": 643
+          },
+          {
+            "word": "pov",
+            "count": 620
+          },
+          {
+            "word": "nhom",
+            "count": 544
+          },
+          {
+            "word": "nov",
+            "count": 528
+          },
+          {
+            "word": "pel",
+            "count": 517
+          },
+          {
+            "word": "kernh",
+            "count": 480
+          },
+          {
+            "word": "tae",
+            "count": 448
+          },
+          {
+            "word": "venh",
+            "count": 447
+          },
+          {
+            "word": "kon",
+            "count": 440
+          },
+          {
+            "word": "cute",
+            "count": 424
+          },
+          {
+            "word": "bat",
+            "count": 421
+          },
+          {
+            "word": "anh",
+            "count": 416
+          },
+          {
+            "word": "jet",
+            "count": 412
+          },
+          {
+            "word": "dak",
+            "count": 405
+          },
+          {
+            "word": "dol",
+            "count": 377
+          },
+          {
+            "word": "ber",
+            "count": 360
+          },
+          {
+            "word": "jol",
+            "count": 358
+          }
+        ],
+        "unique_words": 11857,
+        "avg_word_length": 3.3880380265388133,
+        "vocabulary_richness": 0.05139998526103147
+      },
+      "Other": {
+        "total_words": 780,
+        "top_20_words": [
+          {
+            "word": "started",
+            "count": 29
+          },
+          {
+            "word": "playing",
+            "count": 29
+          },
+          {
+            "word": "lyrics",
+            "count": 29
+          },
+          {
+            "word": "suly",
+            "count": 26
+          },
+          {
+            "word": "pheng",
+            "count": 26
+          },
+          {
+            "word": "video",
+            "count": 25
+          },
+          {
+            "word": "tumhom",
+            "count": 23
+          },
+          {
+            "word": "sne",
+            "count": 23
+          },
+          {
+            "word": "feat",
+            "count": 23
+          },
+          {
+            "word": "skipped",
+            "count": 19
+          },
+          {
+            "word": "cover",
+            "count": 5
+          },
+          {
+            "word": "audio",
+            "count": 5
+          },
+          {
+            "word": "results",
+            "count": 4
+          },
+          {
+            "word": "no_entry",
+            "count": 4
+          },
+          {
+            "word": "song",
+            "count": 4
+          },
+          {
+            "word": "khmer",
+            "count": 3
+          },
+          {
+            "word": "lyric",
+            "count": 3
+          },
+          {
+            "word": "youtube",
+            "count": 3
+          },
+          {
+            "word": "original",
+            "count": 3
+          },
+          {
+            "word": "band",
+            "count": 3
+          }
+        ],
+        "unique_words": 161,
+        "avg_word_length": 3.3692307692307693,
+        "vocabulary_richness": 0.2064102564102564
+      }
+    },
+    "overall_word_counts": {
+      "total_words": 474339,
+      "unique_words": 17659,
+      "total_meaningful_words": 210005,
+      "unique_meaningful_words": 16405
+    },
+    "top_50_meaningful_words": [
+      {
+        "word": "dek",
+        "count": 1591
+      },
+      {
+        "word": "pel",
+        "count": 989
+      },
+      {
+        "word": "jet",
+        "count": 943
+      },
+      {
+        "word": "dak",
+        "count": 808
+      },
+      {
+        "word": "tae",
+        "count": 793
+      },
+      {
+        "word": "kon",
+        "count": 774
+      },
+      {
+        "word": "dol",
+        "count": 769
+      },
+      {
+        "word": "muy",
+        "count": 753
+      },
+      {
+        "word": "jol",
+        "count": 735
+      },
+      {
+        "word": "tov",
+        "count": 703
+      },
+      {
+        "word": "cute",
+        "count": 695
+      },
+      {
+        "word": "tver",
+        "count": 669
+      },
+      {
+        "word": "pov",
+        "count": 666
+      },
+      {
+        "word": "lerng",
+        "count": 663
+      },
+      {
+        "word": "nis",
+        "count": 658
+      },
+      {
+        "word": "vea",
+        "count": 658
+      },
+      {
+        "word": "mun",
+        "count": 654
+      },
+      {
+        "word": "anh",
+        "count": 654
+      },
+      {
+        "word": "ber",
+        "count": 643
+      },
+      {
+        "word": "phg",
+        "count": 643
+      },
+      {
+        "word": "bat",
+        "count": 642
+      },
+      {
+        "word": "sad",
+        "count": 621
+      },
+      {
+        "word": "nov",
+        "count": 617
+      },
+      {
+        "word": "kal",
+        "count": 616
+      },
+      {
+        "word": "pherk",
+        "count": 610
+      },
+      {
+        "word": "jenh",
+        "count": 604
+      },
+      {
+        "word": "pek",
+        "count": 594
+      },
+      {
+        "word": "hob",
+        "count": 585
+      },
+      {
+        "word": "nhom",
+        "count": 583
+      },
+      {
+        "word": "bay",
+        "count": 582
+      },
+      {
+        "word": "cuz",
+        "count": 569
+      },
+      {
+        "word": "marn",
+        "count": 568
+      },
+      {
+        "word": "tah",
+        "count": 568
+      },
+      {
+        "word": "del",
+        "count": 556
+      },
+      {
+        "word": "klas",
+        "count": 553
+      },
+      {
+        "word": "yum",
+        "count": 550
+      },
+      {
+        "word": "mes",
+        "count": 549
+      },
+      {
+        "word": "sdab",
+        "count": 546
+      },
+      {
+        "word": "hah",
+        "count": 546
+      },
+      {
+        "word": "nek",
+        "count": 536
+      },
+      {
+        "word": "nas",
+        "count": 526
+      },
+      {
+        "word": "kmeng",
+        "count": 526
+      },
+      {
+        "word": "mak",
+        "count": 519
+      },
+      {
+        "word": "tam",
+        "count": 514
+      },
+      {
+        "word": "tos",
+        "count": 513
+      },
+      {
+        "word": "bart",
+        "count": 504
+      },
+      {
+        "word": "nus",
+        "count": 503
+      },
+      {
+        "word": "good",
+        "count": 499
+      },
+      {
+        "word": "jis",
+        "count": 493
+      },
+      {
+        "word": "klach",
+        "count": 486
+      }
+    ]
+  },
+  "emoji_analysis": {
+    "total_emojis_used": 35171,
+    "user_emoji_analysis": {
+      "Eve": {
+        "top_10_emojis": [
+          {
+            "count": 3677,
+            "emoji": "😭"
+          },
+          {
+            "count": 1491,
+            "emoji": "😂"
+          },
+          {
+            "count": 704,
+            "emoji": "🥺"
+          },
+          {
+            "count": 619,
+            "emoji": "💀"
+          },
+          {
+            "count": 482,
+            "emoji": "😍"
+          },
+          {
+            "count": 447,
+            "emoji": "🖕🏻"
+          },
+          {
+            "count": 440,
+            "emoji": "🫶"
+          },
+          {
+            "count": 409,
+            "emoji": "💪"
+          },
+          {
+            "count": 372,
+            "emoji": "😔"
+          },
+          {
+            "count": 345,
+            "emoji": "💔"
+          }
+        ],
+        "total_emojis_sent": 15768,
+        "unique_emojis_used": 314
+      },
+      "Adam": {
+        "top_10_emojis": [
+          {
+            "count": 3523,
+            "emoji": "😭"
+          },
+          {
+            "count": 3207,
+            "emoji": "😂"
+          },
+          {
+            "count": 1150,
+            "emoji": "🥹"
+          },
+          {
+            "count": 985,
+            "emoji": "🥲"
+          },
+          {
+            "count": 817,
+            "emoji": "☠️"
+          },
+          {
+            "count": 747,
+            "emoji": "🫶"
+          },
+          {
+            "count": 609,
+            "emoji": "🤣"
+          },
+          {
+            "count": 524,
+            "emoji": "😆"
+          },
+          {
+            "count": 394,
+            "emoji": "☹️"
+          },
+          {
+            "count": 359,
+            "emoji": "🖕🏾"
+          }
+        ],
+        "total_emojis_sent": 19403,
+        "unique_emojis_used": 333
+      }
+    },
+    "top_20_emojis_overall": [
+      {
+        "count": 7200,
+        "emoji": "😭"
+      },
+      {
+        "count": 4698,
+        "emoji": "😂"
+      },
+      {
+        "count": 1376,
+        "emoji": "🥹"
+      },
+      {
+        "count": 1214,
+        "emoji": "🥲"
+      },
+      {
+        "count": 1187,
+        "emoji": "🫶"
+      },
+      {
+        "count": 1013,
+        "emoji": "🥺"
+      },
+      {
+        "count": 942,
+        "emoji": "☠️"
+      },
+      {
+        "count": 849,
+        "emoji": "😆"
+      },
+      {
+        "count": 799,
+        "emoji": "😍"
+      },
+      {
+        "count": 740,
+        "emoji": "🤣"
+      },
+      {
+        "count": 629,
+        "emoji": "💀"
+      },
+      {
+        "count": 623,
+        "emoji": "💪"
+      },
+      {
+        "count": 552,
+        "emoji": "😢"
+      },
+      {
+        "count": 485,
+        "emoji": "😁"
+      },
+      {
+        "count": 462,
+        "emoji": "💔"
+      },
+      {
+        "count": 452,
+        "emoji": "😔"
+      },
+      {
+        "count": 447,
+        "emoji": "🖕🏻"
+      },
+      {
+        "count": 440,
+        "emoji": "🫂"
+      },
+      {
+        "count": 419,
+        "emoji": "☹️"
+      },
+      {
+        "count": 405,
+        "emoji": "🤡"
+      }
+    ],
+    "unique_emojis_overall": 455,
+    "messages_with_emojis_percent": 13.760068342689774
+  },
+  "topic_modeling": {
+    "discovered_topics": [
+      {
+        "topic_id": 0,
+        "top_words": [
+          "nv",
+          "bay",
+          "bay nv",
+          "hob",
+          "tver",
+          "hob bay",
+          "kmeng",
+          "dol",
+          "tas",
+          "mak"
+        ],
+        "message_percentage": 36.16
+      },
+      {
+        "topic_id": 4,
+        "top_words": [
+          "sad",
+          "yum",
+          "bat",
+          "pel",
+          "tae",
+          "hah",
+          "pov",
+          "jet",
+          "rerng",
+          "sdab"
+        ],
+        "message_percentage": 22.73
+      },
+      {
+        "topic_id": 3,
+        "top_words": [
+          "cute",
+          "kon",
+          "lerng",
+          "dak",
+          "nis",
+          "mes",
+          "pek",
+          "tae",
+          "cute cute",
+          "lerng cute"
+        ],
+        "message_percentage": 22.23
+      },
+      {
+        "topic_id": 1,
+        "top_words": [
+          "dek",
+          "nguy",
+          "nguy dek",
+          "tov",
+          "mg",
+          "tos dek",
+          "ngerb",
+          "yub",
+          "dek dek",
+          "marn"
+        ],
+        "message_percentage": 6.56
+      },
+      {
+        "topic_id": 6,
+        "top_words": [
+          "tos",
+          "yum",
+          "tos dek",
+          "tos tos",
+          "sleep",
+          "tver",
+          "date",
+          "hob",
+          "tos sleep",
+          "lg"
+        ],
+        "message_percentage": 6.15
+      },
+      {
+        "topic_id": 5,
+        "top_words": [
+          "somtos",
+          "somtos somtos",
+          "khos",
+          "knh",
+          "tov",
+          "bong",
+          "dak",
+          "phg",
+          "somtos bong",
+          "nhom"
+        ],
+        "message_percentage": 3.51
+      },
+      {
+        "topic_id": 2,
+        "top_words": [
+          "bart",
+          "mak",
+          "bart mak",
+          "bart bart",
+          "bong",
+          "bart bong",
+          "nov",
+          "orkun",
+          "bart orkun",
+          "dol"
+        ],
+        "message_percentage": 2.65
+      }
+    ]
+  },
+  "filter_settings": {
+    "group_mappings": {
+      "Eve": [
+        "Mandy",
+        "Amanda Ehrmantraut",
+        "mandyE1995",
+        "A.Ehrmantraut",
+        "amanda_e2024",
+        "amanda.ehrmantraut@gmail.com"
+      ],
+      "Adam": [
+        "Nicholas",
+        "Amanda Ehrmantraut",
+        "nicholas - នីកូឡាស់",
+        "nick.machiavel",
+        "nickmachiavel99",
+        "Amanda E",
+        "Nick M"
+      ]
+    },
+    "removed_senders": [],
+    "unassigned_label": "Other"
+  },
+  "dataset_overview": {
+    "date_range": {
+      "end_date": "2023-05-08",
+      "start_date": "2022-04-05",
+      "total_days": 399
+    },
+    "participants": {
+      "count": 3,
+      "names": [
+        "Eve",
+        "Adam",
+        "Other"
+      ]
+    },
+    "total_messages": 124182,
+    "total_reactions": 6922,
+    "analysis_timestamp": "2025-07-07T14:37:59.746964",
+    "daily_average_messages": 496.73,
+    "chat_platforms_distribution": {
+      "TikTok": 4648,
+      "Discord": 948,
+      "Facebook": 104686,
+      "Telegram": 8165,
+      "iMessage": 9583,
+      "Instagram": 3074
+    }
+  },
+  "emotion_analysis": {
+    "note": "Analysis performed on 15,432 messages using the 'emotion-analyzer-v2' model. (Analysis was run on a random sample of 1000 messages to ensure speed).",
+    "summary": {
+      "overall_average_scores": {
+        "joy": 0.2511,
+        "fear": 0.0523,
+        "anger": 0.1034,
+        "disgust": 0.0498,
+        "sadness": 0.1855,
+        "surprise": 0.2199
+      },
+      "user_dominant_emotions": {
+        "Eve": {
+          "average_scores": {
+            "joy": 0.2845,
+            "fear": 0.0481,
+            "anger": 0.0952,
+            "disgust": 0.0455,
+            "sadness": 0.1788,
+            "surprise": 0.2411
+          },
+          "dominant_emotion": "joy"
+        },
+        "Adam": {
+          "average_scores": {
+            "joy": 0.2177,
+            "fear": 0.0565,
+            "anger": 0.1116,
+            "disgust": 0.0541,
+            "sadness": 0.1922,
+            "surprise": 0.1983
+          },
+          "dominant_emotion": "joy"
+        },
+        "Other": {
+          "average_scores": {
+            "joy": null,
+            "fear": null,
+            "anger": null,
+            "disgust": null,
+            "sadness": null,
+            "surprise": null
+          },
+          "dominant_emotion": "anger"
+        }
+      }
+    },
+    "top_messages_per_emotion": {
+      "joy": [
+        {
+          "score": 0.9912,
+          "sender": "Eve",
+          "message": "This is the best day ever! I'm so happy!",
+          "datetime": "2024-06-15T14:30:00"
+        },
+        {
+          "score": 0.9854,
+          "sender": "Adam",
+          "message": "I am so proud of you! This is wonderful news.",
+          "datetime": "2024-05-20T11:05:10"
+        },
+        {
+          "score": 0.9821,
+          "sender": "Eve",
+          "message": "Haha, that's hilarious! You always make me laugh.",
+          "datetime": "2024-04-10T20:18:45"
+        },
+        {
+          "score": 0.9799,
+          "sender": "Adam",
+          "message": "I love spending time with you.",
+          "datetime": "2024-03-22T19:00:12"
+        },
+        {
+          "score": 0.9750,
+          "sender": "Eve",
+          "message": "Feeling so grateful and happy right now. :)",
+          "datetime": "2024-02-01T09:12:33"
+        }
+      ],
+      "fear": [
+        {
+          "score": 0.9867,
+          "sender": "Adam",
+          "message": "I'm worried this plan might not work out.",
+          "datetime": "2024-06-02T23:01:05"
+        },
+        {
+          "score": 0.9412,
+          "sender": "Eve",
+          "message": "Be careful on your way home, the storm looks bad.",
+          "datetime": "2024-05-18T21:40:00"
+        },
+        {
+          "score": 0.8823,
+          "sender": "Adam",
+          "message": "That horror movie was genuinely terrifying.",
+          "datetime": "2024-04-29T00:15:30"
+        },
+        {
+          "score": 0.8544,
+          "sender": "Eve",
+          "message": "I have a bad feeling about this.",
+          "datetime": "2024-03-05T13:22:08"
+        },
+        {
+          "score": 0.8150,
+          "sender": "Adam",
+          "message": "I'm scared of what might happen.",
+          "datetime": "2024-02-11T18:55:21"
+        }
+      ],
+      "anger": [
+        {
+          "score": 0.9901,
+          "sender": "Adam",
+          "message": "I'm so frustrated with this traffic jam.",
+          "datetime": "2024-06-20T17:50:41"
+        },
+        {
+          "score": 0.9633,
+          "sender": "Eve",
+          "message": "He had no right to say that. I'm furious.",
+          "datetime": "2024-05-12T16:05:19"
+        },
+        {
+          "score": 0.9321,
+          "sender": "Adam",
+          "message": "This is completely unfair.",
+          "datetime": "2024-04-08T12:33:51"
+        },
+        {
+          "score": 0.9188,
+          "sender": "Eve",
+          "message": "I can't believe they cancelled our flight. I'm so mad.",
+          "datetime": "2024-03-14T08:10:02"
+        },
+        {
+          "score": 0.8950,
+          "sender": "Adam",
+          "message": "Stop ignoring what I'm saying.",
+          "datetime": "2024-02-09T22:40:15"
+        }
+      ],
+      "disgust": [
+        {
+          "score": 0.9542,
+          "sender": "Eve",
+          "message": "Ugh, I stepped in something gross.",
+          "datetime": "2024-06-07T18:30:11"
+        },
+        {
+          "score": 0.9167,
+          "sender": "Adam",
+          "message": "That's a disgusting habit.",
+          "datetime": "2024-05-03T15:21:04"
+        },
+        {
+          "score": 0.8876,
+          "sender": "Eve",
+          "message": "I can't watch this, it's vile.",
+          "datetime": "2024-04-19T23:00:56"
+        },
+        {
+          "score": 0.8641,
+          "sender": "Adam",
+          "message": "The way he talks about people is repulsive.",
+          "datetime": "2024-03-25T11:45:10"
+        },
+        {
+          "score": 0.8350,
+          "sender": "Eve",
+          "message": "Ew, there's a hair in my food.",
+          "datetime": "2024-02-28T12:55:20"
+        }
+      ],
+      "sadness": [
+        {
+          "score": 0.9925,
+          "sender": "Adam",
+          "message": "I'm going to miss you so much.",
+          "datetime": "2024-06-28T21:10:43"
+        },
+        {
+          "score": 0.9887,
+          "sender": "Eve",
+          "message": "Feeling really down today. Just one of those days.",
+          "datetime": "2024-05-15T19:25:01"
+        },
+        {
+          "score": 0.9845,
+          "sender": "Adam",
+          "message": "I'm so sorry for your loss. My heart is broken for you.",
+          "datetime": "2024-04-30T10:00:00"
+        },
+        {
+          "score": 0.9811,
+          "sender": "Eve",
+          "message": "It's a shame that it has to end this way.",
+          "datetime": "2024-03-16T18:04:22"
+        },
+        {
+          "score": 0.9798,
+          "sender": "Adam",
+          "message": "I wish things could have been different.",
+          "datetime": "2024-02-19T23:50:50"
+        }
+      ],
+      "surprise": [
+        {
+          "score": 0.9899,
+          "sender": "Eve",
+          "message": "OMG! You're kidding me! I can't believe it!",
+          "datetime": "2024-06-11T20:05:14"
+        },
+        {
+          "score": 0.9765,
+          "sender": "Adam",
+          "message": "Whoa, I did not see that coming at all.",
+          "datetime": "2024-05-09T22:30:00"
+        },
+        {
+          "score": 0.9688,
+          "sender": "Eve",
+          "message": "Wait, really? That's amazing!",
+          "datetime": "2024-04-03T11:15:39"
+        },
+        {
+          "score": 0.9612,
+          "sender": "Adam",
+          "message": "No way. You actually did it?",
+          "datetime": "2024-03-01T17:40:21"
+        },
+        {
+          "score": 0.9587,
+          "sender": "Eve",
+          "message": "Wow. Just... wow.",
+          "datetime": "2024-02-05T12:00:01"
+        }
+      ]
+    }
+  },
+  "response_metrics": {
+    "Eve": {
+      "Eve": {
+        "response_count": 0,
+        "avg_response_minutes": 0,
+        "p90_response_minutes": 0,
+        "response_time_std_dev": 0,
+        "median_response_minutes": 0,
+        "fastest_response_minutes": 0,
+        "slowest_response_minutes": 0
+      },
+      "Adam": {
+        "response_count": 26139,
+        "avg_response_minutes": 4.73,
+        "p90_response_minutes": 2.47,
+        "response_time_std_dev": 36.99,
+        "median_response_minutes": 0.23,
+        "fastest_response_minutes": 0.02,
+        "slowest_response_minutes": 1685.97
+      },
+      "Other": {
+        "response_count": 14,
+        "avg_response_minutes": 12.97,
+        "p90_response_minutes": 0.37,
+        "response_time_std_dev": 47.94,
+        "median_response_minutes": 0.14,
+        "fastest_response_minutes": 0.02,
+        "slowest_response_minutes": 179.53
+      }
+    },
+    "Adam": {
+      "Eve": {
+        "response_count": 26015,
+        "avg_response_minutes": 4.67,
+        "p90_response_minutes": 2.5,
+        "response_time_std_dev": 38.68,
+        "median_response_minutes": 0.27,
+        "fastest_response_minutes": 0.02,
+        "slowest_response_minutes": 2135.5
+      },
+      "Adam": {
+        "response_count": 0,
+        "avg_response_minutes": 0,
+        "p90_response_minutes": 0,
+        "response_time_std_dev": 0,
+        "median_response_minutes": 0,
+        "fastest_response_minutes": 0,
+        "slowest_response_minutes": 0
+      },
+      "Other": {
+        "response_count": 24,
+        "avg_response_minutes": 0.14,
+        "p90_response_minutes": 0.44,
+        "response_time_std_dev": 0.19,
+        "median_response_minutes": 0.08,
+        "fastest_response_minutes": 0.02,
+        "slowest_response_minutes": 0.7
+      }
+    },
+    "Other": {
+      "Eve": {
+        "response_count": 9,
+        "avg_response_minutes": 0.26,
+        "p90_response_minutes": 0.49,
+        "response_time_std_dev": 0.46,
+        "median_response_minutes": 0.12,
+        "fastest_response_minutes": 0.02,
+        "slowest_response_minutes": 1.47
+      },
+      "Adam": {
+        "response_count": 15,
+        "avg_response_minutes": 0.39,
+        "p90_response_minutes": 0.71,
+        "response_time_std_dev": 0.87,
+        "median_response_minutes": 0.05,
+        "fastest_response_minutes": 0.02,
+        "slowest_response_minutes": 3.42
+      },
+      "Other": {
+        "response_count": 0,
+        "avg_response_minutes": 0,
+        "p90_response_minutes": 0,
+        "response_time_std_dev": 0,
+        "median_response_minutes": 0,
+        "fastest_response_minutes": 0,
+        "slowest_response_minutes": 0
+      }
+    }
+  },
+  "unbroken_streaks": {
+    "top_streaks": [
+      {
+        "end_date": "2024-05-09",
+        "start_date": "2024-01-10",
+        "length_days": 120,
+        "last_message": {
+          "sender": "Eve",
+          "message": "Okay, have a great trip! Talk to you when you get back.",
+          "datetime": "2024-05-09T22:30:15"
+        },
+        "first_message": {
+          "sender": "Adam",
+          "message": "Hey, how was your holiday? Welcome back!",
+          "datetime": "2024-01-10T10:05:00"
+        },
+        "first_message_after_break": {
+          "sender": "Eve",
+          "message": "I'm back! The trip was amazing. How have you been?",
+          "datetime": "2024-05-13T11:00:20",
+          "days_gap": 4
+        }
+      },
+      {
+        "end_date": "2024-07-16",
+        "start_date": "2024-06-01",
+        "length_days": 46,
+        "last_message": {
+          "sender": "Adam",
+          "message": "Sounds good, let's talk more tomorrow. Good night!",
+          "datetime": "2024-07-16T23:50:05"
+        },
+        "first_message": {
+          "sender": "Eve",
+          "message": "Did you see that new movie trailer? It looks incredible.",
+          "datetime": "2024-06-01T15:10:30"
+        },
+        "first_message_after_break": {
+          "sender": "Adam",
+          "message": "Hey, sorry, yesterday was super busy. What's up?",
+          "datetime": "2024-07-18T09:15:00",
+          "days_gap": 2
+        }
+      },
+      {
+        "end_date": "2023-12-10",
+        "start_date": "2023-11-15",
+        "length_days": 26,
+        "last_message": {
+          "sender": "Eve",
+          "message": "Good night! 😴",
+          "datetime": "2023-12-10T23:59:59"
+        },
+        "first_message": {
+          "sender": "Adam",
+          "message": "Happy birthday! Hope you have an amazing day!",
+          "datetime": "2023-11-15T00:05:10"
+        },
+        "first_message_after_break": {
+          "sender": "Eve",
+          "message": "Hey stranger! Long time no talk.",
+          "datetime": "2023-12-15T18:00:00",
+          "days_gap": 5
+        }
+      }
+    ],
+    "total_active_days": 265
+  },
+  "argument_analysis": {
+    "user_stats": {
+      "Eve": {
+        "count": 95,
+        "top_words_used": [
+          [
+            "not listening",
+            18
+          ],
+          [
+            "ridiculous",
+            15
+          ],
+          [
+            "upset",
+            12
+          ],
+          [
+            "always",
+            10
+          ],
+          [
+            "never",
+            8
+          ]
+        ]
+      },
+      "Adam": {
+        "count": 110,
+        "top_words_used": [
+          [
+            "whatever",
+            20
+          ],
+          [
+            "don't care",
+            15
+          ],
+          [
+            "unbelievable",
+            14
+          ],
+          [
+            "wrong",
+            12
+          ],
+          [
+            "my point is",
+            10
+          ]
+        ]
+      },
+      "Other": {
+        "count": 0,
+        "top_words_used": []
+      }
+    },
+    "top_senders": [
+      {
+        "user": "Adam",
+        "count": 110
+      },
+      {
+        "user": "Eve",
+        "count": 95
+      },
+      {
+        "user": "Other",
+        "count": 0
+      }
+    ],
+    "top_messages": [
+      {
+        "sender": "Eve",
+        "message": "That's not what I said at all. It feels like you're not even listening to me.",
+        "datetime": "2024-06-10T22:15:30"
+      },
+      {
+        "sender": "Adam",
+        "message": "Honestly, whatever. I'm too tired to have this same argument again.",
+        "datetime": "2024-05-28T23:00:12"
+      },
+      {
+        "sender": "Eve",
+        "message": "Why do you always have to turn this into a fight? It's ridiculous.",
+        "datetime": "2024-04-17T20:45:00"
+      },
+      {
+        "sender": "Adam",
+        "message": "My point is that you're completely missing the issue here. It's unbelievable.",
+        "datetime": "2024-03-21T18:05:55"
+      },
+      {
+        "sender": "Eve",
+        "message": "I'm just really upset that you would think that of me. I would never do that.",
+        "datetime": "2024-02-19T19:30:48"
+      }
+    ],
+    "most_used_words": [
+      {
+        "word": "whatever",
+        "count": 25
+      },
+      {
+        "word": "not listening",
+        "count": 22
+      },
+      {
+        "word": "unbelievable",
+        "count": 19
+      },
+      {
+        "word": "ridiculous",
+        "count": 18
+      },
+      {
+        "word": "don't care",
+        "count": 17
+      },
+      {
+        "word": "wrong",
+        "count": 16
+      },
+      {
+        "word": "upset",
+        "count": 15
+      },
+      {
+        "word": "always",
+        "count": 14
+      },
+      {
+        "word": "my point is",
+        "count": 13
+      },
+      {
+        "word": "never",
+        "count": 12
+      },
+      {
+        "word": "annoying",
+        "count": 11
+      },
+      {
+        "word": "frustrating",
+        "count": 10
+      },
+      {
+        "word": "stop",
+        "count": 9
+      },
+      {
+        "word": "seriously",
+        "count": 8
+      },
+      {
+        "word": "blame",
+        "count": 7
+      }
+    ],
+    "total_matching_messages": 205,
+    "argument_intensity_percent": 0.312589928057554
+  },
+  "question_analysis": {
+    "total_questions_asked": 4600,
+    "user_question_analysis": {
+      "Eve": {
+        "total_questions": 2500,
+        "latest_5_questions": [
+          {
+            "datetime": "2024-07-06T22:10:05",
+            "question_text": "What do you want to do tomorrow?"
+          },
+          {
+            "datetime": "2024-07-06T21:45:12",
+            "question_text": "Did you see that new movie trailer?"
+          },
+          {
+            "datetime": "2024-07-06T20:15:30",
+            "question_text": "How was your day?"
+          },
+          {
+            "datetime": "2024-07-06T19:02:45",
+            "question_text": "Are we still on for dinner?"
+          },
+          {
+            "datetime": "2024-07-06T18:30:00",
+            "question_text": "Should I pick up snacks?"
+          }
+        ]
+      },
+      "Adam": {
+        "total_questions": 2100,
+        "latest_5_questions": [
+          {
+            "datetime": "2024-07-06T22:05:18",
+            "question_text": "Where did you want to go again?"
+          },
+          {
+            "datetime": "2024-07-06T20:16:00",
+            "question_text": "It was good, how was yours?"
+          },
+          {
+            "datetime": "2024-07-06T18:35:10",
+            "question_text": "What time should I be ready?"
+          },
+          {
+            "datetime": "2024-07-06T15:20:25",
+            "question_text": "Have you seen my headphones?"
+          },
+          {
+            "datetime": "2024-07-06T12:00:50",
+            "question_text": "Lunch soon?"
+          }
+        ]
+      },
+      "Other": {
+        "total_questions": 0,
+        "latest_5_questions": []
+      }
+    }
+  },
+  "temporal_patterns": {
+    "peak_hour": 0,
+    "monthly_trend": {
+      "2022-04": 16,
+      "2022-05": 314,
+      "2022-06": 2686,
+      "2022-07": 8934,
+      "2022-08": 9872,
+      "2022-09": 19036,
+      "2022-10": 24299,
+      "2022-11": 23045,
+      "2022-12": 19772,
+      "2023-01": 15993,
+      "2023-02": 3674,
+      "2023-03": 1809,
+      "2023-04": 1650,
+      "2023-05": 4
+    },
+    "quietest_hour": 5,
+    "most_active_day": "Thursday",
+    "least_active_day": "Friday",
+    "daily_distribution": {
+      "Friday": 16714,
+      "Monday": 19400,
+      "Sunday": 17929,
+      "Tuesday": 18153,
+      "Saturday": 18376,
+      "Thursday": 20576,
+      "Wednesday": 19956
+    },
+    "hourly_distribution": {
+      "0": 16984,
+      "1": 14070,
+      "2": 9127,
+      "3": 3683,
+      "4": 1315,
+      "5": 673,
+      "6": 908,
+      "7": 900,
+      "8": 1025,
+      "9": 1162,
+      "10": 3048,
+      "11": 4526,
+      "12": 4838,
+      "13": 3267,
+      "14": 3689,
+      "15": 3758,
+      "16": 4708,
+      "17": 3273,
+      "18": 2695,
+      "19": 3623,
+      "20": 4342,
+      "21": 9222,
+      "22": 14318,
+      "23": 15950
+    },
+    "night_owl_percentage": 56.54442274835245,
+    "early_bird_percentage": 3.677233341469368,
+    "daily_distribution_by_date": {
+      "2022-04-05": 16,
+      "2022-05-03": 155,
+      "2022-05-07": 20,
+      "2022-05-08": 40,
+      "2022-05-12": 44,
+      "2022-05-13": 55,
+      "2022-06-05": 67,
+      "2022-06-06": 1064,
+      "2022-06-07": 36,
+      "2022-06-08": 14,
+      "2022-06-09": 519,
+      "2022-06-10": 532,
+      "2022-06-11": 410,
+      "2022-06-17": 7,
+      "2022-06-18": 37,
+      "2022-07-09": 299,
+      "2022-07-10": 91,
+      "2022-07-13": 474,
+      "2022-07-14": 1468,
+      "2022-07-15": 258,
+      "2022-07-16": 308,
+      "2022-07-17": 853,
+      "2022-07-18": 490,
+      "2022-07-19": 462,
+      "2022-07-20": 902,
+      "2022-07-21": 357,
+      "2022-07-22": 141,
+      "2022-07-23": 227,
+      "2022-07-24": 170,
+      "2022-07-25": 26,
+      "2022-07-26": 524,
+      "2022-07-27": 391,
+      "2022-07-28": 559,
+      "2022-07-29": 362,
+      "2022-07-30": 230,
+      "2022-07-31": 342,
+      "2022-08-01": 409,
+      "2022-08-04": 5,
+      "2022-08-05": 625,
+      "2022-08-06": 1159,
+      "2022-08-07": 342,
+      "2022-08-08": 338,
+      "2022-08-09": 218,
+      "2022-08-10": 673,
+      "2022-08-11": 254,
+      "2022-08-12": 161,
+      "2022-08-13": 15,
+      "2022-08-14": 259,
+      "2022-08-15": 857,
+      "2022-08-16": 458,
+      "2022-08-17": 242,
+      "2022-08-18": 193,
+      "2022-08-19": 99,
+      "2022-08-22": 284,
+      "2022-08-23": 397,
+      "2022-08-24": 313,
+      "2022-08-25": 385,
+      "2022-08-26": 224,
+      "2022-08-29": 648,
+      "2022-08-30": 1041,
+      "2022-08-31": 273,
+      "2022-09-01": 693,
+      "2022-09-02": 495,
+      "2022-09-03": 8,
+      "2022-09-04": 945,
+      "2022-09-05": 1047,
+      "2022-09-06": 788,
+      "2022-09-07": 331,
+      "2022-09-08": 1009,
+      "2022-09-09": 615,
+      "2022-09-10": 182,
+      "2022-09-11": 889,
+      "2022-09-12": 1027,
+      "2022-09-13": 255,
+      "2022-09-14": 286,
+      "2022-09-15": 124,
+      "2022-09-16": 62,
+      "2022-09-17": 1012,
+      "2022-09-18": 157,
+      "2022-09-19": 128,
+      "2022-09-20": 912,
+      "2022-09-21": 661,
+      "2022-09-22": 1382,
+      "2022-09-23": 1035,
+      "2022-09-24": 193,
+      "2022-09-25": 209,
+      "2022-09-26": 449,
+      "2022-09-27": 913,
+      "2022-09-28": 1365,
+      "2022-09-29": 1224,
+      "2022-09-30": 640,
+      "2022-10-01": 491,
+      "2022-10-02": 752,
+      "2022-10-03": 311,
+      "2022-10-04": 108,
+      "2022-10-05": 544,
+      "2022-10-06": 544,
+      "2022-10-07": 1116,
+      "2022-10-08": 697,
+      "2022-10-09": 1686,
+      "2022-10-10": 944,
+      "2022-10-11": 813,
+      "2022-10-12": 636,
+      "2022-10-13": 574,
+      "2022-10-14": 363,
+      "2022-10-15": 1172,
+      "2022-10-16": 357,
+      "2022-10-17": 1184,
+      "2022-10-18": 1133,
+      "2022-10-19": 1754,
+      "2022-10-20": 184,
+      "2022-10-21": 480,
+      "2022-10-22": 1080,
+      "2022-10-23": 370,
+      "2022-10-24": 858,
+      "2022-10-25": 648,
+      "2022-10-26": 695,
+      "2022-10-27": 1287,
+      "2022-10-28": 1189,
+      "2022-10-29": 663,
+      "2022-10-30": 1168,
+      "2022-10-31": 498,
+      "2022-11-01": 337,
+      "2022-11-02": 1049,
+      "2022-11-03": 210,
+      "2022-11-04": 508,
+      "2022-11-05": 1122,
+      "2022-11-06": 887,
+      "2022-11-07": 776,
+      "2022-11-08": 639,
+      "2022-11-09": 261,
+      "2022-11-10": 797,
+      "2022-11-11": 774,
+      "2022-11-12": 340,
+      "2022-11-13": 1428,
+      "2022-11-14": 940,
+      "2022-11-15": 260,
+      "2022-11-16": 1393,
+      "2022-11-17": 554,
+      "2022-11-18": 1560,
+      "2022-11-19": 1891,
+      "2022-11-20": 574,
+      "2022-11-21": 1633,
+      "2022-11-22": 470,
+      "2022-11-23": 545,
+      "2022-11-24": 1429,
+      "2022-11-25": 194,
+      "2022-11-26": 249,
+      "2022-11-27": 1349,
+      "2022-11-28": 388,
+      "2022-11-29": 366,
+      "2022-11-30": 122,
+      "2022-12-01": 88,
+      "2022-12-02": 103,
+      "2022-12-03": 543,
+      "2022-12-04": 838,
+      "2022-12-05": 669,
+      "2022-12-06": 115,
+      "2022-12-07": 265,
+      "2022-12-08": 1037,
+      "2022-12-09": 423,
+      "2022-12-10": 235,
+      "2022-12-11": 521,
+      "2022-12-12": 522,
+      "2022-12-13": 1164,
+      "2022-12-14": 1690,
+      "2022-12-15": 845,
+      "2022-12-16": 907,
+      "2022-12-17": 643,
+      "2022-12-18": 323,
+      "2022-12-19": 814,
+      "2022-12-20": 653,
+      "2022-12-21": 1024,
+      "2022-12-22": 1055,
+      "2022-12-23": 351,
+      "2022-12-24": 557,
+      "2022-12-25": 1500,
+      "2022-12-26": 711,
+      "2022-12-27": 573,
+      "2022-12-28": 40,
+      "2022-12-29": 84,
+      "2022-12-30": 677,
+      "2022-12-31": 802,
+      "2023-01-01": 183,
+      "2023-01-02": 644,
+      "2023-01-03": 629,
+      "2023-01-04": 686,
+      "2023-01-05": 1611,
+      "2023-01-06": 347,
+      "2023-01-07": 452,
+      "2023-01-08": 616,
+      "2023-01-09": 257,
+      "2023-01-10": 1081,
+      "2023-01-11": 1163,
+      "2023-01-12": 143,
+      "2023-01-13": 503,
+      "2023-01-14": 1790,
+      "2023-01-15": 514,
+      "2023-01-16": 36,
+      "2023-01-17": 112,
+      "2023-01-18": 1768,
+      "2023-01-19": 683,
+      "2023-01-20": 583,
+      "2023-01-23": 651,
+      "2023-01-24": 917,
+      "2023-01-25": 22,
+      "2023-01-27": 248,
+      "2023-01-28": 133,
+      "2023-01-29": 88,
+      "2023-01-30": 130,
+      "2023-01-31": 3,
+      "2023-02-01": 147,
+      "2023-02-02": 61,
+      "2023-02-03": 351,
+      "2023-02-12": 12,
+      "2023-02-13": 198,
+      "2023-02-14": 258,
+      "2023-02-15": 2,
+      "2023-02-20": 16,
+      "2023-02-21": 880,
+      "2023-02-22": 93,
+      "2023-02-23": 924,
+      "2023-02-24": 10,
+      "2023-02-25": 157,
+      "2023-02-26": 330,
+      "2023-02-27": 235,
+      "2023-03-01": 44,
+      "2023-03-02": 215,
+      "2023-03-03": 288,
+      "2023-03-04": 92,
+      "2023-03-05": 52,
+      "2023-03-06": 98,
+      "2023-03-07": 727,
+      "2023-03-08": 71,
+      "2023-03-09": 2,
+      "2023-03-13": 88,
+      "2023-03-14": 89,
+      "2023-03-15": 8,
+      "2023-03-31": 35,
+      "2023-04-01": 1166,
+      "2023-04-02": 17,
+      "2023-04-03": 29,
+      "2023-04-04": 3,
+      "2023-04-05": 8,
+      "2023-04-06": 33,
+      "2023-04-07": 392,
+      "2023-04-08": 1,
+      "2023-04-28": 1,
+      "2023-05-03": 1,
+      "2023-05-08": 3
+    },
+    "weekend_activity_percentage": 27.691756163046133
+  },
+  "info_sharing_stats": {
+    "total_messages": 131108,
+    "personal_messages": 131104,
+    "info_sharing_messages": 4,
+    "info_sharing_percentage": 0,
+    "info_sharing_by_category": {
+      "news": 1,
+      "announcement": 1
+    },
+    "confidence_threshold_used": 0.4
+  },
+  "sentiment_analysis": {
+    "sentiment_timeline": {
+      "2022-04-05": 0.008928571428571428,
+      "2022-05-03": -0.004301075268817205,
+      "2022-05-07": 0.005,
+      "2022-05-08": 0,
+      "2022-05-12": 0,
+      "2022-05-13": 0.028273809523809524,
+      "2022-06-05": 0.015394088669950737,
+      "2022-06-06": 0.002015501333683152,
+      "2022-06-07": -0.016129032258064516,
+      "2022-06-08": 0,
+      "2022-06-09": -0.0025960337795915404,
+      "2022-06-10": 0.0004563084645220171,
+      "2022-06-11": -0.0034149788035798398,
+      "2022-06-17": 0,
+      "2022-06-18": 0.003787878787878788,
+      "2022-07-09": -0.00043636150647220756,
+      "2022-07-10": 0.0031645569620253164,
+      "2022-07-13": 0.0023836765827612507,
+      "2022-07-14": -0.0016871195983750096,
+      "2022-07-15": -0.002598300731080814,
+      "2022-07-16": 0.0018627954779033913,
+      "2022-07-17": 0.0037912165288591145,
+      "2022-07-18": 0.0002832007712701857,
+      "2022-07-19": 0.0033401849948612537,
+      "2022-07-20": 0.003645436409146488,
+      "2022-07-21": 0.005846895720313442,
+      "2022-07-22": 0,
+      "2022-07-23": -0.006521739130434782,
+      "2022-07-24": 0.002207505518763797,
+      "2022-07-25": 0.014912280701754385,
+      "2022-07-26": -0.001497994810096721,
+      "2022-07-27": 0.006944444444444445,
+      "2022-07-28": 0.002856686881583147,
+      "2022-07-29": -0.0021354166666666665,
+      "2022-07-30": -0.0012089810017271157,
+      "2022-07-31": 0.009710820580385799,
+      "2022-08-01": 0.0007581803671189147,
+      "2022-08-04": 0.16666666666666666,
+      "2022-08-05": -0.003903622276565604,
+      "2022-08-06": 0.0013603785683557763,
+      "2022-08-07": 0,
+      "2022-08-08": 0.004431082777938761,
+      "2022-08-09": -0.001655789219240996,
+      "2022-08-10": -0.005402534113060429,
+      "2022-08-11": 0.0035714285714285713,
+      "2022-08-12": -0.0006459948320413436,
+      "2022-08-13": 0,
+      "2022-08-14": 0.007215007215007215,
+      "2022-08-15": 0.0003610023253815815,
+      "2022-08-16": -0.0006851564687385581,
+      "2022-08-17": 0.006263484358144553,
+      "2022-08-18": 0.0022246882265905725,
+      "2022-08-19": 0.004115226337448559,
+      "2022-08-22": 0.001004016064257028,
+      "2022-08-23": 0.00149812734082397,
+      "2022-08-24": 0.0009025270758122744,
+      "2022-08-25": 0.0029585798816568047,
+      "2022-08-26": 0.0013240418118466901,
+      "2022-08-29": 0.0016638935108153079,
+      "2022-08-30": 0.00412671403431157,
+      "2022-08-31": 0.01028650813889243,
+      "2022-09-01": -0.0009709557581898009,
+      "2022-09-02": -0.0019433815192743764,
+      "2022-09-03": 0,
+      "2022-09-04": -0.000949163449163449,
+      "2022-09-05": 0.00379458979426887,
+      "2022-09-06": -0.0016814635458703257,
+      "2022-09-07": 0.00587248322147651,
+      "2022-09-08": 0.0008960573476702509,
+      "2022-09-09": 0.0039426523297491035,
+      "2022-09-10": 0.006832298136645963,
+      "2022-09-11": 0.0034375,
+      "2022-09-12": 0.0013164251207729467,
+      "2022-09-13": 0.0022251891410769915,
+      "2022-09-14": 0.008538251366120218,
+      "2022-09-15": 0.008993399339933993,
+      "2022-09-16": 0.01870748299319728,
+      "2022-09-17": -0.002251619153793067,
+      "2022-09-18": -0.007442680776014109,
+      "2022-09-19": 0.0077881619937694695,
+      "2022-09-20": -0.001851851851851852,
+      "2022-09-21": -0.0011220633079929562,
+      "2022-09-22": -0.001730021044821358,
+      "2022-09-23": -0.000055114638447971826,
+      "2022-09-24": 0.004437869822485207,
+      "2022-09-25": 0.003766478342749529,
+      "2022-09-26": -0.0007894736842105263,
+      "2022-09-27": 0.00015772512708787204,
+      "2022-09-28": -0.0002702463228779019,
+      "2022-09-29": 0.0029780055723451953,
+      "2022-09-30": 0.002605303581534481,
+      "2022-10-01": 0.0076864535768645355,
+      "2022-10-02": 0.0018836307115238865,
+      "2022-10-03": -0.0010532837670384136,
+      "2022-10-04": 0.012884267631103074,
+      "2022-10-05": -0.0050200803212851405,
+      "2022-10-06": 0.0017059401080019635,
+      "2022-10-07": -0.011063419396752731,
+      "2022-10-08": -0.0012738033330857044,
+      "2022-10-09": -0.00020840398384718806,
+      "2022-10-10": -0.0007671322454412078,
+      "2022-10-11": 0.0034921129099211292,
+      "2022-10-12": -0.0002528445006321111,
+      "2022-10-13": 0.0035034242191500256,
+      "2022-10-14": 0.0010942760942760942,
+      "2022-10-15": -0.0006375071469411092,
+      "2022-10-16": 0.0033444816053511705,
+      "2022-10-17": 0.0008752322477812674,
+      "2022-10-18": 0.002459180312441182,
+      "2022-10-19": -0.001349683016349683,
+      "2022-10-20": 0.003006118648576749,
+      "2022-10-21": 0.0016454178925574808,
+      "2022-10-22": -0.0011133833219722793,
+      "2022-10-23": 0.012475775193798451,
+      "2022-10-24": -0.004068084952269261,
+      "2022-10-25": -0.004947442093864723,
+      "2022-10-26": 0.002955740109084318,
+      "2022-10-27": -0.0029663752750380165,
+      "2022-10-28": 0.00018407726928917193,
+      "2022-10-29": 0.0002412926630389564,
+      "2022-10-30": -0.0017537122375832052,
+      "2022-10-31": -0.0004357298474945534,
+      "2022-11-01": 0.01121758500399277,
+      "2022-11-02": -0.0009207968901846453,
+      "2022-11-03": 0.0020729684908789383,
+      "2022-11-04": -0.005179344465058751,
+      "2022-11-05": 0.002105341490601408,
+      "2022-11-06": -0.00021789321789321807,
+      "2022-11-07": 0.0026328161730136343,
+      "2022-11-08": 0.0026973310618966496,
+      "2022-11-09": 0.0006184291898577612,
+      "2022-11-10": 0.004850433872585358,
+      "2022-11-11": 0,
+      "2022-11-12": 0.0018547544409613374,
+      "2022-11-13": 0.0019237978094066655,
+      "2022-11-14": 0.0008144802352119426,
+      "2022-11-15": -0.0016733601070950468,
+      "2022-11-16": 0.00010650203978482996,
+      "2022-11-17": 0.0026455026455026454,
+      "2022-11-18": 0.0006390141359980502,
+      "2022-11-19": -0.0010247365802921358,
+      "2022-11-20": 0.00436134503517316,
+      "2022-11-21": 0.0019464745968505368,
+      "2022-11-22": 0.0034303931362754895,
+      "2022-11-23": 0.0036063740564719034,
+      "2022-11-24": 0.0025910364145658262,
+      "2022-11-25": 0.007046799354491662,
+      "2022-11-26": 0.008654340010272214,
+      "2022-11-27": 0.0017075796726959515,
+      "2022-11-28": 0.004485393900435683,
+      "2022-11-29": 0.005605756358768407,
+      "2022-11-30": 0.004597701149425287,
+      "2022-12-01": 0.017261904761904763,
+      "2022-12-02": 0.005056455571919489,
+      "2022-12-03": 0.004209097080787509,
+      "2022-12-04": 0.0006893868658574542,
+      "2022-12-05": 0.004099018199233717,
+      "2022-12-06": 0.003608247422680412,
+      "2022-12-07": 0.002310924369747899,
+      "2022-12-08": 0.0035816244963213103,
+      "2022-12-09": -0.006226642555756479,
+      "2022-12-10": 0.009572649572649573,
+      "2022-12-11": 0.00784923928077455,
+      "2022-12-12": 0.0019827690040455995,
+      "2022-12-13": 0.0012354039961401926,
+      "2022-12-14": 0.0036010206853727632,
+      "2022-12-15": 0.00035290006988120197,
+      "2022-12-16": 0.00020575875615513217,
+      "2022-12-17": -0.002919407894736842,
+      "2022-12-18": 0.007003975430699569,
+      "2022-12-19": 0.0032107733954699655,
+      "2022-12-20": 0.0011223344556677889,
+      "2022-12-21": 0.00209049255441008,
+      "2022-12-22": 0.002288279363218928,
+      "2022-12-23": 0.0030120481927710845,
+      "2022-12-24": 0.0022353686679529375,
+      "2022-12-25": 0.001123876123876124,
+      "2022-12-26": 0.002319197896120973,
+      "2022-12-27": 0.0014535402175851614,
+      "2022-12-28": 0,
+      "2022-12-29": 0.005914567360350493,
+      "2022-12-30": 0.002528749028749028,
+      "2022-12-31": 0.0023150004358058053,
+      "2023-01-01": -0.001082251082251082,
+      "2023-01-02": 0.0001696993160407794,
+      "2023-01-03": 0.005484763463486868,
+      "2023-01-04": 0.0027641860112274314,
+      "2023-01-05": -0.002123722686699786,
+      "2023-01-06": 0.0024888610414926203,
+      "2023-01-07": 0.009140989729225023,
+      "2023-01-08": 0.000008153946510110865,
+      "2023-01-09": 0.005674448767833982,
+      "2023-01-10": 0.0019539443684450527,
+      "2023-01-11": 0.0004708788056464475,
+      "2023-01-12": -0.002622377622377622,
+      "2023-01-13": 0.0016680033114296066,
+      "2023-01-14": 0.0004089129990103777,
+      "2023-01-15": 0.004539559014267186,
+      "2023-01-16": 0,
+      "2023-01-17": 0.033854166666666664,
+      "2023-01-18": 0.0019839025353731235,
+      "2023-01-19": 0.0025690362825293855,
+      "2023-01-20": 0.006108234135173899,
+      "2023-01-23": 0.0004531208352864404,
+      "2023-01-24": 0.00010048254553749058,
+      "2023-01-25": 0.009090909090909092,
+      "2023-01-27": 0.005154794978648968,
+      "2023-01-28": 0.0025252525252525246,
+      "2023-01-29": 0.011494252873563218,
+      "2023-01-30": 0.001098901098901099,
+      "2023-01-31": 0,
+      "2023-02-01": 0.01825811625463193,
+      "2023-02-02": 0.006557377049180328,
+      "2023-02-03": 0.004549808429118773,
+      "2023-02-12": 0,
+      "2023-02-13": 0.00004810004810004793,
+      "2023-02-14": 0.00616083009079118,
+      "2023-02-15": 0,
+      "2023-02-20": 0,
+      "2023-02-21": 0.0048955260388707485,
+      "2023-02-22": -0.014039855072463766,
+      "2023-02-23": 0.007178903906124206,
+      "2023-02-24": 0,
+      "2023-02-25": 0.0007077140835102618,
+      "2023-02-26": 0.0012741395720119125,
+      "2023-02-27": 0.0010638297872340426,
+      "2023-03-01": 0.0021645021645021645,
+      "2023-03-02": 0.0002632964718272775,
+      "2023-03-03": 0.005859993664871714,
+      "2023-03-04": 0.004679951690821256,
+      "2023-03-05": -0.004807692307692308,
+      "2023-03-06": 0.0020408163265306124,
+      "2023-03-07": 0.0034471260055854275,
+      "2023-03-08": 0.007042253521126761,
+      "2023-03-09": 0,
+      "2023-03-13": 0.005747126436781609,
+      "2023-03-14": 0.003401360544217687,
+      "2023-03-15": 0,
+      "2023-03-31": -0.016666666666666663,
+      "2023-04-01": -0.0007817620426823388,
+      "2023-04-02": 0.0049019607843137246,
+      "2023-04-03": 0.019957983193277313,
+      "2023-04-04": 0,
+      "2023-04-05": 0,
+      "2023-04-06": 0.007575757575757576,
+      "2023-04-07": 0.007783523985860183,
+      "2023-04-08": 0,
+      "2023-04-28": 0,
+      "2023-05-03": 0,
+      "2023-05-08": 0
+    },
+    "neutral_message_count": 119839,
+    "negative_message_count": 954,
+    "positive_message_count": 1340,
+    "user_average_sentiment": {
+      "Eve": {
+        "mean": 0.0017850341827146871,
+        "std_dev": 0.058659895079298606
+      },
+      "Adam": {
+        "mean": 0.0005947760406218915,
+        "std_dev": 0.047974948228177196
+      },
+      "Other": {
+        "mean": 0,
+        "std_dev": 0
+      }
+    },
+    "overall_average_sentiment": 0.001328797892567987
+  },
+  "attachment_analysis": {
+    "total_attachments": 0
+  },
+  "first_last_messages": {
+    "last_message": {
+      "sender": "Eve",
+      "message": "I'm glad we could talk it all through. I'll cherish the good memories. Goodbye, Adam. Take care!",
+      "datetime": "2023-05-08T23:04:21"
+    },
+    "first_message": {
+      "sender": "Adam",
+      "message": "Hey, is this Eve? This is Adam from the study group.",
+      "datetime": "2022-04-05T19:39:32"
+    }
+  },
+  "sad_tone_analysis": {
+    "user_stats": {
+      "Eve": {
+        "count": 287,
+        "top_words_used": [
+          [
+            "sad",
+            142
+          ],
+          [
+            "tired",
+            38
+          ],
+          [
+            "upset",
+            31
+          ],
+          [
+            "disappointed",
+            29
+          ],
+          [
+            "frustrated",
+            24
+          ]
+        ]
+      },
+      "Adam": {
+        "count": 198,
+        "top_words_used": [
+          [
+            "sad",
+            89
+          ],
+          [
+            "stressed",
+            35
+          ],
+          [
+            "disappointed",
+            28
+          ],
+          [
+            "worried",
+            26
+          ],
+          [
+            "frustrated",
+            20
+          ]
+        ]
+      },
+      "Other": {
+        "count": 0,
+        "top_words_used": []
+      }
+    },
+    "top_senders": [
+      {
+        "user": "Eve",
+        "count": 287
+      },
+      {
+        "user": "Adam",
+        "count": 198
+      },
+      {
+        "user": "Other",
+        "count": 0
+      }
+    ],
+    "top_messages": [
+      {
+        "sender": "Eve",
+        "message": "I'm feeling really sad about work today. My boss criticized my presentation in front of everyone and I just feel so disappointed in myself. I worked so hard on it.",
+        "datetime": "2024-03-15T14:30:22"
+      },
+      {
+        "sender": "Adam",
+        "message": "Having one of those days where everything feels overwhelming. I'm stressed about the project deadline and worried we won't make it. Feeling pretty disappointed with how things are going.",
+        "datetime": "2024-02-28T20:45:18"
+      },
+      {
+        "sender": "Eve",
+        "message": "Been feeling really tired lately, like emotionally drained. I think I need to take a break from everything. Just feeling sad and need some space to think.",
+        "datetime": "2024-01-12T16:22:35"
+      },
+      {
+        "sender": "Adam",
+        "message": "I'm really frustrated with myself. Made another mistake at work today and I can't shake this feeling of being disappointed. Why do I keep messing up?",
+        "datetime": "2023-12-05T18:15:42"
+      },
+      {
+        "sender": "Eve",
+        "message": "Feeling sad watching the news tonight. Sometimes the world just feels too heavy and I get overwhelmed by all the negativity. Need to disconnect for a bit.",
+        "datetime": "2023-11-18T22:08:51"
+      }
+    ],
+    "most_used_words": [
+      {
+        "word": "sad",
+        "count": 231
+      },
+      {
+        "word": "tired",
+        "count": 73
+      },
+      {
+        "word": "disappointed",
+        "count": 57
+      },
+      {
+        "word": "frustrated",
+        "count": 44
+      },
+      {
+        "word": "stressed",
+        "count": 42
+      },
+      {
+        "word": "worried",
+        "count": 38
+      },
+      {
+        "word": "upset",
+        "count": 35
+      },
+      {
+        "word": "overwhelmed",
+        "count": 19
+      },
+      {
+        "word": "drained",
+        "count": 15
+      },
+      {
+        "word": "down",
+        "count": 12
+      },
+      {
+        "word": "heavy",
+        "count": 9
+      },
+      {
+        "word": "blue",
+        "count": 8
+      },
+      {
+        "word": "low",
+        "count": 6
+      },
+      {
+        "word": "discouraged",
+        "count": 5
+      },
+      {
+        "word": "gloomy",
+        "count": 3
+      }
+    ],
+    "total_matching_messages": 485,
+    "sadness_intensity_percent": 0.4521739130434783
+  },
+  "happy_tone_analysis": {
+    "user_stats": {
+      "Eve": {
+        "count": 542,
+        "top_words_used": [
+          [
+            "happy",
+            189
+          ],
+          [
+            "excited",
+            98
+          ],
+          [
+            "amazing",
+            76
+          ],
+          [
+            "wonderful",
+            65
+          ],
+          [
+            "great",
+            58
+          ]
+        ]
+      },
+      "Adam": {
+        "count": 478,
+        "top_words_used": [
+          [
+            "happy",
+            156
+          ],
+          [
+            "awesome",
+            89
+          ],
+          [
+            "great",
+            72
+          ],
+          [
+            "fantastic",
+            54
+          ],
+          [
+            "excellent",
+            43
+          ]
+        ]
+      },
+      "Other": {
+        "count": 0,
+        "top_words_used": []
+      }
+    },
+    "top_senders": [
+      {
+        "user": "Eve",
+        "count": 542
+      },
+      {
+        "user": "Adam",
+        "count": 478
+      },
+      {
+        "user": "Other",
+        "count": 0
+      }
+    ],
+    "top_messages": [
+      {
+        "sender": "Eve",
+        "message": "I'm so happy and excited! Just got the promotion I've been working towards for months. This is absolutely amazing and I can't wait to celebrate with you tonight!",
+        "datetime": "2024-04-22T15:45:33"
+      },
+      {
+        "sender": "Adam",
+        "message": "What an awesome day! The weather is perfect, we had a great breakfast together, and now we're going on that hike we planned. I'm so happy we decided to do this!",
+        "datetime": "2024-03-10T10:20:15"
+      },
+      {
+        "sender": "Eve",
+        "message": "Just finished reading that book you recommended and it was absolutely wonderful! Thanks for the suggestion, you always know what I'll enjoy. Feeling so grateful and happy right now.",
+        "datetime": "2024-02-05T21:30:42"
+      },
+      {
+        "sender": "Adam",
+        "message": "Had such a fantastic time at the concert last night! The music was incredible and sharing it with you made it even more special. What an excellent evening!",
+        "datetime": "2024-01-28T11:15:28"
+      },
+      {
+        "sender": "Eve",
+        "message": "I'm feeling so excited about our vacation plans! Everything is falling into place perfectly. This is going to be such a great trip and I'm happy we're doing it together.",
+        "datetime": "2023-12-15T19:25:17"
+      }
+    ],
+    "most_used_words": [
+      {
+        "word": "happy",
+        "count": 345
+      },
+      {
+        "word": "excited",
+        "count": 154
+      },
+      {
+        "word": "awesome",
+        "count": 132
+      },
+      {
+        "word": "great",
+        "count": 130
+      },
+      {
+        "word": "amazing",
+        "count": 98
+      },
+      {
+        "word": "wonderful",
+        "count": 87
+      },
+      {
+        "word": "fantastic",
+        "count": 76
+      },
+      {
+        "word": "excellent",
+        "count": 62
+      },
+      {
+        "word": "perfect",
+        "count": 45
+      },
+      {
+        "word": "thrilled",
+        "count": 38
+      },
+      {
+        "word": "delighted",
+        "count": 29
+      },
+      {
+        "word": "cheerful",
+        "count": 24
+      },
+      {
+        "word": "joyful",
+        "count": 18
+      },
+      {
+        "word": "pleased",
+        "count": 15
+      },
+      {
+        "word": "elated",
+        "count": 12
+      }
+    ],
+    "total_matching_messages": 1020,
+    "happy_content_intensity_percent": 0.9511278195488721
+  },
+  "icebreaker_analysis": {
+    "first_ever_icebreaker": {
+      "sender": "Adam",
+      "message": "Hey! I saw your profile and thought you seemed really interesting. Hope you're having a good day!",
+      "datetime": "2023-06-15T14:22:18"
+    },
+    "conversation_starter_counts": [
+      {
+        "user": "Adam",
+        "count": 324
+      },
+      {
+        "user": "Eve",
+        "count": 298
+      },
+      {
+        "user": "Other",
+        "count": 0
+      }
+    ]
+  },
+  "rapid_fire_analysis": {
+    "top_10_sessions": [
+      {
+        "end_time": "2024-05-18T20:15:42",
+        "start_time": "2024-05-18T20:14:28",
+        "participants": [
+          "Adam",
+          "Eve"
+        ],
+        "exchange_rate": 0.82,
+        "total_messages": 18,
+        "duration_minutes": 1.23,
+        "messages_per_minute": 14.63
+      },
+      {
+        "end_time": "2024-03-22T16:08:35",
+        "start_time": "2024-03-22T16:07:15",
+        "participants": [
+          "Eve",
+          "Adam"
+        ],
+        "exchange_rate": 0.75,
+        "total_messages": 16,
+        "duration_minutes": 1.33,
+        "messages_per_minute": 12.03
+      },
+      {
+        "end_time": "2024-01-30T11:45:20",
+        "start_time": "2024-01-30T11:43:45",
+        "participants": [
+          "Adam",
+          "Eve"
+        ],
+        "exchange_rate": 0.68,
+        "total_messages": 22,
+        "duration_minutes": 1.58,
+        "messages_per_minute": 13.92
+      },
+      {
+        "end_time": "2023-12-08T19:32:18",
+        "start_time": "2023-12-08T19:28:50",
+        "participants": [
+          "Eve",
+          "Adam"
+        ],
+        "exchange_rate": 0.61,
+        "total_messages": 42,
+        "duration_minutes": 3.47,
+        "messages_per_minute": 12.11
+      },
+      {
+        "end_time": "2023-11-15T14:20:33",
+        "start_time": "2023-11-15T14:19:12",
+        "participants": [
+          "Adam",
+          "Eve"
+        ],
+        "exchange_rate": 0.73,
+        "total_messages": 14,
+        "duration_minutes": 1.35,
+        "messages_per_minute": 10.37
+      },
+      {
+        "end_time": "2023-10-25T22:15:45",
+        "start_time": "2023-10-25T22:13:28",
+        "participants": [
+          "Eve",
+          "Adam"
+        ],
+        "exchange_rate": 0.59,
+        "total_messages": 28,
+        "duration_minutes": 2.28,
+        "messages_per_minute": 12.28
+      },
+      {
+        "end_time": "2023-09-12T17:42:15",
+        "start_time": "2023-09-12T17:40:33",
+        "participants": [
+          "Adam",
+          "Eve"
+        ],
+        "exchange_rate": 0.66,
+        "total_messages": 19,
+        "duration_minutes": 1.70,
+        "messages_per_minute": 11.18
+      },
+      {
+        "end_time": "2023-08-30T13:25:50",
+        "start_time": "2023-08-30T13:22:10",
+        "participants": [
+          "Eve",
+          "Adam"
+        ],
+        "exchange_rate": 0.54,
+        "total_messages": 35,
+        "duration_minutes": 3.67,
+        "messages_per_minute": 9.54
+      },
+      {
+        "end_time": "2023-07-18T20:08:22",
+        "start_time": "2023-07-18T20:06:45",
+        "participants": [
+          "Adam",
+          "Eve"
+        ],
+        "exchange_rate": 0.71,
+        "total_messages": 17,
+        "duration_minutes": 1.62,
+        "messages_per_minute": 10.49
+      },
+      {
+        "end_time": "2023-06-28T15:35:18",
+        "start_time": "2023-06-28T15:33:42",
+        "participants": [
+          "Eve",
+          "Adam"
+        ],
+        "exchange_rate": 0.64,
+        "total_messages": 21,
+        "duration_minutes": 1.60,
+        "messages_per_minute": 13.13
+      }
+    ],
+    "total_rapid_fire_sessions": 672
+  },
+  "sexual_tone_analysis": {
+    "user_stats": {
+      "Eve": {
+        "count": 18,
+        "top_words_used": [
+          [
+            "hot",
+            12
+          ],
+          [
+            "sexy",
+            4
+          ],
+          [
+            "intimate",
+            2
+          ],
+          [
+            "passionate",
+            1
+          ],
+          [
+            "desire",
+            1
+          ]
+        ]
+      },
+      "Adam": {
+        "count": 23,
+        "top_words_used": [
+          [
+            "hot",
+            15
+          ],
+          [
+            "sexy",
+            6
+          ],
+          [
+            "attraction",
+            3
+          ],
+          [
+            "intimate",
+            2
+          ],
+          [
+            "passion",
+            1
+          ]
+        ]
+      },
+      "Other": {
+        "count": 0,
+        "top_words_used": []
+      }
+    },
+    "top_senders": [
+      {
+        "user": "Adam",
+        "count": 23
+      },
+      {
+        "user": "Eve",
+        "count": 18
+      },
+      {
+        "user": "Other",
+        "count": 0
+      }
+    ],
+    "top_messages": [
+      {
+        "sender": "Adam",
+        "message": "You looked absolutely stunning tonight. That dress was so hot on you, couldn't take my eyes off you at dinner.",
+        "datetime": "2024-05-20T23:15:30"
+      },
+      {
+        "sender": "Eve",
+        "message": "I love how you make me feel so desired. There's something so sexy about the way you look at me.",
+        "datetime": "2024-04-12T21:45:22"
+      },
+      {
+        "sender": "Adam",
+        "message": "The chemistry between us is incredible. I feel such a strong attraction and connection with you.",
+        "datetime": "2024-03-08T20:30:15"
+      },
+      {
+        "sender": "Eve",
+        "message": "Can't wait for our romantic getaway next weekend. Looking forward to some intimate time together.",
+        "datetime": "2024-02-18T19:20:45"
+      },
+      {
+        "sender": "Adam",
+        "message": "Your smile is so captivating and sexy. I'm drawn to your confidence and passion for life.",
+        "datetime": "2024-01-25T18:45:12"
+      }
+    ],
+    "most_used_words": [
+      {
+        "word": "hot",
+        "count": 27
+      },
+      {
+        "word": "sexy",
+        "count": 10
+      },
+      {
+        "word": "intimate",
+        "count": 4
+      },
+      {
+        "word": "attraction",
+        "count": 3
+      },
+      {
+        "word": "passionate",
+        "count": 2
+      },
+      {
+        "word": "desire",
+        "count": 2
+      },
+      {
+        "word": "chemistry",
+        "count": 2
+      },
+      {
+        "word": "passion",
+        "count": 1
+      },
+      {
+        "word": "seductive",
+        "count": 1
+      },
+      {
+        "word": "tempting",
+        "count": 1
+      },
+      {
+        "word": "alluring",
+        "count": 1
+      },
+      {
+        "word": "sensual",
+        "count": 1
+      }
+    ],
+    "total_matching_messages": 41,
+    "sexual_content_intensity_percent": 0.038235294117647058
+  },
+  "romance_tone_analysis": {
+    "user_stats": {
+      "Eve": {
+        "count": 156,
+        "top_words_used": [
+          [
+            "love",
+            62
+          ],
+          [
+            "sweet",
+            28
+          ],
+          [
+            "romantic",
+            24
+          ],
+          [
+            "heart",
+            22
+          ],
+          [
+            "darling",
+            20
+          ]
+        ]
+      },
+      "Adam": {
+        "count": 178,
+        "top_words_used": [
+          [
+            "love",
+            71
+          ],
+          [
+            "beautiful",
+            35
+          ],
+          [
+            "sweetheart",
+            29
+          ],
+          [
+            "precious",
+            24
+          ],
+          [
+            "angel",
+            19
+          ]
+        ]
+      },
+      "Other": {
+        "count": 0,
+        "top_words_used": []
+      }
+    },
+    "top_senders": [
+      {
+        "user": "Adam",
+        "count": 178
+      },
+      {
+        "user": "Eve",
+        "count": 156
+      },
+      {
+        "user": "Other",
+        "count": 0
+      }
+    ],
+    "top_messages": [
+      {
+        "sender": "Adam",
+        "message": "Good morning, beautiful. I woke up thinking about you and how lucky I am to have such a precious person in my life. You're my everything, sweetheart.",
+        "datetime": "2024-05-25T07:30:15"
+      },
+      {
+        "sender": "Eve",
+        "message": "I love you more than words can express. You make every day feel like a romantic fairy tale. Thank you for being so sweet and caring, my darling.",
+        "datetime": "2024-04-18T22:15:42"
+      },
+      {
+        "sender": "Adam",
+        "message": "You're absolutely beautiful inside and out. My heart belongs to you completely. Can't wait to hold you in my arms again, my precious angel.",
+        "datetime": "2024-03-14T19:45:28"
+      },
+      {
+        "sender": "Eve",
+        "message": "Every moment with you feels magical and romantic. I love how you make me feel so special and cherished. You have my whole heart, sweetheart.",
+        "datetime": "2024-02-29T16:20:35"
+      },
+      {
+        "sender": "Adam",
+        "message": "You're the most beautiful soul I've ever met. I love everything about you - your laugh, your smile, your kind heart. You're my forever love.",
+        "datetime": "2024-01-20T14:55:18"
+      }
+    ],
+    "most_used_words": [
+      {
+        "word": "love",
+        "count": 133
+      },
+      {
+        "word": "beautiful",
+        "count": 35
+      },
+      {
+        "word": "sweetheart",
+        "count": 29
+      },
+      {
+        "word": "sweet",
+        "count": 28
+      },
+      {
+        "word": "precious",
+        "count": 24
+      },
+      {
+        "word": "romantic",
+        "count": 24
+      },
+      {
+        "word": "heart",
+        "count": 22
+      },
+      {
+        "word": "darling",
+        "count": 20
+      },
+      {
+        "word": "angel",
+        "count": 19
+      },
+      {
+        "word": "forever",
+        "count": 16
+      },
+      {
+        "word": "cherish",
+        "count": 14
+      },
+      {
+        "word": "adore",
+        "count": 12
+      },
+      {
+        "word": "treasure",
+        "count": 10
+      },
+      {
+        "word": "magical",
+        "count": 8
+      },
+      {
+        "word": "devoted",
+        "count": 6
+      }
+    ],
+    "total_matching_messages": 334,
+    "romance_intensity_percent": 0.31179775280898876
+  },
+  "relationship_metrics": {
+    "score_components": {
+      "balance_score": 33.44,
+      "engagement_score": 100,
+      "consistency_score": 26.69,
+      "responsiveness_score": 98.11
+    },
+    "relationship_score": 61.24,
+    "underlying_metrics": {
+      "daily_average_messages": 311.23,
+      "communication_balance_percent": {
+        "Eve": 51.49860688344526,
+        "Adam": 48.44582950830233
+      },
+      "overall_median_response_time_minutes": 0.1
+    },
+    "relationship_intensity": "MEDIUM"
+  },
+  "conversation_patterns": {
+  "total_conversations": 342,
+  "most_intense_conversations": [
+    {
+      "id": 234,
+      "start_time": "2024-03-15T14:22:00",
+      "participants": [
+        "Adam",
+        "Eve"
+      ],
+      "message_count": 892,
+      "intensity_score": 9.2,
+      "sample_messages": [
+        {
+          "sender": "Adam",
+          "message": "Hey can we talk about last night?",
+          "datetime": "2024-03-15T14:22:00"
+        },
+        {
+          "sender": "Eve",
+          "message": "I was hoping you'd bring it up",
+          "datetime": "2024-03-15T14:22:18"
+        },
+        {
+          "sender": "Adam",
+          "message": "I'm really sorry about what I said",
+          "datetime": "2024-03-15T14:22:45"
+        },
+        {
+          "sender": "Eve",
+          "message": "It really hurt my feelings",
+          "datetime": "2024-03-15T14:23:02"
+        },
+        {
+          "sender": "Adam",
+          "message": "I know and I hate myself for it",
+          "datetime": "2024-03-15T14:23:20"
+        }
+      ],
+      "duration_minutes": 156,
+      "messages_per_hour": 343.1,
+      "turn_taking_ratio": 0.48,
+      "relative_pace_factor": 4.2,
+      "avg_response_time_seconds": 18.5
+    },
+    {
+      "id": 189,
+      "start_time": "2024-02-28T19:45:33",
+      "participants": [
+        "Eve",
+        "Adam"
+      ],
+      "message_count": 1124,
+      "intensity_score": 8.95,
+      "sample_messages": [
+        {
+          "sender": "Eve",
+          "message": "Are you still awake?",
+          "datetime": "2024-02-28T19:45:33"
+        },
+        {
+          "sender": "Adam",
+          "message": "Yeah what's up?",
+          "datetime": "2024-02-28T19:45:51"
+        },
+        {
+          "sender": "Eve",
+          "message": "I can't sleep, keep thinking about us",
+          "datetime": "2024-02-28T19:46:12"
+        },
+        {
+          "sender": "Adam",
+          "message": "Me too honestly",
+          "datetime": "2024-02-28T19:46:28"
+        },
+        {
+          "sender": "Eve",
+          "message": "What are we doing?",
+          "datetime": "2024-02-28T19:46:45"
+        }
+      ],
+      "duration_minutes": 287,
+      "messages_per_hour": 234.9,
+      "turn_taking_ratio": 0.52,
+      "relative_pace_factor": 3.8,
+      "avg_response_time_seconds": 22.1
+    },
+    {
+      "id": 167,
+      "start_time": "2024-02-14T21:30:15",
+      "participants": [
+        "Adam",
+        "Eve"
+      ],
+      "message_count": 743,
+      "intensity_score": 8.73,
+      "sample_messages": [
+        {
+          "sender": "Adam",
+          "message": "Happy Valentine's Day 💕",
+          "datetime": "2024-02-14T21:30:15"
+        },
+        {
+          "sender": "Eve",
+          "message": "Aww you remembered!",
+          "datetime": "2024-02-14T21:30:32"
+        },
+        {
+          "sender": "Adam",
+          "message": "Of course I did",
+          "datetime": "2024-02-14T21:30:48"
+        },
+        {
+          "sender": "Eve",
+          "message": "You're the sweetest",
+          "datetime": "2024-02-14T21:31:05"
+        },
+        {
+          "sender": "Adam",
+          "message": "Only for you",
+          "datetime": "2024-02-14T21:31:22"
+        }
+      ],
+      "duration_minutes": 198,
+      "messages_per_hour": 225.5,
+      "turn_taking_ratio": 0.49,
+      "relative_pace_factor": 3.6,
+      "avg_response_time_seconds": 24.8
+    },
+    {
+      "id": 298,
+      "start_time": "2024-04-02T16:18:42",
+      "participants": [
+        "Eve",
+        "Adam"
+      ],
+      "message_count": 1456,
+      "intensity_score": 8.41,
+      "sample_messages": [
+        {
+          "sender": "Eve",
+          "message": "I have something to tell you",
+          "datetime": "2024-04-02T16:18:42"
+        },
+        {
+          "sender": "Adam",
+          "message": "What is it?",
+          "datetime": "2024-04-02T16:18:58"
+        },
+        {
+          "sender": "Eve",
+          "message": "I got the job!",
+          "datetime": "2024-04-02T16:19:15"
+        },
+        {
+          "sender": "Adam",
+          "message": "NO WAY! Congratulations!",
+          "datetime": "2024-04-02T16:19:32"
+        },
+        {
+          "sender": "Eve",
+          "message": "Thank you for believing in me",
+          "datetime": "2024-04-02T16:19:48"
+        }
+      ],
+      "duration_minutes": 345,
+      "messages_per_hour": 253.2,
+      "turn_taking_ratio": 0.46,
+      "relative_pace_factor": 3.9,
+      "avg_response_time_seconds": 20.7
+    },
+    {
+      "id": 145,
+      "start_time": "2024-01-25T12:05:28",
+      "participants": [
+        "Adam",
+        "Eve"
+      ],
+      "message_count": 567,
+      "intensity_score": 8.18,
+      "sample_messages": [
+        {
+          "sender": "Adam",
+          "message": "Good morning sunshine",
+          "datetime": "2024-01-25T12:05:28"
+        },
+        {
+          "sender": "Eve",
+          "message": "Morning! Did you sleep well?",
+          "datetime": "2024-01-25T12:05:45"
+        },
+        {
+          "sender": "Adam",
+          "message": "Better now that I'm talking to you",
+          "datetime": "2024-01-25T12:06:02"
+        },
+        {
+          "sender": "Eve",
+          "message": "You're so cheesy 😊",
+          "datetime": "2024-01-25T12:06:19"
+        },
+        {
+          "sender": "Adam",
+          "message": "You love it though",
+          "datetime": "2024-01-25T12:06:35"
+        }
+      ],
+      "duration_minutes": 142,
+      "messages_per_hour": 239.7,
+      "turn_taking_ratio": 0.51,
+      "relative_pace_factor": 3.7,
+      "avg_response_time_seconds": 23.4
+    },
+    {
+      "id": 278,
+      "start_time": "2024-03-28T20:15:11",
+      "participants": [
+        "Eve",
+        "Adam"
+      ],
+      "message_count": 923,
+      "intensity_score": 7.96,
+      "sample_messages": [
+        {
+          "sender": "Eve",
+          "message": "I'm scared about tomorrow",
+          "datetime": "2024-03-28T20:15:11"
+        },
+        {
+          "sender": "Adam",
+          "message": "Why? What's tomorrow?",
+          "datetime": "2024-03-28T20:15:27"
+        },
+        {
+          "sender": "Eve",
+          "message": "The presentation at work",
+          "datetime": "2024-03-28T20:15:44"
+        },
+        {
+          "sender": "Adam",
+          "message": "You'll do great, I know it",
+          "datetime": "2024-03-28T20:16:01"
+        },
+        {
+          "sender": "Eve",
+          "message": "What if I mess up?",
+          "datetime": "2024-03-28T20:16:18"
+        }
+      ],
+      "duration_minutes": 213,
+      "messages_per_hour": 260.1,
+      "turn_taking_ratio": 0.47,
+      "relative_pace_factor": 4.0,
+      "avg_response_time_seconds": 19.8
+    },
+    {
+      "id": 312,
+      "start_time": "2024-04-18T11:42:55",
+      "participants": [
+        "Adam",
+        "Eve"
+      ],
+      "message_count": 1089,
+      "intensity_score": 7.82,
+      "sample_messages": [
+        {
+          "sender": "Adam",
+          "message": "Can I ask you something?",
+          "datetime": "2024-04-18T11:42:55"
+        },
+        {
+          "sender": "Eve",
+          "message": "Always",
+          "datetime": "2024-04-18T11:43:11"
+        },
+        {
+          "sender": "Adam",
+          "message": "Do you think we're moving too fast?",
+          "datetime": "2024-04-18T11:43:28"
+        },
+        {
+          "sender": "Eve",
+          "message": "I don't know, are we?",
+          "datetime": "2024-04-18T11:43:45"
+        },
+        {
+          "sender": "Adam",
+          "message": "I just want to make sure you're comfortable",
+          "datetime": "2024-04-18T11:44:02"
+        }
+      ],
+      "duration_minutes": 267,
+      "messages_per_hour": 244.7,
+      "turn_taking_ratio": 0.53,
+      "relative_pace_factor": 3.8,
+      "avg_response_time_seconds": 21.9
+    },
+    {
+      "id": 201,
+      "start_time": "2024-03-05T18:33:21",
+      "participants": [
+        "Eve",
+        "Adam"
+      ],
+      "message_count": 678,
+      "intensity_score": 7.65,
+      "sample_messages": [
+        {
+          "sender": "Eve",
+          "message": "I miss you",
+          "datetime": "2024-03-05T18:33:21"
+        },
+        {
+          "sender": "Adam",
+          "message": "I miss you too",
+          "datetime": "2024-03-05T18:33:37"
+        },
+        {
+          "sender": "Eve",
+          "message": "When can we see each other again?",
+          "datetime": "2024-03-05T18:33:54"
+        },
+        {
+          "sender": "Adam",
+          "message": "This weekend?",
+          "datetime": "2024-03-05T18:34:11"
+        },
+        {
+          "sender": "Eve",
+          "message": "Can't wait that long",
+          "datetime": "2024-03-05T18:34:28"
+        }
+      ],
+      "duration_minutes": 159,
+      "messages_per_hour": 255.8,
+      "turn_taking_ratio": 0.48,
+      "relative_pace_factor": 3.9,
+      "avg_response_time_seconds": 20.3
+    },
+    {
+      "id": 156,
+      "start_time": "2024-01-31T15:28:44",
+      "participants": [
+        "Adam",
+        "Eve"
+      ],
+      "message_count": 834,
+      "intensity_score": 7.51,
+      "sample_messages": [
+        {
+          "sender": "Adam",
+          "message": "I had the weirdest dream about you",
+          "datetime": "2024-01-31T15:28:44"
+        },
+        {
+          "sender": "Eve",
+          "message": "Oh no, what happened?",
+          "datetime": "2024-01-31T15:29:01"
+        },
+        {
+          "sender": "Adam",
+          "message": "We were on a beach somewhere tropical",
+          "datetime": "2024-01-31T15:29:18"
+        },
+        {
+          "sender": "Eve",
+          "message": "That sounds nice actually",
+          "datetime": "2024-01-31T15:29:35"
+        },
+        {
+          "sender": "Adam",
+          "message": "It was until the giant crabs showed up",
+          "datetime": "2024-01-31T15:29:52"
+        }
+      ],
+      "duration_minutes": 185,
+      "messages_per_hour": 270.4,
+      "turn_taking_ratio": 0.50,
+      "relative_pace_factor": 4.1,
+      "avg_response_time_seconds": 18.9
+    },
+    {
+      "id": 223,
+      "start_time": "2024-03-12T22:17:38",
+      "participants": [
+        "Eve",
+        "Adam"
+      ],
+      "message_count": 712,
+      "intensity_score": 7.33,
+      "sample_messages": [
+        {
+          "sender": "Eve",
+          "message": "Are you still up?",
+          "datetime": "2024-03-12T22:17:38"
+        },
+        {
+          "sender": "Adam",
+          "message": "Yeah, can't sleep",
+          "datetime": "2024-03-12T22:17:55"
+        },
+        {
+          "sender": "Eve",
+          "message": "Me neither",
+          "datetime": "2024-03-12T22:18:12"
+        },
+        {
+          "sender": "Adam",
+          "message": "Want to talk about it?",
+          "datetime": "2024-03-12T22:18:29"
+        },
+        {
+          "sender": "Eve",
+          "message": "Just thinking about everything",
+          "datetime": "2024-03-12T22:18:46"
+        }
+      ],
+      "duration_minutes": 176,
+      "messages_per_hour": 242.9,
+      "turn_taking_ratio": 0.49,
+      "relative_pace_factor": 3.7,
+      "avg_response_time_seconds": 23.1
+    }
+  ],
+  "conversation_starter_counts": [
+    {
+      "user": "Adam",
+      "count": 184
+    },
+    {
+      "user": "Eve",
+      "count": 158
+    }
+  ],
+  "longest_conversations_by_duration": [
+    {
+      "id": 267,
+      "start_time": "2024-03-22T09:15:33",
+      "participants": [
+        "Adam",
+        "Eve"
+      ],
+      "message_count": 892,
+      "intensity_score": 4.2,
+      "sample_messages": [
+        {
+          "sender": "Adam",
+          "message": "What are you up to today?",
+          "datetime": "2024-03-22T09:15:33"
+        },
+        {
+          "sender": "Eve",
+          "message": "Just relaxing, it's finally the weekend",
+          "datetime": "2024-03-22T09:18:42"
+        },
+        {
+          "sender": "Adam",
+          "message": "I know right? This week felt so long",
+          "datetime": "2024-03-22T09:21:15"
+        },
+        {
+          "sender": "Eve",
+          "message": "Tell me about it",
+          "datetime": "2024-03-22T09:24:33"
+        },
+        {
+          "sender": "Adam",
+          "message": "At least we have two days to recover",
+          "datetime": "2024-03-22T09:27:18"
+        }
+      ],
+      "duration_minutes": 743.5,
+      "messages_per_hour": 72.1,
+      "turn_taking_ratio": 0.52,
+      "relative_pace_factor": 1.8,
+      "avg_response_time_seconds": 125.4
+    },
+    {
+      "id": 188,
+      "start_time": "2024-02-27T13:42:18",
+      "participants": [
+        "Eve",
+        "Adam"
+      ],
+      "message_count": 534,
+      "intensity_score": 2.9,
+      "sample_messages": [
+        {
+          "sender": "Eve",
+          "message": "I'm at the coffee shop",
+          "datetime": "2024-02-27T13:42:18"
+        },
+        {
+          "sender": "Adam",
+          "message": "The one on Main Street?",
+          "datetime": "2024-02-27T13:55:23"
+        },
+        {
+          "sender": "Eve",
+          "message": "Yeah, they have a new barista",
+          "datetime": "2024-02-27T14:08:45"
+        },
+        {
+          "sender": "Adam",
+          "message": "Is the coffee still good?",
+          "datetime": "2024-02-27T14:22:17"
+        },
+        {
+          "sender": "Eve",
+          "message": "Even better somehow",
+          "datetime": "2024-02-27T14:35:42"
+        }
+      ],
+      "duration_minutes": 687.3,
+      "messages_per_hour": 46.6,
+      "turn_taking_ratio": 0.45,
+      "relative_pace_factor": 1.4,
+      "avg_response_time_seconds": 198.7
+    },
+    {
+      "id": 134,
+      "start_time": "2024-01-18T16:28:55",
+      "participants": [
+        "Adam",
+        "Eve"
+      ],
+      "message_count": 1234,
+      "intensity_score": 5.8,
+      "sample_messages": [
+        {
+          "sender": "Adam",
+          "message": "Want to watch a movie together tonight?",
+          "datetime": "2024-01-18T16:28:55"
+        },
+        {
+          "sender": "Eve",
+          "message": "Sure! What did you have in mind?",
+          "datetime": "2024-01-18T16:32:12"
+        },
+        {
+          "sender": "Adam",
+          "message": "Maybe something funny? I need to laugh",
+          "datetime": "2024-01-18T16:35:44"
+        },
+        {
+          "sender": "Eve",
+          "message": "I know just the thing",
+          "datetime": "2024-01-18T16:39:18"
+        },
+        {
+          "sender": "Adam",
+          "message": "Perfect, you always know what I need",
+          "datetime": "2024-01-18T16:42:33"
+        }
+      ],
+      "duration_minutes": 623.8,
+      "messages_per_hour": 118.7,
+      "turn_taking_ratio": 0.48,
+      "relative_pace_factor": 2.3,
+      "avg_response_time_seconds": 72.9
+    },
+    {
+      "id": 245,
+      "start_time": "2024-03-18T11:05:22",
+      "participants": [
+        "Eve",
+        "Adam"
+      ],
+      "message_count": 789,
+      "intensity_score": 3.7,
+      "sample_messages": [
+        {
+          "sender": "Eve",
+          "message": "Look at this cute dog I saw!",
+          "datetime": "2024-03-18T11:05:22"
+        },
+        {
+          "sender": "Adam",
+          "message": "Aww, what breed is it?",
+          "datetime": "2024-03-18T11:12:44"
+        },
+        {
+          "sender": "Eve",
+          "message": "I think it's a golden retriever puppy",
+          "datetime": "2024-03-18T11:19:33"
+        },
+        {
+          "sender": "Adam",
+          "message": "They're the best dogs",
+          "datetime": "2024-03-18T11:26:18"
+        },
+        {
+          "sender": "Eve",
+          "message": "Makes me want to get one",
+          "datetime": "2024-03-18T11:33:42"
+        }
+      ],
+      "duration_minutes": 589.4,
+      "messages_per_hour": 80.3,
+      "turn_taking_ratio": 0.46,
+      "relative_pace_factor": 1.9,
+      "avg_response_time_seconds": 108.2
+    },
+    {
+      "id": 178,
+      "start_time": "2024-02-21T08:33:17",
+      "participants": [
+        "Adam",
+        "Eve"
+      ],
+      "message_count": 445,
+      "intensity_score": 2.1,
+      "sample_messages": [
+        {
+          "sender": "Adam",
+          "message": "Good morning beautiful",
+          "datetime": "2024-02-21T08:33:17"
+        },
+        {
+          "sender": "Eve",
+          "message": "Morning! How did you sleep?",
+          "datetime": "2024-02-21T08:48:33"
+        },
+        {
+          "sender": "Adam",
+          "message": "Like a baby, you?",
+          "datetime": "2024-02-21T09:03:45"
+        },
+        {
+          "sender": "Eve",
+          "message": "Not bad, weird dreams though",
+          "datetime": "2024-02-21T09:18:52"
+        },
+        {
+          "sender": "Adam",
+          "message": "Want to tell me about them?",
+          "datetime": "2024-02-21T09:34:18"
+        }
+      ],
+      "duration_minutes": 567.2,
+      "messages_per_hour": 47.1,
+      "turn_taking_ratio": 0.44,
+      "relative_pace_factor": 1.3,
+      "avg_response_time_seconds": 213.6
+    },
+    {
+      "id": 289,
+      "start_time": "2024-03-30T14:22:41",
+      "participants": [
+        "Eve",
+        "Adam"
+      ],
+      "message_count": 667,
+      "intensity_score": 4.1,
+      "sample_messages": [
+        {
+          "sender": "Eve",
+          "message": "I'm bored, entertain me",
+          "datetime": "2024-03-30T14:22:41"
+        },
+        {
+          "sender": "Adam",
+          "message": "Want to play 20 questions?",
+          "datetime": "2024-03-30T14:28:15"
+        },
+        {
+          "sender": "Eve",
+          "message": "Sure! You go first",
+          "datetime": "2024-03-30T14:34:22"
+        },
+        {
+          "sender": "Adam",
+          "message": "Is it bigger than a breadbox?",
+          "datetime": "2024-03-30T14:40:33"
+        },
+        {
+          "sender": "Eve",
+          "message": "You haven't picked something yet!",
+          "datetime": "2024-03-30T14:46:18"
+        }
+      ],
+      "duration_minutes": 534.7,
+      "messages_per_hour": 74.8,
+      "turn_taking_ratio": 0.49,
+      "relative_pace_factor": 1.8,
+      "avg_response_time_seconds": 118.3
+    },
+    {
+      "id": 112,
+      "start_time": "2024-01-08T19:17:28",
+      "participants": [
+        "Adam",
+        "Eve"
+      ],
+      "message_count": 823,
+      "intensity_score": 5.2,
+      "sample_messages": [
+        {
+          "sender": "Adam",
+          "message": "How was your day?",
+          "datetime": "2024-01-08T19:17:28"
+        },
+        {
+          "sender": "Eve",
+          "message": "Long but good, yours?",
+          "datetime": "2024-01-08T19:23:44"
+        },
+        {
+          "sender": "Adam",
+          "message": "Same here, work was crazy",
+          "datetime": "2024-01-08T19:29:55"
+        },
+        {
+          "sender": "Eve",
+          "message": "At least it's over now",
+          "datetime": "2024-01-08T19:36:12"
+        },
+        {
+          "sender": "Adam",
+          "message": "True, and I get to talk to you",
+          "datetime": "2024-01-08T19:42:33"
+        }
+      ],
+      "duration_minutes": 521.3,
+      "messages_per_hour": 94.7,
+      "turn_taking_ratio": 0.47,
+      "relative_pace_factor": 2.1,
+      "avg_response_time_seconds": 95.4
+    },
+    {
+      "id": 256,
+      "start_time": "2024-03-21T10:45:13",
+      "participants": [
+        "Eve",
+        "Adam"
+      ],
+      "message_count": 512,
+      "intensity_score": 3.4,
+      "sample_messages": [
+        {
+          "sender": "Eve",
+          "message": "Spring is finally here!",
+          "datetime": "2024-03-21T10:45:13"
+        },
+        {
+          "sender": "Adam",
+          "message": "I know! The weather is perfect",
+          "datetime": "2024-03-21T10:52:28"
+        },
+        {
+          "sender": "Eve",
+          "message": "Want to go for a walk later?",
+          "datetime": "2024-03-21T10:59:41"
+        },
+        {
+          "sender": "Adam",
+          "message": "I'd love to",
+          "datetime": "2024-03-21T11:06:55"
+        },
+        {
+          "sender": "Eve",
+          "message": "Great! I know the perfect spot",
+          "datetime": "2024-03-21T11:14:12"
+        }
+      ],
+      "duration_minutes": 498.6,
+      "messages_per_hour": 61.6,
+      "turn_taking_ratio": 0.48,
+      "relative_pace_factor": 1.6,
+      "avg_response_time_seconds": 156.8
+    },
+    {
+      "id": 298,
+      "start_time": "2024-04-02T16:18:42",
+      "participants": [
+        "Eve",
+        "Adam"
+      ],
+      "message_count": 1456,
+      "intensity_score": 8.41,
+      "sample_messages": [
+        {
+          "sender": "Eve",
+          "message": "I have something to tell you",
+          "datetime": "2024-04-02T16:18:42"
+        },
+        {
+          "sender": "Adam",
+          "message": "What is it?",
+          "datetime": "2024-04-02T16:18:58"
+        },
+        {
+          "sender": "Eve",
+          "message": "I got the job!",
+          "datetime": "2024-04-02T16:19:15"
+        },
+        {
+          "sender": "Adam",
+          "message": "NO WAY! Congratulations!",
+          "datetime": "2024-04-02T16:19:32"
+        },
+        {
+          "sender": "Eve",
+          "message": "Thank you for believing in me",
+          "datetime": "2024-04-02T16:19:48"
+        }
+      ],
+      "duration_minutes": 487.9,
+      "messages_per_hour": 179.2,
+      "turn_taking_ratio": 0.46,
+      "relative_pace_factor": 2.8,
+      "avg_response_time_seconds": 59.7
+    },
+    {
+      "id": 167,
+      "start_time": "2024-02-14T21:30:15",
+      "participants": [
+        "Adam",
+        "Eve"
+      ],
+      "message_count": 743,
+      "intensity_score": 8.73,
+      "sample_messages": [
+        {
+          "sender": "Adam",
+          "message": "Happy Valentine's Day 💕",
+          "datetime": "2024-02-14T21:30:15"
+        },
+        {
+          "sender": "Eve",
+          "message": "Aww you remembered!",
+          "datetime": "2024-02-14T21:30:32"
+        },
+        {
+          "sender": "Adam",
+          "message": "Of course I did",
+          "datetime": "2024-02-14T21:30:48"
+        },
+        {
+          "sender": "Eve",
+          "message": "You're the sweetest",
+          "datetime": "2024-02-14T21:31:05"
+        },
+        {
+          "sender": "Adam",
+          "message": "Only for you",
+          "datetime": "2024-02-14T21:31:22"
+        }
+      ],
+      "duration_minutes": 476.2,
+      "messages_per_hour": 93.6,
+      "turn_taking_ratio": 0.49,
+      "relative_pace_factor": 2.0,
+      "avg_response_time_seconds": 87.3
+    }
+  ],
+    "longest_conversations_by_messages": [
+      {
+        "id": 101,
+        "start_time": "2023-11-05T19:02:14",
+        "participants": [
+          "Adam",
+          "Eve"
+        ],
+        "message_count": 1850,
+        "intensity_score": 8.9,
+        "sample_messages": [
+          {
+            "sender": "Adam",
+            "message": "Hey! Are you free this weekend? Was thinking we could go for a hike.",
+            "datetime": "2023-11-05T19:02:14"
+          },
+          {
+            "sender": "Eve",
+            "message": "Ooh, that sounds fun! I'm in. Which trail were you thinking of?",
+            "datetime": "2023-11-05T19:03:05"
+          },
+          {
+            "sender": "Adam",
+            "message": "Maybe the 'Sunset Peak' one? Heard the views are incredible.",
+            "datetime": "2023-11-05T19:03:45"
+          },
+          {
+            "sender": "Eve",
+            "message": "Perfect! Let's do it. What should I bring?",
+            "datetime": "2023-11-05T19:04:12"
+          },
+          {
+            "sender": "Adam",
+            "message": "Just the usual - water, snacks. I'll handle the sandwiches. 🥪",
+            "datetime": "2023-11-05T19:05:00"
+          }
+        ],
+        "duration_minutes": 450.5,
+        "messages_per_hour": 246.39,
+        "turn_taking_ratio": 0.49,
+        "relative_pace_factor": 3.1,
+        "avg_response_time_seconds": 28.5
+      },
+      {
+        "id": 205,
+        "start_time": "2024-01-22T21:30:00",
+        "participants": [
+          "Eve",
+          "Adam"
+        ],
+        "message_count": 1720,
+        "intensity_score": 8.5,
+        "sample_messages": [
+          {
+            "sender": "Eve",
+            "message": "Did you watch the latest episode of 'Galaxy Runners'?",
+            "datetime": "2024-01-22T21:30:00"
+          },
+          {
+            "sender": "Adam",
+            "message": "Not yet! Don't spoil it! I'm just about to.",
+            "datetime": "2024-01-22T21:30:35"
+          },
+          {
+            "sender": "Eve",
+            "message": "Haha, okay, my lips are sealed. 🤐 Just prepare for a major cliffhanger.",
+            "datetime": "2024-01-22T21:31:10"
+          },
+          {
+            "sender": "Adam",
+            "message": "You're killing me! Okay, going dark. Talk to you in an hour.",
+            "datetime": "2024-01-22T21:31:25"
+          },
+          {
+            "sender": "Eve",
+            "message": "Enjoy the ride! 🚀",
+            "datetime": "2024-01-22T21:31:40"
+          }
+        ],
+        "duration_minutes": 410.2,
+        "messages_per_hour": 251.58,
+        "turn_taking_ratio": 0.5,
+        "relative_pace_factor": 3.2,
+        "avg_response_time_seconds": 25.1
+      },
+      {
+        "id": 311,
+        "start_time": "2024-02-14T18:45:10",
+        "participants": [
+          "Adam",
+          "Eve"
+        ],
+        "message_count": 1654,
+        "intensity_score": 9.2,
+        "sample_messages": [
+          {
+            "sender": "Adam",
+            "message": "Happy Valentine's Day! ❤️",
+            "datetime": "2024-02-14T18:45:10"
+          },
+          {
+            "sender": "Eve",
+            "message": "Happy Valentine's Day to you too! You won't believe what I just saw.",
+            "datetime": "2024-02-14T18:47:22"
+          },
+          {
+            "sender": "Adam",
+            "message": "What is it? Did the cat learn how to use the coffee machine?",
+            "datetime": "2024-02-14T18:47:50"
+          },
+          {
+            "sender": "Eve",
+            "message": "Even better. He's sleeping in the flower bouquet you sent. It's adorable.",
+            "datetime": "2024-02-14T18:48:30"
+          },
+          {
+            "sender": "Adam",
+            "message": "No way! Send me a picture right now! 🤣",
+            "datetime": "2024-02-14T18:48:45"
+          }
+        ],
+        "duration_minutes": 380.7,
+        "messages_per_hour": 260.65,
+        "turn_taking_ratio": 0.51,
+        "relative_pace_factor": 3.3,
+        "avg_response_time_seconds": 24.3
+      },
+      {
+        "id": 427,
+        "start_time": "2024-03-10T22:00:05",
+        "participants": [
+          "Eve",
+          "Adam"
+        ],
+        "message_count": 1598,
+        "intensity_score": 7.8,
+        "sample_messages": [
+          {
+            "sender": "Eve",
+            "message": "Okay, pineapple on pizza. Discuss.",
+            "datetime": "2024-03-10T22:00:05"
+          },
+          {
+            "sender": "Adam",
+            "message": "It's a culinary masterpiece. Sweet and savory perfection.",
+            "datetime": "2024-03-10T22:01:15"
+          },
+          {
+            "sender": "Eve",
+            "message": "You're officially disowned. Fruit does NOT belong on pizza.",
+            "datetime": "2024-03-10T22:01:45"
+          },
+          {
+            "sender": "Adam",
+            "message": "Tomato is a fruit. Your argument is invalid. 😉",
+            "datetime": "2024-03-10T22:02:01"
+          },
+          {
+            "sender": "Eve",
+            "message": ".... I have been defeated. Well played.",
+            "datetime": "2024-03-10T22:03:00"
+          }
+        ],
+        "duration_minutes": 395.0,
+        "messages_per_hour": 242.73,
+        "turn_taking_ratio": 0.48,
+        "relative_pace_factor": 2.9,
+        "avg_response_time_seconds": 31.2
+      },
+      {
+        "id": 534,
+        "start_time": "2024-04-01T15:12:34",
+        "participants": [
+          "Adam",
+          "Eve"
+        ],
+        "message_count": 1502,
+        "intensity_score": 7.5,
+        "sample_messages": [
+          {
+            "sender": "Adam",
+            "message": "My computer just made a weird noise and now it won't turn on.",
+            "datetime": "2024-04-01T15:12:34"
+          },
+          {
+            "sender": "Eve",
+            "message": "Oh no! Did you try turning it off and on again? 😉",
+            "datetime": "2024-04-01T15:13:02"
+          },
+          {
+            "sender": "Adam",
+            "message": "Haha, very funny. I think it's serious this time.",
+            "datetime": "2024-04-01T15:13:20"
+          },
+          {
+            "sender": "Eve",
+            "message": "Okay, okay. Check the power cable first. Sometimes it just gets loose.",
+            "datetime": "2024-04-01T15:14:00"
+          },
+          {
+            "sender": "Adam",
+            "message": "You're a genius! That was it. I owe you one.",
+            "datetime": "2024-04-01T15:15:10"
+          }
+        ],
+        "duration_minutes": 420.8,
+        "messages_per_hour": 214.16,
+        "turn_taking_ratio": 0.47,
+        "relative_pace_factor": 2.8,
+        "avg_response_time_seconds": 36.8
+      },
+      {
+        "id": 688,
+        "start_time": "2024-05-20T20:55:00",
+        "participants": [
+          "Eve",
+          "Adam"
+        ],
+        "message_count": 1421,
+        "intensity_score": 8.1,
+        "sample_messages": [
+          {
+            "sender": "Eve",
+            "message": "Long day. I need a vacation.",
+            "datetime": "2024-05-20T20:55:00"
+          },
+          {
+            "sender": "Adam",
+            "message": "Same. Where would we go if we could go anywhere right now?",
+            "datetime": "2024-05-20T20:55:45"
+          },
+          {
+            "sender": "Eve",
+            "message": "A quiet beach with a good book and no emails.",
+            "datetime": "2024-05-20T20:56:30"
+          },
+          {
+            "sender": "Adam",
+            "message": "I was thinking the exact same thing. Let's make it happen soon.",
+            "datetime": "2024-05-20T20:57:00"
+          },
+          {
+            "sender": "Eve",
+            "message": "Deal. It's a promise. 🤝",
+            "datetime": "2024-05-20T20:57:25"
+          }
+        ],
+        "duration_minutes": 355.0,
+        "messages_per_hour": 240.45,
+        "turn_taking_ratio": 0.5,
+        "relative_pace_factor": 3.0,
+        "avg_response_time_seconds": 29.9
+      },
+      {
+        "id": 712,
+        "start_time": "2024-06-18T12:30:15",
+        "participants": [
+          "Adam",
+          "Eve"
+        ],
+        "message_count": 1388,
+        "intensity_score": 6.9,
+        "sample_messages": [
+          {
+            "sender": "Adam",
+            "message": "What do you want for lunch? I'm buying.",
+            "datetime": "2024-06-18T12:30:15"
+          },
+          {
+            "sender": "Eve",
+            "message": "Ooh, you're the best! I'm craving tacos.",
+            "datetime": "2024-06-18T12:31:05"
+          },
+          {
+            "sender": "Adam",
+            "message": "Taco Tuesday on a Thursday? Bold. I like it. On my way.",
+            "datetime": "2024-06-18T12:31:40"
+          },
+          {
+            "sender": "Eve",
+            "message": "My hero! Get extra hot sauce.",
+            "datetime": "2024-06-18T12:32:00"
+          },
+          {
+            "sender": "Adam",
+            "message": "You read my mind. 🔥",
+            "datetime": "2024-06-18T12:32:15"
+          }
+        ],
+        "duration_minutes": 390.4,
+        "messages_per_hour": 213.32,
+        "turn_taking_ratio": 0.46,
+        "relative_pace_factor": 2.7,
+        "avg_response_time_seconds": 41.5
+      },
+      {
+        "id": 830,
+        "start_time": "2024-07-04T23:01:50",
+        "participants": [
+          "Eve",
+          "Adam"
+        ],
+        "message_count": 1305,
+        "intensity_score": 7.2,
+        "sample_messages": [
+          {
+            "sender": "Eve",
+            "message": "Did you see those fireworks?!",
+            "datetime": "2024-07-04T23:01:50"
+          },
+          {
+            "sender": "Adam",
+            "message": "Yeah, they were amazing! The finale was insane.",
+            "datetime": "2024-07-04T23:02:33"
+          },
+          {
+            "sender": "Eve",
+            "message": "Right? Happy 4th!",
+            "datetime": "2024-07-04T23:03:00"
+          },
+          {
+            "sender": "Adam",
+            "message": "Happy 4th! Hope you had a great day.",
+            "datetime": "2024-07-04T23:03:21"
+          },
+          {
+            "sender": "Eve",
+            "message": "You too! Let's not wait a whole year for the next BBQ.",
+            "datetime": "2024-07-04T23:04:00"
+          }
+        ],
+        "duration_minutes": 360.1,
+        "messages_per_hour": 217.44,
+        "turn_taking_ratio": 0.49,
+        "relative_pace_factor": 2.6,
+        "avg_response_time_seconds": 44.1
+      },
+      {
+        "id": 901,
+        "start_time": "2024-08-11T11:05:22",
+        "participants": [
+          "Adam",
+          "Eve"
+        ],
+        "message_count": 1250,
+        "intensity_score": 6.5,
+        "sample_messages": [
+          {
+            "sender": "Adam",
+            "message": "Just saw a dog riding a skateboard. My life is complete.",
+            "datetime": "2024-08-11T11:05:22"
+          },
+          {
+            "sender": "Eve",
+            "message": "NO WAY. PICS OR IT DIDN'T HAPPEN.",
+            "datetime": "2024-08-11T11:06:00"
+          },
+          {
+            "sender": "Adam",
+            "message": "I was too slow! He was a four-legged blur. A legend.",
+            "datetime": "2024-08-11T11:06:35"
+          },
+          {
+            "sender": "Eve",
+            "message": "I choose to believe you. That's the best thing I've heard all day.",
+            "datetime": "2024-08-11T11:07:01"
+          },
+          {
+            "sender": "Adam",
+            "message": "The world is a magical place.",
+            "datetime": "2024-08-11T11:07:20"
+          }
+        ],
+        "duration_minutes": 320.5,
+        "messages_per_hour": 234.0,
+        "turn_taking_ratio": 0.5,
+        "relative_pace_factor": 2.8,
+        "avg_response_time_seconds": 35.7
+      },
+      {
+        "id": 952,
+        "start_time": "2024-09-02T16:21:40",
+        "participants": [
+          "Eve",
+          "Adam"
+        ],
+        "message_count": 1178,
+        "intensity_score": 6.2,
+        "sample_messages": [
+          {
+            "sender": "Eve",
+            "message": "I can't find my keys anywhere.",
+            "datetime": "2024-09-02T16:21:40"
+          },
+          {
+            "sender": "Adam",
+            "message": "Are they in the door?",
+            "datetime": "2024-09-02T16:22:30"
+          },
+          {
+            "sender": "Eve",
+            "message": "...I am not a smart person.",
+            "datetime": "2024-09-02T16:23:05"
+          },
+          {
+            "sender": "Adam",
+            "message": "Happens to the best of us! At least you found them!",
+            "datetime": "2024-09-02T16:23:30"
+          },
+          {
+            "sender": "Eve",
+            "message": "Thanks for being my external brain. 😂",
+            "datetime": "2024-09-02T16:24:00"
+          }
+        ],
+        "duration_minutes": 400.0,
+        "messages_per_hour": 176.7,
+        "turn_taking_ratio": 0.45,
+        "relative_pace_factor": 2.5,
+        "avg_response_time_seconds": 48.2
+      }
+    ],
+    "population_average_response_seconds": 582.65
+  }
+}

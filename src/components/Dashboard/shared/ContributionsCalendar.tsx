@@ -67,7 +67,7 @@ export const ContributionsCalendar: React.FC<ContributionsCalendarProps> = ({ da
         if (day.date && day.count !== null) {
             const rect = e.currentTarget.getBoundingClientRect();
             setTooltip({
-                content: `${day.count} contributions on ${formatDate(day.date)}`,
+                content: `${day.count} messages on ${formatDate(day.date)}`,
                 x: rect.left + window.scrollX,
                 y: rect.top + window.scrollY,
             });
@@ -86,7 +86,7 @@ export const ContributionsCalendar: React.FC<ContributionsCalendarProps> = ({ da
                 </div>
             )}
             <div className="flex justify-between items-start mb-2">
-                <h3 className="text-lg font-semibold text-gray-200">{totalContributions.toLocaleString()} contributions in {selectedYear}</h3>
+                <h3 className="text-lg font-semibold text-gray-200">{totalContributions.toLocaleString()} messages in {selectedYear}</h3>
                  <div className="flex items-center gap-4">
                     <InfoPopup text="This calendar shows daily message frequency, similar to a GitHub contribution graph. Darker shades indicate more messages on that day." />
                      <div className="flex items-center gap-3">
