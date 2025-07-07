@@ -35,7 +35,8 @@ def create_app():
 
     allowed_origins = [
         "http://localhost:3000",
-        "https://chat-analysis-beryl.vercel.app"
+        "https://chat-analysis-beryl.vercel.app",
+        "https://chatanalysis.webhop.me"
     ]
 
     CORS(app, resources={r"/*": {"origins": allowed_origins}},
