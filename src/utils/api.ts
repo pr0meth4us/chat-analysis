@@ -1,7 +1,7 @@
 import { FilterConfig, TaskStatus, SearchResult, KeywordCountResult, Message, FilteredData } from '@/types';
 import { AnalysisResult } from '@/types/analysis';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://ec2-13-238-143-239.ap-southeast-2.compute.amazonaws.com:5328';
+const API_BASE = 'https://chatanalysis.webhop.me';
 
 class ApiError extends Error {
   constructor(public status: number, message: string) {
