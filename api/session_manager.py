@@ -13,7 +13,8 @@ from .config import Config
 class PostgresSessionManager:
     def __init__(self, dsn):
         try:
-            self.pool = pool.SimpleConnectionPool(minconn=1, maxconn=5, dsn=dsn)
+            self.dsn = dsn # Store the dsn for potential re-connections
+            self.pool = pool.SimpleConnectionPool(minconn=1, maxconn=5, dsn=self.dsn)
             print("Gateway successfully created PostgreSQL connection pool.")
             self._setup_database()
             self._cleanup_old_data()
@@ -23,24 +24,16 @@ class PostgresSessionManager:
 
     @contextmanager
     def _execute(self, retries=3, delay=1):
-        """A robust context manager for executing queries with retry logic."""
         conn = None
         last_exception = None
         for attempt in range(retries):
             try:
                 conn = self.pool.getconn()
                 yield conn
-                # If we get here, the block executed successfully
                 return
             except OperationalError as e:
                 print(f"Database connection error (attempt {attempt + 1}/{retries}): {e}")
                 last_exception = e
-                # Close the entire pool to clear all stale connections
-                if self.pool:
-                    self.pool.closeall()
-                print("Connection pool closed. Will be recreated on next request.")
-                # Re-create the pool for the next attempt
-                self.pool = pool.SimpleConnectionPool(minconn=1, maxconn=5, dsn=self.dsn)
                 time.sleep(delay)
             finally:
                 if conn:
@@ -81,9 +74,10 @@ class PostgresSessionManager:
             print("Gateway database tables ensured.")
         except Exception as error:
             print("Gateway DB setup error", error)
+            raise
 
     def _cleanup_old_data(self):
-        """Clean up old session data on startup to prevent confusion."""
+        """Clean up old session data on startup."""
         try:
             with self._execute() as conn:
                 with conn.cursor() as cur:
@@ -155,7 +149,7 @@ class PostgresSessionManager:
         try:
             with self._execute() as conn:
                 with conn.cursor() as cur:
-                    cur.execute(sql, (session_id, data_type))
+                    cur.execute(sql, (session_id,))
                     rows_affected = cur.rowcount
                     conn.commit()
                     print(f"Cleared {data_type} data for session {session_id} ({rows_affected} rows)")
@@ -265,6 +259,7 @@ class PostgresSessionManager:
             print(f"Error getting all sessions: {error}")
             return []
 
+# Initialize the session manager
 try:
     session_manager = PostgresSessionManager(dsn=Config.DATABASE_URL)
 except Exception as e:
